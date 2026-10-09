@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>C 程序设计基础 · 第 1 章 概述与算法 · 习题与解答</title>
+<style>
+  /* 使用 Word 兼容的简单 CSS */
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.8;
+    color: #22303c;
+    background: #eef3f8;
+  }
+  .page {
+    max-width: 1000px;
+    margin: 0 auto;
+    background: #ffffff;
+    border: 1px solid #d6e2ee;
+    padding: 0 0 60px 0;
+  }
+  /* 封面 */
+  .cover {
+    background: #1a6fb5;
+    color: #ffffff;
+    padding: 50px 48px 40px 48px;
+  }
+  .cover h1 {
+    margin: 0 0 8px 0;
+    font-size: 2em;
+    letter-spacing: 2px;
+  }
+  .cover h2 {
+    margin: 0 0 26px 0;
+    font-weight: normal;
+    font-size: 1.15em;
+    color: #bcd9f2;
+    letter-spacing: 1px;
+  }
+  .cover .meta {
+    font-size: 0.95em;
+    color: #d7e8f7;
+    border-top: 1px solid #7fb2dd;
+    padding-top: 16px;
+  }
+  /* 正文 */
+  main {
+    padding: 8px 48px 0 48px;
+  }
+  h2.chapter {
+    margin: 40px 0 18px 0;
+    padding: 10px 18px;
+    font-size: 1.4em;
+    color: #ffffff;
+    background: #1a6fb5;
+    border-left: 6px solid #e8720c;
+  }
+  h3.section {
+    margin: 32px 0 14px 0;
+    padding-left: 14px;
+    font-size: 1.2em;
+    color: #124f83;
+    border-left: 6px solid #1a6fb5;
+  }
+  h4.sub {
+    margin: 24px 0 10px 0;
+    font-size: 1.05em;
+    color: #1d5b8e;
+  }
+  h4.sub::before {
+    content: "▍";
+    color: #e8720c;
+    margin-right: 6px;
+    font-size: 0.9em;
+  }
+  p {
+    margin: 10px 0;
+  }
+  ul, ol {
+    padding-left: 1.9em;
+    margin: 10px 0;
+  }
+  li {
+    margin: 5px 0;
+  }
+  ul > li::marker {
+    color: #1a6fb5;
+  }
+  ol > li::marker {
+    color: #1a6fb5;
+    font-weight: bold;
+  }
+  /* 提示框 */
+  .box {
+    border-radius: 0;
+    padding: 14px 20px;
+    margin: 16px 0;
+    border-left: 5px solid #1a6fb5;
+    background: #e8f2fb;
+  }
+  .box.tip {
+    border-left-color: #2e8b57;
+    background: #eaf7ef;
+  }
+  .box.warn {
+    border-left-color: #e8720c;
+    background: #fdf1e4;
+  }
+  .box.key {
+    border-left-color: #8e44ad;
+    background: #f5ecfa;
+  }
+  .box .label {
+    display: inline-block;
+    font-weight: bold;
+    margin-right: 8px;
+    color: #124f83;
+  }
+  .box.tip .label {
+    color: #2e8b57;
+  }
+  .box.warn .label {
+    color: #b95a05;
+  }
+  .box.key .label {
+    color: #7d3c98;
+  }
+  /* 表格 */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 0.94em;
+    background: #ffffff;
+  }
+  caption {
+    caption-side: top;
+    text-align: left;
+    font-weight: bold;
+    color: #124f83;
+    padding-bottom: 8px;
+  }
+  th, td {
+    border: 1px solid #d6e2ee;
+    padding: 9px 12px;
+    vertical-align: top;
+  }
+  thead th {
+    background: #1a6fb5;
+    color: #ffffff;
+    font-weight: 600;
+    text-align: left;
+  }
+  tbody tr:nth-child(even) {
+    background: #f7fafd;
+  }
+  tbody th {
+    background: #eaf3fb;
+    color: #124f83;
+    text-align: left;
+  }
+  /* 代码 */
+  pre {
+    background: #1e2a35;
+    color: #e6edf3;
+    padding: 16px 20px;
+    border-radius: 0;
+    overflow-x: auto;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 0.9em;
+    line-height: 1.65;
+    margin: 14px 0;
+  }
+  pre .cmt {
+    color: #7f9bab;
+  }
+  pre .kw {
+    color: #7cc7ff;
+  }
+  pre .str {
+    color: #ffcc80;
+  }
+  code.inline {
+    background: #eef3f8;
+    color: #c0392b;
+    padding: 1px 6px;
+    border-radius: 0;
+    font-family: Consolas, monospace;
+    font-size: 0.92em;
+  }
+  /* 例题 / 习题 */
+  .example {
+    border: 1px solid #d6e2ee;
+    border-radius: 0;
+    margin: 20px 0;
+    overflow: hidden;
+  }
+  .example > .title {
+    background: #eaf3fb;
+    color: #124f83;
+    font-weight: bold;
+    padding: 9px 18px;
+    border-bottom: 1px solid #d6e2ee;
+  }
+  .example > .body {
+    padding: 6px 20px 16px 20px;
+  }
+  .exercise {
+    border: 1px dashed #b9cfe4;
+    border-radius: 0;
+    margin: 18px 0;
+    padding: 14px 20px;
+    background: #fbfdff;
+  }
+  .exercise .qhead {
+    font-weight: bold;
+    color: #124f83;
+    margin-bottom: 6px;
+  }
+  details {
+    margin: 10px 0 0 0;
+    border-top: 1px dashed #cfe0ee;
+    padding-top: 8px;
+  }
+  summary {
+    cursor: pointer;
+    color: #e8720c;
+    font-weight: bold;
+    outline: none;
+    user-select: none;
+  }
+  summary:hover {
+    text-decoration: underline;
+  }
+  /* 其他 */
+  .flow {
+    font-family: Consolas, monospace;
+    background: #f3f7fb;
+    border: 1px solid #d6e2ee;
+    border-radius: 0;
+    padding: 14px 18px;
+    margin: 14px 0;
+    white-space: pre;
+    overflow-x: auto;
+    font-size: 0.9em;
+    line-height: 1.7;
+    color: #204060;
+  }
+  .tag {
+    display: inline-block;
+    background: #e8720c;
+    color: #ffffff;
+    font-size: 0.78em;
+    padding: 1px 9px;
+    border-radius: 0;
+    margin-right: 8px;
+    vertical-align: 2px;
+    letter-spacing: 0.5px;
+  }
+  .tag.blue {
+    background: #1a6fb5;
+  }
+  .tag.green {
+    background: #2e8b57;
+  }
+  hr {
+    border: none;
+    border-top: 1px solid #d6e2ee;
+    margin: 36px 0;
+  }
+  .backtop {
+    display: block;
+    text-align: right;
+    font-size: 0.85em;
+    color: #1a6fb5;
+    text-decoration: none;
+    margin-top: 8px;
+  }
+  .backtop:hover {
+    text-decoration: underline;
+  }
+  footer {
+    margin-top: 48px;
+    padding: 22px 48px;
+    background: #f5f7fa;
+    border-top: 1px solid #d6e2ee;
+    text-align: center;
+    font-size: 0.88em;
+    color: #6b7d8d;
+  }
+  /* 图片占位符 */
+  .img-placeholder {
+    display: block;
+    width: 100%;
+    min-height: 120px;
+    border: 2px dashed #b0c4de;
+    background: #f8fbff;
+    color: #6b7d8d;
+    text-align: center;
+    line-height: 120px;
+    font-size: 0.9em;
+    margin: 16px 0;
+    border-radius: 0;
+    padding: 10px;
+    box-sizing: border-box;
+  }
+  .img-placeholder.small {
+    min-height: 80px;
+    line-height: 80px;
+  }
+  .img-placeholder.large {
+    min-height: 200px;
+    line-height: 200px;
+  }
+  /* 表格内占位符 */
+  td .img-placeholder {
+    margin: 4px 0;
+    min-height: 80px;
+    line-height: 80px;
+    font-size: 0.85em;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ================= 封面 ================= -->
+  <header class="cover">
+    <h1>C 程序设计基础</h1>
+    <h2>C Programming Language · 第 1 章　概述与算法--习题与参考答案</h2>
+    <div class="meta">
+      武汉理工大学　·　主讲：孙骏　　李民　·　
+    </div>
+  </header>
+
+  <main>
+
+ 
+  <!-- =========================================================
+       习题与参考答案
+       ========================================================= -->
+  <h2 class="chapter" id="c6">习题与参考答案</h2>
+
+  <h3 class="section">一、选择题</h3>
+
+  <div class="exercise">
+    <p class="qhead">1. 计算机唯一能够直接识别和运行的语言是（　　）。</p>
+    <p>A. 汇编语言　　B. 高级语言　　C. 机器语言　　D. 自然语言</p>
+    <details>
+      <summary>查看答案与解析</summary>
+      <p><b>答案：C</b></p>
+      <p>解析：机器语言是用二进制代码表示的、计算机能直接识别和执行的一种机器指令的集合，是计算机唯一能够直接识别和运行的语言。汇编语言和高级语言都必须经过翻译才能被计算机执行。</p>
+    </details>
+  </div>
+
+  <div class="exercise">
+    <p class="qhead">2. 下列关于算法的叙述中，错误的是（　　）。</p>
+    <p>A. 算法必须有输出　　B. 算法必须在有限步内结束</p>
+    <p>C. 算法必须有输入　　D. 算法的每一步都必须有确定含义</p>
+    <details>
+      <summary>查看答案与解析</summary>
+      <p><b>答案：C</b></p>
+      <p>解析：算法可以有 <b>0 ~ n 个输入</b>，但必须有 <b>1 ~ n 个输出</b>。A、B、D 分别对应算法的"有输出""有穷性""确定性"三个特点。</p>
+    </details>
+  </div>
+
+  <div class="exercise">
+    <p class="qhead">3. 用高级语言编写的程序称为（　　）。</p>
+    <p>A. 目标程序　　B. 源程序　　C. 可执行程序　　D. 汇编程序</p>
+    <details>
+      <summary>查看答案与解析</summary>
+      <p><b>答案：B</b></p>
+      <p>解析：使用高级计算机语言编写的程序称为<b>源程序</b>；源程序经编译后形成的 <code class="inline">.obj</code> 文件称为<b>目标程序</b>；链接后形成的 <code class="inline">.exe</code> 文件称为<b>可执行程序</b>。</p>
+    </details>
+  </div>
+
+  <div class="exercise">
+    <p class="qhead">4. 结构化程序设计的三种基本结构是（　　）。</p>
+    <p>A. 顺序、函数、过程　　B. 顺序、选择、循环</p>
+    <p>C. 分支、循环、递归　　D. 主函数、子函数、模块</p>
+    <details>
+      <summary>查看答案与解析</summary>
+      <p><b>答案：B</b></p>
+      <p>解析：为限制使用无条件转移语句（如 goto），结构化程序设计规定只用<b>顺序结构、选择结构、循环结构</b>三种基本结构来构建程序。</p>
+    </details>
+  </div>
+
+  <div class="exercise">
+    <p class="qhead">5. 以下关于 C 语言程序的叙述中，正确的是（　　）。</p>
+    <p>A. C 程序可以没有 main 函数</p>
+    <p>B. C 程序可以从任意一个函数开始执行</p>
+    <p>C. C 程序中有且仅有一个 main 函数</p>
+    <p>D. main 函数必须放在程序最前面</p>
+    <details>
+      <summary>查看答案与解析</summary>
+      <p><b>答案：C</b></p>
+      <p>解析：C 程序由若干个函数组成，其中有且仅有一个 main 函数，程序总是从 main 函数开始执行；main 函数的位置可以放在任意位置，不一定要在最前面。</p>
+    </details>
+  </div>
+
+  <div class="exercise">
+    <p class="qhead">6. 下列转义字符中，表示换行的是（　　）。</p>
+    <p>A. <code class="inline">\t</code>　　B. <code class="inline">\n</code>　　C. <code class="inline">\\</code>　　D. <code class="inline">\0</code></p>
+    <details>
+      <summary>查看答案与解析</summary>
+      <p><b>答案：B</b></p>
+      <p>解析：<code class="inline">\n</code> 是换行符（newline）；<code class="inline">\t</code> 是水平制表符；<code class="inline">\\</code> 表示一个反斜杠字符；<code class="inline">\0</code> 是空字符。</p>
+    </details>
+  </div>
+
+  <h3 class="section">二、填空题</h3>
+
+  <div class="exercise">
+    <p class="qhead">1. 十进制数 45 转换成二进制数是 ________，转换成十六进制数是 ________。</p>
+    <details>
+      <summary>查看答案与解析</summary>
+      <p><b>答案：101101；2D</b></p>
+      <p>解析：45 = 32 + 8 + 4 + 1 = 101101<sub>2</sub>；再由 0010 1101 分组得 2D<sub>16</sub>。</p>
+    </details>
+  </div>
+
+  <div class="exercise">
+    <p class="qhead">2. 二进制数 (101101)<sub>2</sub> 对应的八进制数是 ________，对应的十进制数是 ________。</p>
+    <details>
+      <summary>查看答案与解析</summary>
+      <p><b>答案：55；45</b></p>
+      <p>解析：101101 按 3 位分组为 101 | 101 → 5 | 5，即 (55)<sub>8</sub>；按权展开 32+8+4+1 = 45。</p>
+    </details>
+  </div>
+
+  <div class="exercise">
+    <p class="qhead">3. 高级语言翻译成机器语言有两种方式：________ 和 ________。</p>
+    <details>
+      <summary>查看答案与解析</summary>
+      <p><b>答案：解释；编译</b></p>
+      <p>解析：解释是"一边翻译，一边运行"；编译是"翻译完成后，再运行"，编译后生成 <code class="inline">.obj</code> 目标文件，链接后生成 <code class="inline">.exe</code> 可执行文件。</p>
+    </details>
+  </div>
+
+  <div class="exercise">
+    <p class="qhead">4. 算法的优劣可以用 ________ 和 ________ 来衡量。</p>
+    <details>
+      <summary>查看答案与解析</summary>
+      <p><b>答案：时间复杂度；空间复杂度</b></p>
+      <p>解析：时间复杂度衡量算法执行所耗费的时间，空间复杂度衡量算法执行所耗费的存储空间。</p>
+    </details>
+  </div>
+
+  <div class="exercise">
+    <p class="qhead">5. 算法的五个特点分别是：________、________、________、有 0~n 个输入、有 1~n 个输出。</p>
+    <details>
+      <summary>查看答案与解析</summary>
+      <p><b>答案：有穷性（有限性）；确定性；有效性</b></p>
+      <p>解析：算法必须满足有穷性、确定性、有效性、有 0~n 个输入、有 1~n 个输出这五个特点。</p>
+    </details>
+  </div>
+
+  <h3 class="section">三、判断题</h3>
+
+  <div class="exercise">
+    <p class="qhead">1. 汇编语言可以在不同平台的计算机之间直接移植。（　　）</p>
+    <details>
+      <summary>查看答案与解析</summary>
+      <p><b>答案：×</b></p>
+      <p>解析：特定的汇编语言与特定的机器语言指令集一一对应，不同平台之间<b>不可直接移植</b>。</p>
+    </details>
+  </div>
+
+  <div class="exercise">
+    <p class="qhead">2. C 语言源程序文件的扩展名是 .c。（　　）</p>
+    <details>
+      <summary>查看答案与解析</summary>
+      <p><b>答案：√</b></p>
+      <p>解析：C 语言源程序是以 <code class="inline">.c</code> 结尾的文件。</p>
+    </details>
+  </div>
+
+  <div class="exercise">
+    <p class="qhead">3. C 语言编译时会忽略 <code class="inline">/* */</code> 之间的注释内容。（　　）</p>
+    <details>
+      <summary>查看答案与解析</summary>
+      <p><b>答案：√</b></p>
+      <p>解析：C 语言系统编译时，忽略介于 <code class="inline">/*</code> 与 <code class="inline">*/</code> 之间的文本，使用一个空格替代。</p>
+    </details>
+  </div>
+
+  <div class="exercise">
+    <p class="qhead">4. N-S 流程图去掉了流程线，全部算法写在一个矩形框内。（　　）</p>
+    <details>
+      <summary>查看答案与解析</summary>
+      <p><b>答案：√</b></p>
+      <p>解析：N-S 流程图（盒图）没有流程线，由若干基本框组成，便于结构化设计。</p>
+    </details>
+  </div>
+
+  <h3 class="section">四、简答题</h3>
+
+  <div class="exercise">
+    <p class="qhead">1. 简述机器语言、汇编语言、高级语言三者的关系。</p>
+    <details>
+      <summary>查看参考答案</summary>
+      <ul>
+        <li><b>机器语言</b>：是计算机唯一能识别的语言，全部由二进制代码组成，但普通人无法理解，且不同型号计算机之间不相通。</li>
+        <li><b>汇编语言</b>：用助记符表示指令，少部分专业人士可以理解，但计算机无法识别，需要汇编程序翻译；与特定机器指令集一一对应，不可直接移植。</li>
+        <li><b>高级语言</b>：以人类日常语言为基础，多数人可以理解和使用，但计算机无法识别，必须通过解释或编译的方式翻译成机器语言。高级语言可移植性好。</li>
+        <li><b>总结</b>：三者是从"面向机器"到"面向人类"的逐步演进；越接近机器，计算机越容易识别、人越难使用；越接近人类，人越容易使用、计算机越不能直接识别。</li>
+      </ul>
+    </details>
+  </div>
+
+  <div class="exercise">
+    <p class="qhead">2. 什么是算法？算法有哪些特点？</p>
+    <details>
+      <summary>查看参考答案</summary>
+      <p><b>算法</b>是对解题方案准确而完整的一系列清晰有序的指令（An algorithm is a step by step process used to carry out some function）。</p>
+      <p><b>算法的特点：</b></p>
+      <ol>
+        <li><b>有穷性（有限性）</b>：算法必须在执行有限步之后结束；</li>
+        <li><b>确定性</b>：每一步的含义必须明确无歧义；</li>
+        <li><b>有效性</b>：每一个步骤都应当有效且可实际执行；</li>
+        <li><b>有 0~n 个输入</b>；</li>
+        <li><b>有 1~n 个输出</b>。</li>
+      </ol>
+    </details>
+  </div>
+
+  <div class="exercise">
+    <p class="qhead">3. 算法的表示方法有哪些？各有什么特点？</p>
+    <details>
+      <summary>查看参考答案</summary>
+      <table>
+        <thead><tr><th>表示方法</th><th>特点</th></tr></thead>
+        <tbody>
+          <tr><td>自然语言法</td><td>通俗易懂，但容易产生歧义，冗长，难以表达分支和循环</td></tr>
+          <tr><td>传统流程图法</td><td>用图形符号描述流程，直观形象，便于发现逻辑错误，但流程线过多时不易阅读</td></tr>
+          <tr><td>N-S 流程图法</td><td>去掉流程线，全部算法写在一个矩形框内，强制结构化，结构清晰</td></tr>
+          <tr><td>伪代码法（pseudo-code）</td><td>介于自然语言与计算机语言之间，不拘泥于语法细节，便于向程序过渡</td></tr>
+        </tbody>
+      </table>
+    </details>
+  </div>
+
+  <h3 class="section">五、编程题</h3>
+
+  <div class="exercise">
+    <p class="qhead">1. 编写一个 C 程序，在屏幕上输出一行文字：<code class="inline">Hello, C Language!</code></p>
+    <details>
+      <summary>查看参考答案</summary>
+<pre><span class="cmt">//学号_姓名.c
+//功能：在屏幕上输出一行文字</span>
+<span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+
+<span class="kw">int</span> main()
+{
+    printf(<span class="str">"Hello, C Language!\n"</span>);
+    <span class="kw">return</span> 0;
+}</pre>
+    </details>
+  </div>
+
+  <div class="exercise">
+    <p class="qhead">2. 编写程序，输出下列结果（要求用 %d 占位符，让计算机自己计算）：</p>
+    <div class="flow">12+34=46
+100-25=75</div>
+    <details>
+      <summary>查看参考答案</summary>
+<pre><span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+
+<span class="kw">int</span> main()
+{
+    printf(<span class="str">"12+34=%d\n"</span>, 12 + 34);
+    printf(<span class="str">"100-25=%d\n"</span>, 100 - 25);
+    <span class="kw">return</span> 0;
+}</pre>
+    </details>
+  </div>
+
+  <div class="exercise">
+    <p class="qhead">3. 编写程序，输入一个年份，输出"你好,年份"。例如输入 2026，输出"你好,2026"。</p>
+    <details>
+      <summary>查看参考答案</summary>
+<pre><span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+
+<span class="kw">int</span> main()
+{
+    <span class="kw">int</span> year;
+    scanf(<span class="str">"%d"</span>, &amp;year);
+    printf(<span class="str">"你好,%d\n"</span>, year);
+    <span class="kw">return</span> 0;
+}</pre>
+      <p><b>注意：</b><code class="inline">scanf</code> 中的 <code class="inline">&amp;year</code> 不能写成 <code class="inline">year</code>；<code class="inline">printf</code> 中的 <code class="inline">%d</code> 与 <code class="inline">year</code> 必须一一对应。</p>
+    </details>
+  </div>
+
+  <div class="exercise">
+    <p class="qhead">4. 仿照计算5!的算法，画出求 1+2+3+…+100 的算法流程图（可用传统流程图或 N-S 流程图）。</p>
+    <details>
+      <summary>查看参考答案</summary>
+      <p><b>算法思路：</b></p>
+      <ol>
+        <li>设 sum = 0，i = 1；</li>
+        <li>若 i ≤ 100，则执行 (3)；否则执行 (4)；</li>
+        <li>sum = sum + i；i = i + 1；返回 (2)；</li>
+        <li>输出 sum。</li>
+      </ol>
+      <p><b>传统流程图：</b></p>
+       <div class="img-placeholder large"><img src="传统流程图-1到100的和.png"  style="width:100%; max-width:300px; display:block; margin:16px auto;"></div>
+
+      <p><b>N-S 流程图：</b></p>
+      <div class="img-placeholder large"><img src="NS流程图-1到100的和.png"  style="width:100%; max-width:250px; display:block; margin:16px auto;"></div>
+      <p><b>结果：sum = 5050</b></p>
+    </details>
+  </div>
+
+  <hr>
+
+  <div class="box key">
+    <span class="label">本章小结</span>
+    <ol style="margin:6px 0 0 0;">
+      <li>掌握常用数制（二、八、十、十六）及其相互转换方法。</li>
+      <li>了解计算机语言发展的三个阶段：机器语言 → 汇编语言 → 高级语言，以及三种语言各自的特点与相互关系。</li>
+      <li>掌握高级语言的两种翻译方式：解释与编译，以及 C 程序从 <code class="inline">.c</code> → <code class="inline">.obj</code> → <code class="inline">.exe</code> 的过程。</li>
+      <li>掌握算法的概念、五个特点、评价标准，以及四种表示方法（自然语言、伪代码、传统流程图、N-S 流程图）。</li>
+      <li>掌握结构化程序设计的三种基本结构：顺序、选择、循环。</li>
+      <li>能够编写、编译并运行第一个 C 程序，理解注释、预处理指令、main 函数、花括号、语句、转义字符 <code class="inline">\n</code>、返回值等基本概念，并会使用 <code class="inline">printf</code> 与 <code class="inline">scanf</code> 完成简单的输入输出。</li>
+    </ol>
+  </div>
+
+  <a class="backtop" href="#top">↑ 返回顶部</a>
+
+  </main>
+
+  <footer>
+    C 程序设计基础 · 第 1 章 概述与算法 · 讲义<br>
+    武汉理工大学　主讲：孙骏　| 本讲义依据课件《hour 1-1 概述+算法》与《hour 2-1 第 1 个程序》整理
+  </footer>
+</div>
+</body>
+</html>
