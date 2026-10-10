@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>C 程序设计基础 · 第 2 章 顺序结构 · 讲义</title>
+<style>
+  /* 使用 Word 兼容的简单 CSS */
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: "Microsoft YaHei", "PingFang SC", "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.8;
+    color: #22303c;
+    background: #eef3f8;
+  }
+  .page {
+    max-width: 1000px;
+    margin: 0 auto;
+    background: #ffffff;
+    border: 1px solid #d6e2ee;
+    padding: 0 0 60px 0;
+  }
+  /* 封面 */
+  .cover {
+    background: #1a6fb5;
+    color: #ffffff;
+    padding: 50px 48px 40px 48px;
+  }
+  .cover h1 {
+    margin: 0 0 8px 0;
+    font-size: 2em;
+    letter-spacing: 2px;
+  }
+  .cover h2 {
+    margin: 0 0 26px 0;
+    font-weight: normal;
+    font-size: 1.15em;
+    color: #bcd9f2;
+    letter-spacing: 1px;
+  }
+  .cover .meta {
+    font-size: 0.95em;
+    color: #d7e8f7;
+    border-top: 1px solid #7fb2dd;
+    padding-top: 16px;
+  }
+  /* 正文 */
+  main {
+    padding: 8px 48px 0 48px;
+  }
+  h2.chapter {
+    margin: 40px 0 18px 0;
+    padding: 10px 18px;
+    font-size: 1.4em;
+    color: #ffffff;
+    background: #1a6fb5;
+    border-left: 6px solid #e8720c;
+  }
+  h3.section {
+    margin: 32px 0 14px 0;
+    padding-left: 14px;
+    font-size: 1.2em;
+    color: #124f83;
+    border-left: 6px solid #1a6fb5;
+  }
+  h4.sub {
+    margin: 24px 0 10px 0;
+    font-size: 1.05em;
+    color: #1d5b8e;
+  }
+  h4.sub::before {
+    content: "▍";
+    color: #e8720c;
+    margin-right: 6px;
+    font-size: 0.9em;
+  }
+  p {
+    margin: 10px 0;
+  }
+  ul, ol {
+    padding-left: 1.9em;
+    margin: 10px 0;
+  }
+  li {
+    margin: 5px 0;
+  }
+  ul > li::marker {
+    color: #1a6fb5;
+  }
+  ol > li::marker {
+    color: #1a6fb5;
+    font-weight: bold;
+  }
+  /* 提示框 */
+  .box {
+    border-radius: 0;
+    padding: 14px 20px;
+    margin: 16px 0;
+    border-left: 5px solid #1a6fb5;
+    background: #e8f2fb;
+  }
+  .box.tip {
+    border-left-color: #2e8b57;
+    background: #eaf7ef;
+  }
+  .box.warn {
+    border-left-color: #e8720c;
+    background: #fdf1e4;
+  }
+  .box.key {
+    border-left-color: #8e44ad;
+    background: #f5ecfa;
+  }
+  .box .label {
+    display: inline-block;
+    font-weight: bold;
+    margin-right: 8px;
+    color: #124f83;
+  }
+  .box.tip .label {
+    color: #2e8b57;
+  }
+  .box.warn .label {
+    color: #b95a05;
+  }
+  .box.key .label {
+    color: #7d3c98;
+  }
+  /* 表格 */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 0.94em;
+    background: #ffffff;
+  }
+  caption {
+    caption-side: top;
+    text-align: left;
+    font-weight: bold;
+    color: #124f83;
+    padding-bottom: 8px;
+  }
+  th, td {
+    border: 1px solid #d6e2ee;
+    padding: 9px 12px;
+    vertical-align: top;
+  }
+  thead th {
+    background: #1a6fb5;
+    color: #ffffff;
+    font-weight: 600;
+    text-align: left;
+  }
+  tbody tr:nth-child(even) {
+    background: #f7fafd;
+  }
+  tbody th {
+    background: #eaf3fb;
+    color: #124f83;
+    text-align: left;
+  }
+  /* 代码 */
+  pre {
+    background: #1e2a35;
+    color: #e6edf3;
+    padding: 16px 20px;
+    border-radius: 0;
+    overflow-x: auto;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 0.9em;
+    line-height: 1.65;
+    margin: 14px 0;
+  }
+  pre .cmt {
+    color: #7f9bab;
+  }
+  pre .kw {
+    color: #7cc7ff;
+  }
+  pre .str {
+    color: #ffcc80;
+  }
+  code.inline {
+    background: #eef3f8;
+    color: #c0392b;
+    padding: 1px 6px;
+    border-radius: 0;
+    font-family: Consolas, monospace;
+    font-size: 0.92em;
+  }
+  /* 例题 / 习题 */
+  .example {
+    border: 1px solid #d6e2ee;
+    border-radius: 0;
+    margin: 20px 0;
+    overflow: hidden;
+  }
+  .example > .title {
+    background: #eaf3fb;
+    color: #124f83;
+    font-weight: bold;
+    padding: 9px 18px;
+    border-bottom: 1px solid #d6e2ee;
+  }
+  .example > .body {
+    padding: 6px 20px 16px 20px;
+  }
+  .exercise {
+    border: 1px dashed #b9cfe4;
+    border-radius: 0;
+    margin: 18px 0;
+    padding: 14px 20px;
+    background: #fbfdff;
+  }
+  .exercise .qhead {
+    font-weight: bold;
+    color: #124f83;
+    margin-bottom: 6px;
+  }
+  details {
+    margin: 10px 0 0 0;
+    border-top: 1px dashed #cfe0ee;
+    padding-top: 8px;
+  }
+  summary {
+    cursor: pointer;
+    color: #e8720c;
+    font-weight: bold;
+    outline: none;
+    user-select: none;
+  }
+  summary:hover {
+    text-decoration: underline;
+  }
+  /* 其他 */
+  .flow {
+    font-family: Consolas, monospace;
+    background: #f3f7fb;
+    border: 1px solid #d6e2ee;
+    border-radius: 0;
+    padding: 14px 18px;
+    margin: 14px 0;
+    white-space: pre;
+    overflow-x: auto;
+    font-size: 0.9em;
+    line-height: 1.7;
+    color: #204060;
+  }
+  hr {
+    border: none;
+    border-top: 1px solid #d6e2ee;
+    margin: 36px 0;
+  }
+  .backtop {
+    display: block;
+    text-align: right;
+    font-size: 0.85em;
+    color: #1a6fb5;
+    text-decoration: none;
+    margin-top: 8px;
+  }
+  .backtop:hover {
+    text-decoration: underline;
+  }
+  footer {
+    margin-top: 48px;
+    padding: 22px 48px;
+    background: #f5f7fa;
+    border-top: 1px solid #d6e2ee;
+    text-align: center;
+    font-size: 0.88em;
+    color: #6b7d8d;
+  }
+  /* 图片占位符 */
+  .img-placeholder {
+    display: block;
+    width: 100%;
+    min-height: 120px;
+    border: 2px dashed #b0c4de;
+    background: #f8fbff;
+    color: #6b7d8d;
+    text-align: center;
+    line-height: 120px;
+    font-size: 0.9em;
+    margin: 16px 0;
+    border-radius: 0;
+    padding: 10px;
+    box-sizing: border-box;
+  }
+  .img-placeholder.small {
+    min-height: 80px;
+    line-height: 80px;
+  }
+  .img-placeholder.large {
+    min-height: 200px;
+    line-height: 200px;
+  }
+  /* 图标签 */
+   tab {
+    text-align: center;
+    color: var(--primary);
+    font-size: 0.9em;
+    margin: 2px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+   tab .sub {
+    display: block;
+    color: var(--muted);
+    font-weight: 400;
+    font-size: 0.88em;
+    margin: 2px;
+    font-style: italic;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ================= 封面 ================= -->
+  <header class="cover">
+    <h1>C 程序设计基础</h1>
+    <h2>C Programming Language · 第 2 章　顺序结构</h2>
+    <div class="meta">
+      武汉理工大学　　　　　主讲：孙骏　·　李民 　　　　讲义整理（含全部例题、习题与参考答案）：孙骏　·　李民
+    </div>
+  </header>
+
+  <main>
+
+  <!-- =========================================================
+       第 1 节  常量
+       ========================================================= -->
+  <h2 class="chapter" id="c1">2.1　常量（Constant）</h2>
+
+  <div class="box key">
+    <span class="label">定义</span>
+    常量的值是在<b>编译时</b>（COMPILE time）给定的，程序运行过程中<b>不能被改变</b>。
+    <br>
+    <i>The value of a constant is given at COMPILE time, and (of course) cannot be changed.</i>
+  </div>
+
+  <h3 class="section" id="c1-1">2.1.1　常量的分类</h3>
+
+  <p>C 语言中的常量有：<b>整型常量</b>、<b>实型常量</b>、<b>字符型常量</b>、<b>字符串常量</b>、<b>符号常量</b>、<b>枚举常量</b>等。</p>
+
+ 
+
+  <h4 class="sub">（1）隐式声明</h4>
+
+  <div class="box">
+    <span class="label">隐式声明</span>
+    基本类型常量通过<b>书写形式</b>隐式说明的，即由其书写格式确定数据的类型。
+  </div>
+
+ 
+
+  <h4 class="sub">（2）各类常量的书写形式</h4>
+
+  <table>
+    <caption>表 2-1　各类常量的书写形式</caption>
+    <thead>
+      <tr><th>常量类型</th><th>书写形式</th><th>示例</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th rowspan="3">整型量</th>
+        <td>十进制整数</td>
+        <td><code class="inline">3</code>、<code class="inline">55</code></td>
+      </tr>
+      <tr>
+        <td>八进制整数（以 0 开头）</td>
+        <td><code class="inline">015</code></td>
+      </tr>
+      <tr>
+        <td>十六进制整数（以 0x 开头）</td>
+        <td><code class="inline">0x0D</code></td>
+      </tr>
+      <tr>
+        <th rowspan="2">实型量</th>
+        <td>小数形式</td>
+        <td><code class="inline">-16.783</code></td>
+      </tr>
+      <tr>
+        <td>指数形式</td>
+        <td><code class="inline">3.4e-5</code></td>
+      </tr>
+      <tr>
+        <th rowspan="2">字符常量</th>
+        <td>字符形式</td>
+        <td><code class="inline">'A'</code>、<code class="inline">'$'</code>、<code class="inline">'9'</code>、<code class="inline">'p'</code></td>
+      </tr>
+      <tr>
+        <td>转义字符形式</td>
+        <td><code class="inline">'\n'</code>、<code class="inline">'\101'</code></td>
+      </tr>
+      <tr>
+        <th>字符串常量</th>
+        <td>用双引号括起来的一串字符</td>
+        <td><code class="inline">"Welcome to Room 2-202"</code></td>
+      </tr>
+      <tr>
+        <th>符号常量</th>
+        <td>用 <code class="inline">#define</code> 定义</td>
+        <td><code class="inline">#define PI 3.1415926</code></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- 图片占位：常量分类树状图（树叶） -->
+  <div class="img-placeholder"><img src="images/常量类型.png"  alt="常量类型图"  style="width:100%; max-width:700px; display:block; margin:16px auto;"> 
+     <text style="line-height:10px;"><b>常量类型</b></text>
+  </div>
+
+  <div class="example">
+    <div class="title">例 2-1　输入年份，显示问好</div>
+    <div class="body">
+      <p><b>要求：</b>编写程序，输入年份，显示问好。例如输入 2018，显示"你好,2018"。</p>
+
+      <p><b>❌ 错误写法：把变量名写在双引号里面</b></p>
+<pre><span class="kw">#include</span><span class="str">&lt;stdio.h&gt;</span>
+
+<span class="kw">int</span> main()
+{
+    <span class="kw">int</span> year;
+    scanf(<span class="str">"%d"</span>, &amp;year);
+    printf(<span class="str">"你好, year"</span>);      <span class="cmt">// 错误：year 只是一串普通字符</span>
+    <span class="kw">return</span> 0;
+}</pre>
+      <p><b>运行结果：</b></p>
+      <div class="flow">2020
+你好, year</div>
+
+      <p><b>✅ 正确写法：使用占位符 %d</b></p>
+<pre><span class="kw">#include</span><span class="str">&lt;stdio.h&gt;</span>
+
+<span class="kw">int</span> main()
+{
+    <span class="kw">int</span> year;
+    scanf(<span class="str">"%d"</span>, &amp;year);
+    printf(<span class="str">"你好,%d"</span>, year);    <span class="cmt">// %d 是占位符，year 是要输出的结果</span>
+    <span class="kw">return</span> 0;
+}</pre>
+      <p><b>运行结果：</b></p>
+      <div class="flow">2022
+你好,2022
+
+2004
+你好,2004</div>
+
+      <div class="box key">
+        <span class="label">要点</span>
+        <ul style="margin:6px 0 0 0;">
+          <li><code class="inline">scanf("%d", &amp;year);</code> 中的 <code class="inline">&amp;</code> 是<b>取地址符</b>，不能省略。</li>
+          <li><code class="inline">printf("你好, %d", year);</code> 中的 <code class="inline">%d</code> 是<b>占位符</b>，<code class="inline">year</code> 是<b>要输出的结果</b>，二者<b>一一对应</b>。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       第 2 节  变量
+       ========================================================= -->
+  <h2 class="chapter" id="c2">2.2　变量（Variable）</h2>
+
+  <div class="box key">
+    <span class="label">定义</span>
+    变量是在程序运行过程中，其值<b>可以被改变</b>的量。
+    <br>
+    程序运行时，系统为每一个变量分配一个<b>内存单元</b>，并在变量名和该内存单元地址间建立<b>一一对应的关系</b>。
+  </div>
+
+  <!-- 图片占位：内存地址与变量名对应图 -->
+  <div class="img-placeholder"><img src="images/变量存储示意图.png"  alt="变量存储示意图"  style="width:100%; max-width:450px; display:block; margin:16px auto;"></div>
+
+  <p><b>引用变量名，实际上就是引用该变量名所对应地址单元的内容。</b></p>
+
+  <h3 class="section" id="c2-1">2.2.1　什么是变量</h3>
+
+  <p>变量也应有不同的类型。</p>
+  <ul>
+    <li>常量的类型是<b>隐式说明</b>的，即通过书写形式确定。</li>
+    <li>变量的类型则是<b>显式说明</b>的，通过<b>定义语句</b>确定变量名及其类型。</li>
+  </ul>
+
+  <!-- 图片占位：变量的存储示意图 -->
+  <div class="img-placeholder"><img src="images/变量存储示意图2.png"  alt="变量存储示意图"  style="width:100%; max-width:250px; display:block; margin:16px auto;"></div>
+
+  <div class="box warn">
+    <span class="label">注意</span>
+    变量名及其类型需要<b>先定义，后使用</b>。
+  </div>
+
+  <div class="example">
+    <div class="title">例 2-2　两数求和程序（分步输入版）</div>
+    <div class="body">
+<pre><span class="cmt">1. /* Fig. 2.1_1: Addition program */</span>
+<span class="cmt">2.</span> <span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="cmt">3.</span> <span class="kw">int</span> main( <span class="kw">void</span> ) {
+<span class="cmt">4.</span>     <span class="kw">int</span> integer1;
+<span class="cmt">5.</span>     <span class="kw">int</span> integer2;
+<span class="cmt">6.</span>     scanf(<span class="str">"%d"</span>, &amp;integer1);
+<span class="cmt">7.</span>     scanf(<span class="str">"%d"</span>, &amp;integer2);
+<span class="cmt">8.</span>     printf(<span class="str">"Sum is %d\n"</span>, integer1 + integer2 );
+<span class="cmt">9.</span>     <span class="kw">return</span> 0;
+<span class="cmt">10.</span> }</pre>
+    </div>
+  </div>
+
+  <div class="example">
+    <div class="title">例 2-3　两数求和程序（带提示版）</div>
+    <div class="body">
+<pre><span class="cmt">1. /* Fig. 2.1_2: Addition program */</span>
+<span class="cmt">2.</span> <span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="cmt">3.</span> <span class="kw">int</span> main(<span class="kw">void</span>) {
+<span class="cmt">4.</span>     <span class="kw">int</span> integer1;
+<span class="cmt">5.</span>     <span class="kw">int</span> integer2;
+<span class="cmt">6.</span>     printf(<span class="str">"Enter first integer\n"</span>);      <span class="cmt">/* 提示 */</span>
+<span class="cmt">7.</span>     scanf(<span class="str">"%d"</span>, &amp;integer1);
+<span class="cmt">8.</span>     printf(<span class="str">"Enter second integer\n"</span>);     <span class="cmt">// 提示</span>
+<span class="cmt">9.</span>     scanf(<span class="str">"%d"</span>, &amp;integer2);              <span class="cmt">// 读入（输入）另一个整数</span>
+<span class="cmt">10.</span>     printf(<span class="str">"Sum is %d\n"</span>, integer1 + integer2);  <span class="cmt">// 输出结果</span>
+<span class="cmt">11.</span>     <span class="kw">return</span> 0;                           <span class="cmt">// 说明程序正常结束，返回操作系统</span>
+<span class="cmt">12.</span> }                                       <span class="cmt">/* 主函数结束 */</span></pre>
+    </div>
+  </div>
+
+  <div class="example">
+    <div class="title">例 2-4　两数求和程序（一次输入两个数）</div>
+    <div class="body">
+<pre><span class="cmt">1. /* Fig. 2.1_3: Addition program */</span>
+<span class="cmt">2.</span> <span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="cmt">3.</span> <span class="kw">int</span> main( <span class="kw">void</span> )
+<span class="cmt">4.</span> {
+<span class="cmt">5.</span>     <span class="kw">int</span> integer1, integer2 ;
+<span class="cmt">6.</span>     printf(<span class="str">"Enter two integers, separate with ','\n"</span>);  <span class="cmt">// prompt（提示）</span>
+<span class="cmt">7.</span>     scanf(<span class="str">"%d,%d"</span>, &amp;integer1, &amp;integer2);              <span class="cmt">/* read two integers */</span>
+<span class="cmt">8.</span>     printf(<span class="str">"Sum is %d\n"</span>, integer1 + integer2 );           <span class="cmt">/* print sum */</span>
+<span class="cmt">9.</span>     <span class="kw">return</span> 0;
+<span class="cmt">10.</span> }</pre>
+    </div>
+  </div>
+
+  <h3 class="section" id="c2-2">2.2.2　变量的定义</h3>
+
+  <div class="box key">
+    <span class="label">变量定义的格式</span>
+    <b>类型定义符　变量名表；</b>
+  </div>
+
+  <p><b>示例：</b></p>
+<pre><span class="kw">int</span> student_num ;
+<span class="kw">float</span> student_score, aver;</pre>
+
+  <ul>
+    <li><b>类型定义符</b>：定义变量名表中所列变量的类型（如 <code class="inline">int</code>、<code class="inline">float</code>、<code class="inline">double</code>）。</li>
+    <li><b>变量名表</b>：由若干个变量名组成，其间用逗号 <code class="inline">,</code> 分隔。</li>
+    <li>变量名示例：<code class="inline">M</code>、<code class="inline">integer1</code>、<code class="inline">integer2</code>、<code class="inline">year</code>。</li>
+  </ul>
+
+  <!-- 图片占位：变量声明代码截图 -->
+  <div class="img-placeholder"><img src="images/变量定义说明.png"  alt="变量定义说明"  style="width:100%; max-width:550px; display:block; margin:16px auto;"></div>
+
+  <h4 class="sub">C 语言基本类型一览表</h4>
+
+  <table>
+    <caption>表 2-2　C 语言的基本类型</caption>
+    <thead>
+      <tr><th>类型</th><th>类型定义符</th><th>长度（字节数）</th><th>有效值范围</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>字符型</td><td><code class="inline">char</code></td><td>1</td><td>有符号数：-128 ~ 127，-2<sup>7</sup> ~ (2<sup>7</sup>-1)</td></tr>
+      <tr><td>有符号字符型</td><td><code class="inline">signed char</code></td><td>1</td><td>有符号数：-128 ~ 127，-2<sup>7</sup> ~ (2<sup>7</sup>-1)</td></tr>
+      <tr><td>无符号字符型</td><td><code class="inline">unsigned char</code></td><td>1</td><td>无符号数：0 ~ 255，0 ~ (2<sup>8</sup>-1)</td></tr>
+      <tr><td>短整型</td><td><code class="inline">short int</code> 或 <code class="inline">short</code></td><td>2</td><td>有符号数：-32768 ~ 32767，-2<sup>15</sup> ~ (2<sup>15</sup>-1)</td></tr>
+      <tr><td>有符号短整型</td><td><code class="inline">signed short int</code> 或 <code class="inline">signed short</code></td><td>2</td><td>有符号数：-32768 ~ 32767，-2<sup>15</sup> ~ (2<sup>15</sup>-1)</td></tr>
+      <tr><td>无符号短整型</td><td><code class="inline">unsigned short int</code></td><td>2</td><td>无符号数：0 ~ 65535，0 ~ (2<sup>16</sup>-1)</td></tr>
+      <tr><td>整型</td><td><code class="inline">int</code></td><td>4</td><td>有符号数：约 -21 亿 ~ 21 亿，-2<sup>31</sup> ~ (2<sup>31</sup>-1)</td></tr>
+      <tr><td>有符号整型</td><td><code class="inline">signed int</code></td><td>4</td><td>有符号数：约 -21 亿 ~ 21 亿，-2<sup>31</sup> ~ (2<sup>31</sup>-1)</td></tr>
+      <tr><td>无符号整型</td><td><code class="inline">unsigned int</code> 或 <code class="inline">unsigned</code></td><td>4</td><td>无符号数：约 0 ~ 42 亿，0 ~ (2<sup>32</sup>-1)</td></tr>
+      <tr><td>长整型</td><td><code class="inline">long int</code> 或 <code class="inline">long</code></td><td>4</td><td>有符号数：约 -21 亿 ~ 21 亿，-2<sup>31</sup> ~ (2<sup>31</sup>-1)</td></tr>
+      <tr><td>有符号长整型</td><td><code class="inline">signed long int</code> 或 <code class="inline">signed long</code></td><td>4</td><td>有符号数：约 -21 亿 ~ 21 亿，-2<sup>31</sup> ~ (2<sup>31</sup>-1)</td></tr>
+      <tr><td>无符号长整型</td><td><code class="inline">unsigned long int</code> 或 <code class="inline">unsigned long</code></td><td>4</td><td>无符号数：约 0 ~ 42 亿，0 ~ (2<sup>32</sup>-1)</td></tr>
+      <tr><td>单精度实型</td><td><code class="inline">float</code></td><td>4</td><td>约 3.4×10<sup>-38</sup> ~ 3.4×10<sup>38</sup>（7 位有效位）</td></tr>
+      <tr><td>双精度实型</td><td><code class="inline">double</code></td><td>8</td><td>约 1.7×10<sup>-37</sup> ~ 1.7×10<sup>38</sup>（16 位有效位）</td></tr>
+      <tr><td>长双精度实型</td><td><code class="inline">long double</code></td><td>10</td><td>约 10<sup>-4031</sup> ~ 10<sup>4032</sup>（18 位有效位）</td></tr>
+    </tbody>
+  </table>
+
+  <div class="box">
+    <span class="label">要点</span>
+    在程序执行时，系统为已经定义的不同类型的各个变量<b>逐一分配存储单元</b>。
+    <ul style="margin:6px 0 0 0;">
+      <li>每个单元存储一个数据；</li>
+      <li>单元的大小依据数据类型可能不一样。</li>
+    </ul>
+  </div>
+
+  <!-- 图片占位：存储单元示意图 -->
+ 
+
+  <h3 class="section" id="c2-3">2.2.3　变量的初始化</h3>
+
+  <div class="box key">
+    <span class="label">定义的同时对变量进行初始化（赋初值）</span>
+    <b>类型定义符　变量名 = 表达式, ......;</b>
+  </div>
+
+  <p><b>示例：</b></p>
+<pre><span class="kw">long</span> distance = 700000, height;
+<span class="kw">double</span> area = 9.6e7;
+<span class="kw">float</span> s = 3 * distance;</pre>
+
+  <ul>
+    <li><code class="inline">=</code> 是<b>赋值号</b>，不是数学中的等号。</li>
+    <li><code class="inline">distance</code> 需要<b>预先定义，且已经赋过初值</b>，才能用于计算 <code class="inline">s</code> 的初值。</li>
+  </ul>
+
+  <h3 class="section" id="c2-4">2.2.4　使用变量的注意事项</h3>
+
+  <div class="box warn">
+    <span class="label">四个注意</span>
+    <ol style="margin:6px 0 0 0;">
+      <li>在使用变量时，应注意<b>"先定义，后使用"</b>的原则。</li>
+      <li>在一个函数中，<b>变量名不能重复定义</b>。</li>
+      <li>除非有特定的需要，通常把定义变量的语句<b>集中放在函数的开始处</b>。</li>
+      <li>通常，在函数中定义变量时，若没有赋初值，则该变量的值<b>不确定</b>。</li>
+    </ol>
+  </div>
+
+  <!-- =========================================================
+       第 3 节  标识符和关键字
+       ========================================================= -->
+  <h2 class="chapter" id="c3">2.3　标识符和关键字</h2>
+
+  <p>在 C 语言程序中，<b>标识符</b>和<b>关键字</b>都属于程序的基本语法单位。</p>
+
+  <h3 class="section" id="c3-1">2.3.1　关键字（Keywords）</h3>
+
+  <div class="box key">
+    <span class="label">定义</span>
+    关键字是 C 语言中明确的<b>保留字</b>，它们有特定的含义，<b>不能用作其他用途</b>。
+  </div>
+
+  <table>
+    <caption>表 2-3　C 语言的关键字（32 个）</caption>
+    <tbody>
+      <tr><td><code class="inline">auto</code></td><td><code class="inline">break</code></td><td><code class="inline">case</code></td><td><code class="inline">char</code></td><td><code class="inline">const</code></td><td><code class="inline">continue</code></td><td><code class="inline">default</code></td><td><code class="inline">do</code></td></tr>
+      <tr><td><code class="inline">double</code></td><td><code class="inline">else</code></td><td><code class="inline">enum</code></td><td><code class="inline">extern</code></td><td><code class="inline">float</code></td><td><code class="inline">for</code></td><td><code class="inline">goto</code></td><td><code class="inline">if</code></td></tr>
+      <tr><td><code class="inline">int</code></td><td><code class="inline">long</code></td><td><code class="inline">register</code></td><td><code class="inline">return</code></td><td><code class="inline">short</code></td><td><code class="inline">signed</code></td><td><code class="inline">sizeof</code></td><td><code class="inline">static</code></td></tr>
+      <tr><td><code class="inline">struct</code></td><td><code class="inline">switch</code></td><td><code class="inline">typedef</code></td><td><code class="inline">union</code></td><td><code class="inline">unsigned</code></td><td><code class="inline">void</code></td><td><code class="inline">volatile</code></td><td><code class="inline">while</code></td></tr>
+    </tbody>
+  </table>
+
+  <h3 class="section" id="c3-2">2.3.2　标识符（Identifiers）</h3>
+
+  <div class="box key">
+    <span class="label">标识符的命名规则</span>
+    <ol style="margin:6px 0 0 0;">
+      <li>标识符由<b>字母、数字、下划线</b>组成，必须以<b>字母或下划线开头</b>。</li>
+      <li><b>大写字母和小写字母被认为是不同的字符</b>，不能含有其他字符，不能跨行书写。</li>
+      <li><b>关键字、库函数名</b>（<code class="inline">printf</code>、<code class="inline">scanf</code>）<b>不能用来作为标识符</b>。</li>
+    </ol>
+  </div>
+
+  <!-- 图片占位：标识符示例 -->
+  <div class="img-placeholder"><img src="images/标识符.png"  alt="标识符说明"  style="width:100%; max-width:700px; display:block; margin:16px auto;"></div>
+
+  <h4 class="sub">标识符说明</h4>
+
+  <ul>
+    <li>Visual C++ 中标识符有效长度可达 <b>255 个字符</b>。</li>
+    <li>良好的命名习惯会让程序的可读性、可维护性大大加强（如 <code class="inline">student_name</code>、<code class="inline">birthday</code>、<code class="inline">age</code>、<code class="inline">year</code>）。</li>
+    <li><code class="inline">main</code> 是个<b>特殊的标识符</b>。名为 <code class="inline">main</code> 的函数是执行程序的<b>入口</b>。</li>
+  </ul>
+
+ 
+
+  <!-- =========================================================
+       第 4 节  输入输出函数
+       ========================================================= -->
+  <h2 class="chapter" id="c4">2.4　输入输出函数</h2>
+
+  <h3 class="section" id="c4-1">2.4.1　scanf 函数（输入函数）</h3>
+
+  <div class="box key">
+    <span class="label">scanf 函数</span>
+    <b>功能：</b>程序运行时，从用户处获取值。
+    <ul style="margin:6px 0 0 0;">
+      <li><code class="inline">scanf</code> 使用<b>标准输入设备</b>（通常指键盘）。</li>
+      <li>程序运行时，用户从键盘键入数据，并<b>按下 Enter 键</b>响应 <code class="inline">scanf</code> 语句。</li>
+      <li color=#c0392b><b>不按下 "Enter" 键，程序不会向下继续运行。</b></li>
+    </ul>
+  </div>
+
+ 
+  <h4 class="sub">（1）scanf 的格式</h4>
+
+  <div class="flow">scanf("格式控制字符串", 地址列表);
+
+scanf("%d,%d", &amp;integer1, &amp;integer2);
+scanf("%d:%d", &amp;hour, &amp;minute);</div>
+
+  <ul>
+    <li><b>格式控制字符串</b>：包含格式字符和普通字符。</li>
+    <li><b>逗号</b>、<b>冒号</b>等参数分隔符是<b>不可替换</b>的，输入时必须按原样输入。</li>
+    <li><b>地址列表</b>：数据输入的地址，需要在变量名前加 <code class="inline">&amp;</code>（取地址符）。</li>
+    <li><b>数据输入分隔符</b>：按要求设置。</li>
+  </ul>
+
+  <h4 class="sub">（2）scanf 的常用格式字符</h4>
+
+  <table>
+    <caption>表 2-4　scanf 常用格式字符</caption>
+    <thead>
+      <tr><th>格式字符</th><th>说明</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code class="inline">%d</code></td><td>输入十进制整数</td></tr>
+      <tr><td><code class="inline">%u</code></td><td>输入无符号整数</td></tr>
+      <tr><td><code class="inline">%o</code></td><td>输入八进制整数（非负数）</td></tr>
+      <tr><td><code class="inline">%x</code></td><td>输入十六进制整数（非负数）</td></tr>
+      <tr><td><code class="inline">%f</code>、<code class="inline">%e</code></td><td>输入实型数据，可以任意选用小数形式或指数形式（f、e 功能等价）；double 类型数据使用 <code class="inline">%lf</code></td></tr>
+      <tr><td><code class="inline">%c</code></td><td>输入单个字符</td></tr>
+      <tr><td><code class="inline">%s</code></td><td>输入字符串（字符串数组中）</td></tr>
+    </tbody>
+  </table>
+
+  <div class="box warn">
+    <span class="label">注意</span>
+    <b>不到万不得已，输入中不建议使用辅助格式符！</b>
+    <br>
+    <code class="inline">scanf("%02d", &amp;a);</code>　　<code class="inline">scanf("%.1f", &amp;x);</code>
+  </div>
+
+  <div class="example">
+    <div class="title">例 2-5　两数求和（scanf 提示字符写在格式串中）</div>
+    <div class="body">
+<pre><span class="cmt">1. /* Fig. 2.1_2: Addition program */</span>
+<span class="cmt">2.</span> <span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="cmt">3.</span> <span class="kw">int</span> main( <span class="kw">void</span> ) {
+<span class="cmt">4.</span>     <span class="kw">int</span> integer1, integer2 ;
+<span class="cmt">5.</span>
+<span class="cmt">6.</span>     scanf(<span class="str">"integer1=%d"</span>, &amp;integer1);
+<span class="cmt">7.</span>     scanf(<span class="str">"integer2=%d"</span>, &amp;integer2);
+<span class="cmt">8.</span>
+<span class="cmt">9.</span>     printf(<span class="str">"Sum is %d\n"</span>, integer1 + integer2 );
+<span class="cmt">10.</span>     <span class="kw">return</span> 0;
+<span class="cmt">11.</span> }</pre>
+      <p><b>运行时输入：</b></p>
+      <div class="flow">integer1=12
+integer2=34
+Sum is 46</div>
+      <div class="box warn">
+        <span class="label">说明</span>
+        <code class="inline">scanf</code> 中的普通字符（如 <code class="inline">integer1=</code>）必须<b>原样输入</b>，否则无法正确读入数据。
+      </div>
+    </div>
+  </div>
+
+  <h3 class="section" id="c4-2">2.4.2　printf 函数（输出函数）</h3>
+
+  <div class="box key">
+    <span class="label">printf 函数</span>
+    <b>格式：</b><code class="inline">printf("格式控制字符串", 输出列表);</code>
+    <ul style="margin:6px 0 0 0;">
+      <li><b>双引号内</b>：格式字串，包括普通字符、格式字符。</li>
+      <li><b>双引号外</b>：输出列表，输出项与格式对应。</li>
+      <li><code class="inline">printf</code> 函数可以在第二部分参数中进行计算。</li>
+    </ul>
+  </div>
+
+  <div class="flow">printf("Sum is %d\n", integer1 + integer2 );
+
+第一部分参数：
+  %d  - 输出（显示）十进制整数
+  Sum is(\n) - 普通字符（转义字符），通常提示显示的数据意义（非必须，按要求添加）
+
+第二部分参数：
+  integer1 + integer2 - 被输出的表达式</div>
+
+  <h4 class="sub">（1）printf 的常用格式字符</h4>
+
+  <table>
+    <caption>表 2-5　printf 常用格式字符</caption>
+    <thead>
+      <tr><th>类型</th><th>格式字符串</th><th>输出形式</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th rowspan="4">整型</th>
+        <td><code class="inline">%d</code></td>
+        <td>带符号的十进制形式（正数不输出符号 +）</td>
+      </tr>
+      <tr>
+        <td><code class="inline">%o</code></td>
+        <td>无符号的八进制形式（不输出前导符号 0）</td>
+      </tr>
+      <tr>
+        <td><code class="inline">%x</code> 或 <code class="inline">%X</code></td>
+        <td>无符号的十六进制形式（不输出前导符号 0x 或 0X）</td>
+      </tr>
+      <tr>
+        <td><code class="inline">%u</code></td>
+        <td>无符号的十进制形式</td>
+      </tr>
+      <tr>
+        <th rowspan="3">实型</th>
+        <td><code class="inline">%f</code></td>
+        <td>小数形式，默认小数位数为 6 位</td>
+      </tr>
+      <tr>
+        <td><code class="inline">%e</code> 或 <code class="inline">%E</code></td>
+        <td>指数形式，数字部分默认为 6 位</td>
+      </tr>
+      <tr>
+        <td><code class="inline">%g</code> 或 <code class="inline">%G</code></td>
+        <td>优化的小数或指数形式（去掉无意义的 0 后所占宽度较少的一种）</td>
+      </tr>
+      <tr>
+        <th rowspan="2">字符型</th>
+        <td><code class="inline">%c</code></td>
+        <td>单个字符形式（不输出单引号 '）</td>
+      </tr>
+      <tr>
+        <td><code class="inline">%s</code></td>
+        <td>字符串</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h4 class="sub">（2）printf 的辅助格式字符</h4>
+
+  <table>
+    <caption>表 2-6　printf 常用辅助格式字符</caption>
+    <thead>
+      <tr><th>字符</th><th>功能</th><th>示例</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><b>m</b></td><td>输出数据域宽，数据长度 &lt; m，左补空格，否则按实际输出</td><td><code class="inline">%8d</code></td></tr>
+      <tr><td><b>.n</b></td><td>对实数，指定小数点后位数（四舍五入）</td><td><code class="inline">printf("%8.2f", 123.4567);</code>　<code class="inline">%.3f</code></td></tr>
+      <tr><td><b>-</b></td><td>对字符串，指定实际输出位数；输出数据在域内左对齐（缺省右对齐）</td><td><code class="inline">%.6s</code>　<code class="inline">%-8d</code></td></tr>
+      <tr><td><b>+</b></td><td>指定在有符号数的正数前显示正号（+）</td><td><code class="inline">%+8d</code></td></tr>
+      <tr><td><b>0</b></td><td>输出数值时指定左面不使用的空位置自动填 0</td><td><code class="inline">printf("%08.0f", 123.4567);</code>　<code class="inline">%08d</code></td></tr>
+      <tr><td><b>#</b></td><td>在八进制和十六进制数前显示前导 0、0x</td><td><code class="inline">printf("%#x", 65);</code>　<code class="inline">%#o</code>　<code class="inline">%#x</code></td></tr>
+      <tr><td><b>l / L</b></td><td>在 d,o,x,u 前，指定输出精度为 long 型；在 e,f,g 前，指定输出精度为 double 型</td><td><code class="inline">%ld</code>　<code class="inline">%lf</code></td></tr>
+    </tbody>
+  </table>
+
+  <div class="flow">printf("f(%d,%d)=%f", 3, 4, 5.0);
+printf("a = %d \n b = %8.2f \n", a, b+5.5);</div>
+
+  <h3 class="section" id="c4-3">2.4.3　字符输入输出</h3>
+
+  <h4 class="sub">（1）字符常量与字符串常量</h4>
+
+  <ul>
+    <li><b>字符常量</b>：用<b>单引号</b>括起来的一个字符。</li>
+    <li><b>字符串常量</b>：用<b>双引号</b>括起来的一串字符，以 <code class="inline">'\0'</code> 结尾。</li>
+    <li><b>字符变量</b>：以变量名代表的一个字符。</li>
+  </ul>
+
+  <h4 class="sub">（2）字符的格式输入输出</h4>
+
+  <div class="flow">scanf("%c", &amp;ch);      // 输入单个字符
+printf("%c", ch);       // 输出单个字符</div>
+
+  <div class="box warn">
+    <span class="label">注意</span>
+    在用 <code class="inline">%c</code> 格式输入时，<b>空格等间隔字符也都作为有效字符输入</b>。
+  </div>
+
+  <div class="example">
+    <div class="title">例 2-6　字符的格式输入输出</div>
+    <div class="body">
+<pre><span class="cmt">1. /* Fig. 2.2_1: print character */</span>
+<span class="cmt">2.</span> <span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="cmt">3.</span> <span class="kw">int</span> main( <span class="kw">void</span> ) {
+<span class="cmt">4.</span>     <span class="kw">char</span> ch1, ch2, ch3;
+<span class="cmt">5.</span>     scanf( <span class="str">"%c%c%c"</span>, &amp;ch1, &amp;ch2, &amp;ch3 );
+<span class="cmt">6.</span>     printf( <span class="str">"ch1:%c, ch2:%c, ch3:%c\n"</span>, ch1, ch2, ch3 );
+<span class="cmt">7.</span>     <span class="kw">return</span> 0;
+<span class="cmt">8.</span> }</pre>
+    </div>
+  </div>
+
+  <h4 class="sub">（3）无格式输入输出——输入、输出单个字符</h4>
+
+  <ul>
+    <li><code class="inline">getchar()</code>：字符输入函数。</li>
+    <li><code class="inline">putchar()</code>：字符输出函数。</li>
+    <li><code class="inline">getchar()</code> 和 <code class="inline">putchar()</code> 原型在头文件 <code class="inline">&lt;stdio.h&gt;</code> 中。</li>
+  </ul>
+
+  <div class="flow">ch = getchar();     // 等价于 scanf("%c", &amp;ch);
+putchar(ch);        // 等价于 printf("%c", ch);</div>
+
+  <h4 class="sub">getchar() 的使用</h4>
+
+<pre><span class="kw">char</span> ch;
+ch = getchar();     <span class="cmt">// 从终端输入 1 个字符并赋给 ch</span>
+
+<span class="kw">char</span> ch;
+getchar();          <span class="cmt">// 输入 1 个字符，但没有赋值给任何一个变量</span></pre>
+
+  <!-- 图片占位：getchar 使用示意图1 -->
+
+  <!-- 图片占位：getchar 使用示意图2 -->
+
+
+  <h4 class="sub">putchar() 的使用</h4>
+
+  <p><code class="inline">putchar()</code> 函数将参数的值送至屏幕，参数可以是 char 型变量、常量或表达式，或 0~255 间的整型数据。</p>
+
+<pre><span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="kw">int</span> main( <span class="kw">void</span> ){
+    putchar(65);        <span class="cmt">// 输出字符 'A'</span>
+    putchar(<span class="str">'A'</span>);      <span class="cmt">// 输出字符 'A'</span>
+    putchar(<span class="str">'a'</span>-32);   <span class="cmt">// 输出字符 'A'</span>
+    <span class="kw">return</span> 0;
+}</pre>
+
+  <h4 class="sub">（4）字符串格式输出</h4>
+
+  <div class="flow">printf("welcome to c!! \n");
+printf("%s", "welcome to c!! \n");</div>
+
+  <p>上述两种写法输出结果相同。<code class="inline">%s</code> 是<b>字符串格式字符</b>。</p>
+
+  <!-- =========================================================
+       第 5 节  讨论
+       ========================================================= -->
+  <h2 class="chapter" id="c5">2.5　讨论</h2>
+
+  <div class="box warn">
+    <span class="label">讨论题</span>
+    <ol style="margin:6px 0 0 0;">
+      <li>输入或输出时，格式与输出量不匹配时，结果如何？例如：
+        <ul>
+          <li><code class="inline">%d</code> 输入或输出实型量</li>
+          <li><code class="inline">%f</code> 输入或输出整型量</li>
+          <li><code class="inline">%c</code> 输入或输出整型量 123456</li>
+        </ul>
+      </li>
+      <li>输入时，若分隔符不一致，结果如何？</li>
+      <li>输入时，若增加提示字符，又如何？</li>
+    </ol>
+  </div>
+
+  <div class="box tip">
+    <span class="label">结论提示</span>
+    <ul style="margin:6px 0 0 0;">
+      <li>格式字符与数据类型<b>不匹配</b>时，会导致输出结果错误或程序异常。</li>
+      <li>输入时，<b>格式串中的普通字符必须原样输入</b>，否则数据无法正确读入。</li>
+      <li>建议在 <code class="inline">scanf</code> 前用 <code class="inline">printf</code> 给出提示信息，而不是把提示字符写在 <code class="inline">scanf</code> 的格式串中。</li>
+    </ul>
+  </div>
+
+  <!-- =========================================================
+       综合例题
+       ========================================================= -->
+  <h2 class="chapter" id="c6">综合例题</h2>
+
+  <div class="example">
+    <div class="title">例 2-7　计算两个整数的和</div>
+    <div class="body">
+      <p><b>要求：</b>从键盘输入两个整数，输出它们的和。</p>
+<pre><span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+
+<span class="kw">int</span> main( <span class="kw">void</span> )
+{
+    <span class="kw">int</span> integer1, integer2;
+    printf(<span class="str">"Enter two integers: "</span>);
+    scanf(<span class="str">"%d %d"</span>, &amp;integer1, &amp;integer2);
+    printf(<span class="str">"Sum is %d\n"</span>, integer1 + integer2);
+    <span class="kw">return</span> 0;
+}</pre>
+      <p><b>运行示例：</b></p>
+      <div class="flow">Enter two integers: 12 34
+Sum is 46</div>
+    </div>
+  </div>
+
+  <div class="example">
+    <div class="title">例 2-8　计算两个实数的和（使用 double 类型）</div>
+    <div class="body">
+      <p><b>要求：</b>输入两个实数，输出它们的和。</p>
+<pre><span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+
+<span class="kw">int</span> main( <span class="kw">void</span> )
+{
+    <span class="kw">double</span> x, y;
+    scanf(<span class="str">"%lf %lf"</span>, &amp;x, &amp;y);
+    printf(<span class="str">"Sum is %f\n"</span>, x + y);
+    <span class="kw">return</span> 0;
+}</pre>
+      <div class="box warn">
+        <span class="label">注意</span>
+        <code class="inline">double</code> 类型数据在 <code class="inline">scanf</code> 中使用 <code class="inline">%lf</code>，在 <code class="inline">printf</code> 中使用 <code class="inline">%f</code>。
+      </div>
+    </div>
+  </div>
+
+  <div class="example">
+    <div class="title">例 2-9　字符的输入输出</div>
+    <div class="body">
+      <p><b>要求：</b>输入一个字符，输出它的 ASCII 码值。</p>
+<pre><span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+
+<span class="kw">int</span> main( <span class="kw">void</span> )
+{
+    <span class="kw">char</span> ch;
+    ch = getchar();
+    printf(<span class="str">"The ASCII code of %c is %d\n"</span>, ch, ch);
+    <span class="kw">return</span> 0;
+}</pre>
+      <p><b>运行示例：</b></p>
+      <div class="flow">输入：A
+输出：The ASCII code of A is 65</div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       习题与参考答案
+       ========================================================= -->
+  <h2 class="chapter" id="c7">习题与参考答案</h2>
+
+  <h3 class="section">一、选择题</h3>
+
+  <div class="exercise">
+    <p class="qhead">1. 以下关于常量的叙述中，正确的是（　　）。</p>
+    <p>A. 常量的值在程序运行过程中可以被改变</p>
+    <p>B. 常量的类型是显式说明的</p>
+    <p>C. 常量的值是在编译时给定的，程序运行过程中不能被改变</p>
+    <p>D. 常量不需要说明类型</p>
+    <details>
+      <summary>查看答案与解析</summary>
+      <p><b>答案：C</b></p>
+      <p>解析：常量的值是在编译时给定的，程序运行过程中不能被改变；常量的类型是<b>隐式说明</b>的，通过书写形式确定。</p>
+    </details>
+  </div>
+
+  <div class="exercise">
+    <p class="qhead">2. 以下变量名中，合法的是（　　）。</p>
+    <p>A. <code class="inline">2y</code>　　B. <code class="inline">M?m</code>　　C. <code class="inline">_M</code>　　D. <code class="inline">integer@2</code></p>
+    <details>
+      <summary>查看答案与解析</summary>
+      <p><b>答案：C</b></p>
+      <p>解析：标识符由字母、数字、下划线组成，必须以字母或下划线开头。A 以数字开头，B 含 <code class="inline">?</code>，D 含 <code class="inline">@</code>，均非法。</p>
+    </details>
+  </div>
+
+  <div class="exercise">
+    <p class="qhead">3. 以下标识符中，不能用作变量名的是（　　）。</p>
+    <p>A. <code class="inline">student_name</code>　　B. <code class="inline">int</code>　　C. <code class="inline">year</code>　　D. <code class="inline">_M</code></p>
+    <details>
+      <summary>查看答案与解析</summary>
+      <p><b>答案：B</b></p>
+      <p>解析：<code class="inline">int</code> 是 C 语言的关键字，不能用作标识符。</p>
+    </details>
+  </div>
+
+  <div class="exercise">
+    <p class="qhead">4. 以下关于变量的叙述中，错误的是（　　）。</p>
+    <p>A. 变量必须先定义后使用</p>
+    <p>B. 在一个函数中，变量名不能重复定义</p>
+    <p>C. 定义变量时若没有赋初值，则该变量的值自动为 0</p>
+    <p>D. 通常把定义变量的语句集中放在函数的开始处</p>
+    <details>
+      <summary>查看答案与解析</summary>
+      <p><b>答案：C</b></p>
+      <p>解析：在函数中定义变量时，若没有赋初值，则该变量的值<b>不确定</b>，并不是自动为 0。</p>
+    </details>
+  </div>
+
+  <div class="exercise">
+    <p class="qhead">5. 以下关于 <code class="inline">scanf</code> 的叙述中，正确的是（　　）。</p>
+    <p>A. <code class="inline">scanf</code> 中的变量名前必须加 <code class="inline">&amp;</code></p>
+    <p>B. <code class="inline">scanf</code> 中的普通字符可以随意省略</p>
+    <p>C. <code class="inline">double</code> 类型数据在 <code class="inline">scanf</code> 中使用 <code class="inline">%f</code></p>
+    <p>D. <code class="inline">scanf</code> 中可以使用 <code class="inline">%.1f</code> 精确控制输入精度</p>
+    <details>
+      <summary>查看答案与解析</summary>
+      <p><b>答案：A</b></p>
+      <p>解析：<code class="inline">scanf</code> 中的变量名前必须加 <code class="inline">&amp;</code>（数组名除外）；普通字符必须原样输入，不能随意省略；<code class="inline">double</code> 类型数据在 <code class="inline">scanf</code> 中使用 <code class="inline">%lf</code>；<code class="inline">scanf</code> 中不建议使用辅助格式符。</p>
+    </details>
+  </div>
+
+  <div class="exercise">
+    <p class="qhead">6. 以下关于 <code class="inline">printf</code> 的叙述中，错误的是（　　）。</p>
+    <p>A. <code class="inline">%d</code> 用于输出十进制整数</p>
+    <p>B. <code class="inline">%8.2f</code> 表示输出宽度为 8，小数位为 2 的实数</p>
+    <p>C. <code class="inline">%c</code> 用于输出单个字符</p>
+    <p>D. <code class="inline">%s</code> 用于输出整型数据</p>
+    <details>
+      <summary>查看答案与解析</summary>
+      <p><b>答案：D</b></p>
+      <p>解析：<code class="inline">%s</code> 用于输出字符串，不是整型数据。</p>
+    </details>
+  </div>
+
+  <h3 class="section">二、填空题</h3>
+
+  <div class="exercise">
+    <p class="qhead">1. 常量的值是在 ________ 时给定的，程序运行过程中 ________ 被改变。</p>
+    <details>
+      <summary>查看答案与解析</summary>
+      <p><b>答案：编译；不能</b></p>
+    </details>
+  </div>
+
+  <div class="exercise">
+    <p class="qhead">2. 变量定义的格式为：________ 变量名表；</p>
+    <details>
+      <summary>查看答案与解析</summary>
+      <p><b>答案：类型定义符</b></p>
+    </details>
+  </div>
+
+  <div class="exercise">
+    <p class="qhead">3. 标识符由 ________、________、________ 组成，必须以 ________ 或 ________ 开头。</p>
+    <details>
+      <summary>查看答案与解析</summary>
+      <p><b>答案：字母；数字；下划线；字母；下划线</b></p>
+    </details>
+  </div>
+
+  <div class="exercise">
+    <p class="qhead">4. <code class="inline">scanf</code> 函数中的变量名前必须加 ________ 符号。</p>
+    <details>
+      <summary>查看答案与解析</summary>
+      <p><b>答案：&amp;（取地址符）</b></p>
+    </details>
+  </div>
+
+  <div class="exercise">
+    <p class="qhead">5. <code class="inline">printf("%8.2f", 123.4567);</code> 的输出结果是 ________。</p>
+    <details>
+      <summary>查看答案与解析</summary>
+      <p><b>答案：&nbsp;&nbsp;&nbsp;123.46</b>（宽度为 8，小数位 2 位，左补空格）</p>
+    </details>
+  </div>
+
+  <div class="exercise">
+    <p class="qhead">6. <code class="inline">getchar()</code> 函数的功能是 ________，<code class="inline">putchar()</code> 函数的功能是 ________。</p>
+    <details>
+      <summary>查看答案与解析</summary>
+      <p><b>答案：从终端输入一个字符；向屏幕输出一个字符</b></p>
+    </details>
+  </div>
+
+  <h3 class="section">三、判断题</h3>
+
+  <div class="exercise">
+    <p class="qhead">1. 变量的类型是隐式说明的，通过书写形式确定。（　　）</p>
+    <details>
+      <summary>查看答案与解析</summary>
+      <p><b>答案：×</b></p>
+      <p>解析：变量的类型是<b>显式说明</b>的，通过定义语句确定。常量的类型才是隐式说明的。</p>
+    </details>
+  </div>
+
+  <div class="exercise">
+    <p class="qhead">2. 在 C 语言中，大写字母和小写字母被认为是相同的字符。（　　）</p>
+    <details>
+      <summary>查看答案与解析</summary>
+      <p><b>答案：×</b></p>
+      <p>解析：C 语言中<b>区分大小写</b>，大写字母和小写字母被认为是不同的字符。</p>
+    </details>
+  </div>
+
+  <div class="exercise">
+    <p class="qhead">3. <code class="inline">main</code> 是一个特殊的标识符，是执行程序的入口。（　　）</p>
+    <details>
+      <summary>查看答案与解析</summary>
+      <p><b>答案：√</b></p>
+    </details>
+  </div>
+
+  <div class="exercise">
+    <p class="qhead">4. 在用 <code class="inline">%c</code> 格式输入时，空格等间隔字符作为有效字符输入。（　　）</p>
+    <details>
+      <summary>查看答案与解析</summary>
+      <p><b>答案：√</b></p>
+    </details>
+  </div>
+
+  <h3 class="section">四、简答题</h3>
+
+  <div class="exercise">
+    <p class="qhead">1. 简述常量与变量的区别。</p>
+    <details>
+      <summary>查看参考答案</summary>
+      <ul>
+        <li><b>常量</b>：值在编译时给定，程序运行过程中不能被改变；类型是隐式说明的，通过书写形式确定。</li>
+        <li><b>变量</b>：程序运行过程中其值可以被改变；类型是显式说明的，通过定义语句确定变量名及其类型。</li>
+        <li>程序运行时，系统为每一个变量分配一个内存单元，并在变量名和该内存单元地址间建立一一对应的关系。</li>
+      </ul>
+    </details>
+  </div>
+
+  <div class="exercise">
+    <p class="qhead">2. 简述变量的命名规则（标识符规则）。</p>
+    <details>
+      <summary>查看参考答案</summary>
+      <ol>
+        <li>标识符由字母、数字、下划线组成，必须以字母或下划线开头。</li>
+        <li>大写字母和小写字母被认为是不同的字符，不能含有其他字符，不能跨行书写。</li>
+        <li>关键字、库函数名（如 <code class="inline">printf</code>、<code class="inline">scanf</code>）不能用来作为标识符。</li>
+      </ol>
+    </details>
+  </div>
+
+  <div class="exercise">
+    <p class="qhead">3. 简述使用变量时应注意的事项。</p>
+    <details>
+      <summary>查看参考答案</summary>
+      <ol>
+        <li>在使用变量时，应注意"先定义，后使用"的原则。</li>
+        <li>在一个函数中，变量名不能重复定义。</li>
+        <li>除非有特定的需要，通常把定义变量的语句集中放在函数的开始处。</li>
+        <li>通常，在函数中定义变量时，若没有赋初值，则该变量的值不确定。</li>
+      </ol>
+    </details>
+  </div>
+
+  <div class="exercise">
+    <p class="qhead">4. <code class="inline">scanf</code> 和 <code class="inline">printf</code> 中常用的格式字符有哪些？各有什么作用？</p>
+    <details>
+      <summary>查看参考答案</summary>
+      <table>
+        <thead><tr><th>格式字符</th><th>scanf 中的作用</th><th>printf 中的作用</th></tr></thead>
+        <tbody>
+          <tr><td><code class="inline">%d</code></td><td>输入十进制整数</td><td>输出十进制整数</td></tr>
+          <tr><td><code class="inline">%o</code></td><td>输入八进制整数</td><td>输出八进制整数</td></tr>
+          <tr><td><code class="inline">%x</code></td><td>输入十六进制整数</td><td>输出十六进制整数</td></tr>
+          <tr><td><code class="inline">%u</code></td><td>输入无符号整数</td><td>输出无符号整数</td></tr>
+          <tr><td><code class="inline">%f</code> / <code class="inline">%e</code></td><td>输入实型数据</td><td>输出实型数据</td></tr>
+          <tr><td><code class="inline">%c</code></td><td>输入单个字符</td><td>输出单个字符</td></tr>
+          <tr><td><code class="inline">%s</code></td><td>输入字符串</td><td>输出字符串</td></tr>
+        </tbody>
+      </table>
+    </details>
+  </div>
+
+  <h3 class="section">五、编程题</h3>
+
+  <div class="exercise">
+    <p class="qhead">1. 编写程序，输入两个整数，输出它们的和、差、积、商。</p>
+    <details>
+      <summary>查看参考答案</summary>
+<pre><span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+
+<span class="kw">int</span> main()
+{
+    <span class="kw">int</span> a, b;
+    scanf(<span class="str">"%d%d"</span>, &amp;a, &amp;b);
+    printf(<span class="str">"和 = %d\n"</span>, a + b);
+    printf(<span class="str">"差 = %d\n"</span>, a - b);
+    printf(<span class="str">"积 = %d\n"</span>, a * b);
+    printf(<span class="str">"商 = %d\n"</span>, a / b);
+    <span class="kw">return</span> 0;
+}</pre>
+      <p><b>说明：</b>整数除法结果仍为整数，若需得到小数结果，可将变量定义为 <code class="inline">float</code> 或 <code class="inline">double</code>。</p>
+    </details>
+  </div>
+
+  <div class="exercise">
+    <p class="qhead">2. 编写程序，输入圆的半径，计算并输出圆的面积和周长（π 取 3.1415926）。</p>
+    <details>
+      <summary>查看参考答案</summary>
+<pre><span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="kw">#define</span> PI 3.1415926
+
+<span class="kw">int</span> main()
+{
+    <span class="kw">double</span> r, area, perimeter;
+    scanf(<span class="str">"%lf"</span>, &amp;r);
+    area = PI * r * r;
+    perimeter = 2 * PI * r;
+    printf(<span class="str">"面积 = %.4f\n"</span>, area);
+    printf(<span class="str">"周长 = %.4f\n"</span>, perimeter);
+    <span class="kw">return</span> 0;
+}</pre>
+    </details>
+  </div>
+
+  <div class="exercise">
+    <p class="qhead">3. 编写程序，输入一个字符，输出该字符及其 ASCII 码值。</p>
+    <details>
+      <summary>查看参考答案</summary>
+<pre><span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+
+<span class="kw">int</span> main()
+{
+    <span class="kw">char</span> ch;
+    ch = getchar();
+    printf(<span class="str">"字符：%c，ASCII 码：%d\n"</span>, ch, ch);
+    <span class="kw">return</span> 0;
+}</pre>
+    </details>
+  </div>
+
+  <div class="exercise">
+    <p class="qhead">4. 编写程序，输入两个实数，输出它们的和、差、积、商（保留两位小数）。</p>
+    <details>
+      <summary>查看参考答案</summary>
+<pre><span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+
+<span class="kw">int</span> main()
+{
+    <span class="kw">double</span> x, y;
+    scanf(<span class="str">"%lf%lf"</span>, &amp;x, &amp;y);
+    printf(<span class="str">"和 = %.2f\n"</span>, x + y);
+    printf(<span class="str">"差 = %.2f\n"</span>, x - y);
+    printf(<span class="str">"积 = %.2f\n"</span>, x * y);
+    printf(<span class="str">"商 = %.2f\n"</span>, x / y);
+    <span class="kw">return</span> 0;
+}</pre>
+    </details>
+  </div>
+
+  <hr>
+
+  <div class="box key">
+    <span class="label">本章小结</span>
+    <ol style="margin:6px 0 0 0;">
+      <li>掌握常量的概念、分类及其书写形式（整型、实型、字符型、字符串、符号常量）。</li>
+      <li>掌握变量的概念、定义格式、初始化方法及使用注意事项。</li>
+      <li>掌握 C 语言的基本数据类型（char、int、float、double 等）及其长度和取值范围。</li>
+      <li>掌握标识符的命名规则，了解关键字和标识符的区别。</li>
+      <li>掌握 <code class="inline">scanf</code> 和 <code class="inline">printf</code> 的格式控制字符串、常用格式字符及辅助格式字符。</li>
+      <li>掌握字符输入输出函数 <code class="inline">getchar()</code> 和 <code class="inline">putchar()</code> 的使用方法。</li>
+    </ol>
+  </div>
+
+  <a class="backtop" href="#top">↑ 返回顶部</a>
+
+  </main>
+
+  <footer>
+    C 程序设计基础 · 第 2 章 顺序结构 · 讲义<br>
+    武汉理工大学　主讲：孙骏　李民　| 本讲义依据课件《hour 2-第2个程序-常变量定义》与《hour 3-第2个程序+输入输出》整理
+  </footer>
+</div>
+</body>
+</html>
