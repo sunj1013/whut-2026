@@ -494,33 +494,55 @@
 <section class="slide">
   <div class="s-title">C 语言的运算符总览</div>
   <div class="s-body">
-    
-    <div class="box key" style="margin-top:10px;">
+
+    <div class="box key" style="margin-top:0; font-size:26px; line-height:1.55;">
       <span class="label">表达式</span>
-      用<b>运算符</b>将若干个<b>操作数</b>连接起来构成的式子。<br>
+      用运算符将若干个操作数连接起来构成的式子。
       表达式的<b>值</b>是运算结果，表达式的<b>类型</b>是结果值的类型。
     </div>
 
-    <table class="tb" style="font-size:24px;">
-      <thead><tr><th style="width:6%">#</th><th style="width:22%">类别</th><th style="width:36%">运算符</th><th style="width:36%">典型应用</th></tr></thead>
-      <tbody>
-        <tr><td>1</td><td>算术运算符</td><td><code class="inline">+ - * / %</code></td><td>顺序结构</td></tr>
-        <tr><td>2</td><td>自增、自减</td><td><code class="inline">++ --</code></td><td>循环结构</td></tr>
-        <tr><td>3</td><td>关系运算符</td><td><code class="inline">&gt; &lt; &gt;= &lt;= == !=</code></td><td>选择结构</td></tr>
-        <tr><td>4</td><td>逻辑运算符</td><td><code class="inline">! &amp;&amp; ||</code></td><td>选择结构</td></tr>
-        <tr><td>5</td><td>位运算符</td><td><code class="inline">&lt;&lt; &gt;&gt; ~ | ^ &amp;</code></td><td>底层操作</td></tr>
-        <tr><td>6</td><td>赋值运算符</td><td><code class="inline">= += -= *= /= %=</code></td><td>顺序结构</td></tr>
-        <tr><td>7</td><td>条件运算符</td><td><code class="inline">? :</code></td><td>选择结构</td></tr>
-        <tr><td>8</td><td>逗号运算符</td><td><code class="inline">,</code></td><td>简化书写</td></tr>
-        <tr><td>9</td><td>指针运算符</td><td><code class="inline">* &amp;</code></td><td>指针</td></tr>
-        <tr><td>10</td><td>求字节数</td><td><code class="inline">sizeof</code></td><td>顺序结构</td></tr>
-        <tr><td>11</td><td>强制类型转换</td><td><code class="inline">(类型)</code></td><td>顺序结构</td></tr>
-        <tr><td>12</td><td>结构体成员</td><td><code class="inline">. -&gt;</code></td><td>结构体</td></tr>
-        <tr><td>13</td><td>下标运算符</td><td><code class="inline">[]</code></td><td>数组</td></tr>
-        <tr><td>14</td><td>函数调用</td><td><code class="inline">()</code></td><td>函数</td></tr>
-      </tbody>
-    </table>
-      </div>
+    <div class="two" style="margin-top:12px; gap:18px;">
+
+      <!-- 左栏：1~7 -->
+      <table class="tb" style="font-size:22px; line-height:1.35; margin-top:0;">
+        <thead>
+          <tr><th style="width:8%">#</th><th style="width:26%">类别</th><th style="width:36%">运算符</th><th style="width:30%">应用</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1</td><td>算术</td><td><code class="inline" style="font-size:22px;">+ - * / %</code></td><td>顺序</td></tr>
+          <tr><td>2</td><td>自增自减</td><td><code class="inline" style="font-size:22px;">++ --</code></td><td>循环</td></tr>
+          <tr><td>3</td><td>关系</td><td><code class="inline" style="font-size:22px;">&gt; &lt; &gt;= &lt;= == !=</code></td><td>选择</td></tr>
+          <tr><td>4</td><td>逻辑</td><td><code class="inline" style="font-size:22px;">! &amp;&amp; ||</code></td><td>选择</td></tr>
+          <tr><td>5</td><td>位运算</td><td><code class="inline" style="font-size:22px;">&lt;&lt; &gt;&gt; ~ | ^ &amp;</code></td><td>底层</td></tr>
+          <tr><td>6</td><td>赋值</td><td><code class="inline" style="font-size:22px;">= += -= *= /= %=</code></td><td>顺序</td></tr>
+          <tr><td>7</td><td>条件</td><td><code class="inline" style="font-size:22px;">? :</code></td><td>选择</td></tr>
+        </tbody>
+      </table>
+
+      <!-- 右栏：8~14 -->
+      <table class="tb" style="font-size:22px; line-height:1.35; margin-top:0;">
+        <thead>
+          <tr><th style="width:8%">#</th><th style="width:26%">类别</th><th style="width:36%">运算符</th><th style="width:30%">应用</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>8</td><td>逗号</td><td><code class="inline" style="font-size:22px;">,</code></td><td>简化书写</td></tr>
+          <tr><td>9</td><td>指针</td><td><code class="inline" style="font-size:22px;">* &amp;</code></td><td>指针</td></tr>
+          <tr><td>10</td><td>求字节数</td><td><code class="inline" style="font-size:22px;">sizeof</code></td><td>顺序</td></tr>
+          <tr><td>11</td><td>强制类型转换</td><td><code class="inline" style="font-size:22px;">(类型)</code></td><td>顺序</td></tr>
+          <tr><td>12</td><td>结构体成员</td><td><code class="inline" style="font-size:22px;">. -&gt;</code></td><td>结构体</td></tr>
+          <tr><td>13</td><td>下标</td><td><code class="inline" style="font-size:22px;">[]</code></td><td>数组</td></tr>
+          <tr><td>14</td><td>函数调用</td><td><code class="inline" style="font-size:22px;">()</code></td><td>函数</td></tr>
+        </tbody>
+      </table>
+
+    </div>
+
+    <div class="box tip" style="margin-top:12px; font-size:26px; line-height:1.55;">
+      <span class="label">本讲重点</span>
+      本讲主要学 <b>1、2、6、8、10、11</b> 六类运算符，其余在后续章节展开。
+    </div>
+
+  </div>
 </section>
 
 <!-- ================= 4 算术运算符 ================= -->
@@ -665,8 +687,7 @@ c = (a++) * b;    <span class="cmt">// c = 3 * 5 = 15，然后 a 变 4</span></p
 </section>
 
 
-
-<!-- ================= 10 逗号运算符 ================= -->
+<!-- ================= 9 逗号运算符 ================= -->
 <section class="slide">
   <div class="s-title">逗号运算符和逗号表达式</div>
   <div class="s-body">
@@ -686,7 +707,7 @@ x = (y = y + <span class="num">6</span>, y / z);   <span class="cmt">// y=13, 13
   </div>
 </section>
 
-<!-- ================= 11 逗号 vs 分隔符 ================= -->
+<!-- ================= 10 逗号 vs 分隔符 ================= -->
 <section class="slide">
   <div class="s-title">注意：逗号运算符 vs 逗号分隔符</div>
   <div class="s-body">
@@ -720,7 +741,7 @@ x = (y = y + <span class="num">6</span>, y / z);   <span class="cmt">// y=13, 13
   </div>
 </section>
 
-<!-- ================= 12 sizeof 运算符 ================= -->
+<!-- ================= 11 sizeof 运算符 ================= -->
 <section class="slide">
   <div class="s-title">sizeof 运算符</div>
   <div class="s-body">
@@ -741,14 +762,14 @@ x = (y = y + <span class="num">6</span>, y / z);   <span class="cmt">// y=13, 13
   </div>
 </section>
 
-<!-- ================= 13 sizeof 使用示例 ================= -->
+<!-- ================= 12 sizeof 使用示例 ================= -->
 <section class="slide">
   <div class="s-title">sizeof 的使用示例</div>
   <div class="s-body">
-    <div class="two wide" style="margin-top:0; align-items:start;">
+    <div class="two" style="margin-top:0; align-items:start; grid-template-columns:1.35fr 1fr; gap:24px;">
 
       <!-- 左栏：代码 -->
-      <pre class="code" style="margin-top:0; font-size:32px; line-height:1.5; padding:12px 20px;"><span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+      <pre class="code" style="margin-top:0; font-size:24px; line-height:1.5; padding:14px 20px;"><span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
 
 <span class="kw">int</span> main()
 {
@@ -763,27 +784,25 @@ x = (y = y + <span class="num">6</span>, y / z);   <span class="cmt">// y=13, 13
 
       <!-- 右栏：常见用途 + 说明 -->
       <div>
-        <div class="box tip" style="margin-top:0; font-size:32px; line-height:1.7;">
+        <div class="box tip" style="margin-top:0; font-size:26px; line-height:1.6;">
           <span class="label">常见用途</span>
           · 计算数组长度：<br>
-          <code class="inline" style="font-size:30px;">sizeof(arr) / sizeof(arr[0])</code><br>
+          <code class="inline" style="font-size:24px;">sizeof(arr) / sizeof(arr[0])</code><br>
           （第 5 章）<br><br>
           · 判断本机 int、long 等类型占用的字节数<br><br>
           · 内存分配时确定大小（第 7 章）
-        </div>
-
-        <div class="box key" style="margin-top:12px; font-size:30px; line-height:1.7;">
-          <span class="label">观察</span>
-          <code class="inline" style="font-size:30px;">sizeof</code> 是<b>运算符</b>，不是函数。<br>
-          它的参数在<b>编译时</b>求值，不产生运行时开销。
-        </div>
+        </div>        
       </div>
 
     </div>
+    <div class="box key" style="margin-top:12px; font-size:26px; line-height:1.6;">
+          <span class="label">观察</span>
+          <code class="inline" style="font-size:24px;">sizeof</code> 是<b>运算符</b>，不是函数。
+          它的参数在<b>编译时</b>求值，不产生运行时开销。
+        </div>
   </div>
 </section>
-
-<!-- ================= 14 练习二（1） ================= -->
+<!-- ================= 13 练习二（1） ================= -->
 <section class="slide">
   <div class="s-title">练习二（1）：求两整数的商和余数</div>
   <div class="s-body">
@@ -851,12 +870,12 @@ x = (y = y + <span class="num">6</span>, y / z);   <span class="cmt">// y=13, 13
 scanf(<span class="str">"%d%d%d"</span>, &amp;a, &amp;b, &amp;c);
 printf(<span class="str">"%d"</span>, a + b + c);</pre>
         <p style="font-size:28px; line-height:1.5; margin-top:8px;">
-          <b>输入：</b><code class="inline" style="font-size:28px;">1 2 3 ⏎</code>
+          <b>输入：</b><code class="inline" style="font-size:28px;">1 2 3⏎</code>
           <b>　　　　输出：</b><code class="inline" style="font-size:28px;">6</code>
         </p>
         <div class="box red" style="margin-top:8px; font-size:28px; line-height:1.5;">
           <span class="label">问题</span>
-          按scanf写法，输入时三个数必须分隔开"1 2 3"——<b>对输入格式要求不匹配</b>。
+          按scanf写法，输入时三个数之间必须有空格或回车——<b>与输入格式要求不匹配</b>。
         </div>
       </div>
 
@@ -875,7 +894,7 @@ printf(<span class="str">"%d\n"</span>, a + b + c);</pre>
           <b>输入：</b><code class="inline" style="font-size:28px;">123⏎</code>
           <b>　　　　输出：</b><code class="inline" style="font-size:28px;">6</code>
         </p>
-       
+        
       </div>
 
     </div>
@@ -889,7 +908,7 @@ printf(<span class="str">"%d\n"</span>, a + b + c);</pre>
   </div>
 </section>
 
-<!-- ================= 14 scanf 返回值 ================= -->
+<!-- ================= 15 scanf 返回值 ================= -->
 <section class="slide">
   <div class="s-title">scanf 返回值：判断输入是否成功</div>
   <div class="s-body">
@@ -945,7 +964,7 @@ printf(<span class="str">"n=%d\n"</span>, n);</pre>
   </div>
 </section>
 
-<!-- ================= 14 练习二（二）scanf 应用 ================= -->
+<!-- ================= 16 scanf 返回值有什么用 ================= -->
 <section class="slide">
   <div class="s-title">scanf 返回值有什么用</div>
   <div class="s-body">
@@ -974,32 +993,23 @@ printf(<span class="str">"x=%d\n"</span>, x);</pre>
       <div class="card green">
         <h4 style="font-size:30px;"><span class="ico">✅</span>看返回值</h4>
         <pre class="code" style="font-size:28px; padding:10px 18px; line-height:1.4; margin-top:8px;"><span class="kw">int</span> x;
-<span class="kw">if</span> (scanf(<span class="str">"%d"</span>, &amp;x) == <span class="num">1</span>) {
+<span class="kw">if</span> (scanf(<span class="str">"%d"</span>, &amp;x) > <span class="num">0</span>) {
     printf(<span class="str">"读入成功: %d\n"</span>, x);
 } <span class="kw">else</span> {
     printf(<span class="str">"输入无效\n"</span>);
 }</pre>
         <p style="font-size:28px; line-height:1.55; margin-top:8px;">
           输入 <code class="inline" style="font-size:28px;">abc</code> 时：<br>
-          · 返回值是 0，不满足 <code class="inline" style="font-size:28px;">== 1</code><br>
+          · 返回值是 0，不满足 <code class="inline" style="font-size:28px;"> > 0</code> 的条件<br>
           · 程序走 else 分支，提示"输入无效"<br>
           · <b>不会用错数据</b>
         </p>
       </div>
-
-    </div>
-
-    <div class="box tip" style="margin-top:16px; font-size:28px; line-height:1.6;">
-      <span class="label">课堂练习</span>
-      在第 14 页的"求三位整数各位数字之和"程序里，
-      用 <code class="inline" style="font-size:26px;">if (scanf("%d", &amp;x) == 1)</code> 判断输入是否合法，
-      若不合法则输出"输入无效"。
-    </div>
-
+    </div>    
   </div>
 </section>
 
-<!-- ================= 15 类型转换：为什么需要 ================= -->
+<!-- ================= 17 类型转换：为什么需要 ================= -->
 <section class="slide">
   <div class="s-title">为什么需要类型转换</div>
   <div class="s-body">
@@ -1028,7 +1038,7 @@ printf(<span class="str">"x=%d\n"</span>, x);</pre>
   </div>
 </section>
 
-<!-- ================= 16 隐式类型转换 ================= -->
+<!-- ================= 18 隐式类型转换 ================= -->
 <section class="slide">
   <div class="s-title">隐式类型转换（自动）</div>
   <div class="s-body" style="display:flex; flex-direction:column; justify-content:center;">
@@ -1074,7 +1084,7 @@ printf(<span class="str">"x=%d\n"</span>, x);</pre>
   </div>
 </section>
 
-<!-- ================= 17 混合运算类型推导 ================= -->
+<!-- ================= 19 混合运算与自动类型转换 ================= -->
 <section class="slide">
   <div class="s-title">混合运算与自动类型转换</div>
   <div class="s-body">
@@ -1105,7 +1115,7 @@ dd = (ch / i) + (f * d) + (f + i);</pre>
   </div>
 </section>
 
-<!-- ================= 18 赋值中的隐式转换 ================= -->
+<!-- ================= 20 赋值中的隐式转换 ================= -->
 <section class="slide">
   <div class="s-title">赋值表达式中的隐式类型转换</div>
   <div class="s-body">
@@ -1139,7 +1149,7 @@ dd = (ch / i) + (f * d) + (f + i);</pre>
   </div>
 </section>
 
-<!-- ================= 19 强制类型转换 ================= -->
+<!-- ================= 21 强制类型转换 ================= -->
 <section class="slide">
   <div class="s-title">强制类型转换</div>
   <div class="s-body">
@@ -1160,7 +1170,7 @@ dd = (ch / i) + (f * d) + (f + i);</pre>
   </div>
 </section>
 
-<!-- ================= 20 强制转换易错例 ================= -->
+<!-- ================= 22 强制转换易错例 ================= -->
 <section class="slide">
   <div class="s-title">强制类型转换的易错点</div>
   <div class="s-body" style="display:flex; flex-direction:column; justify-content:center; gap:22px;">
@@ -1189,7 +1199,7 @@ printf(<span class="str">"x=%f"</span>, x);        <span class="cmt">// 输出 x
   </div>
 </section>
 
-<!-- ================= 21 数学表达式转 C ================= -->
+<!-- ================= 23 数学表达式转 C ================= -->
 <section class="slide">
   <div class="s-title">把数学表达式写成 C 表达式</div>
   <div class="s-body">
@@ -1214,11 +1224,11 @@ printf(<span class="str">"x=%f"</span>, x);        <span class="cmt">// 输出 x
         </tr>
       </tbody>
     </table>
-    <div class="box warn" style="margin-top:6px;">
+    <div class="box warn" style="margin-top:0px;font-size: 28px;line-height: 1.5;">
       <span class="label">易错写法</span>
       <code class="inline">s = 0.25(x*x + 1.0/y/y/y)</code> ✗ —— <b>缺少乘号 <code class="inline">*</code></b>，C 语言不会自动补乘号。
     </div>
-    <div class="box tip" style="margin-top:6px;">
+    <div class="box tip" style="margin-top:0px;font-size: 28px;line-height: 1.5;">
       <span class="label">使用数学函数需注意</span>
       ① 必须写 <code class="inline">#include &lt;math.h&gt;</code>；
       ② 参数个数、类型、单位要正确；
@@ -1227,31 +1237,60 @@ printf(<span class="str">"x=%f"</span>, x);        <span class="cmt">// 输出 x
   </div>
 </section>
 
-<!-- ================= 22 格式匹配陷阱 ================= -->
+<!-- ================= 24 格式匹配陷阱 ================= -->
 <section class="slide">
   <div class="s-title">格式符与数据类型必须匹配</div>
   <div class="s-body">
-    <div class="box red" style="margin-top:0;">
+    <div class="box red" style="margin-top:0; font-size:30px; line-height:1.6;">
       <span class="label">警告</span>
       printf / scanf 中，如果格式符与变量类型不一致，变量将得不到正确的数据，或输出结果错误。
     </div>
-    <table class="tb" style="margin-top:12px;">
-      <thead><tr><th style="width:45%">错误写法</th><th style="width:55%">原因</th></tr></thead>
+
+    <table class="tb" style="margin-top:12px; font-size:26px; line-height:1.55;">
+      <thead>
+        <tr>
+          <th style="width:56%">错误写法</th>
+          <th style="width:44%">原因</th>
+        </tr>
+      </thead>
       <tbody>
-        <tr><td class="c-red">printf("%d", 6 * fabs(-4));</td><td>fabs() 返回 double，应用 %f</td></tr>
-        <tr><td class="c-red">printf("%f", 6 * abs(-4));</td><td>abs() 返回 int，应用 %d</td></tr>
-        <tr><td class="c-red">scanf("%f", &amp;d);（d 是 double）</td><td>double 必须用 %lf</td></tr>
-        <tr><td class="c-red">scanf("%d", &amp;x);（x 是 float）</td><td>float 必须用 %f</td></tr>
+        <tr>
+          <td>
+            <code class="inline" style="font-size:24px; color:#c0392b;">printf("%d", 6 * fabs(-4));</code>
+          </td>
+          <td>fabs() 返回 double，应用 <code class="inline" style="font-size:24px;">%f</code></td>
+        </tr>
+        <tr>
+          <td>
+            <code class="inline" style="font-size:24px; color:#c0392b;">printf("%f", 6 * abs(-4));</code>
+          </td>
+          <td>abs() 返回 int，应用 <code class="inline" style="font-size:24px;">%d</code></td>
+        </tr>
+        <tr>
+          <td>
+            <code class="inline" style="font-size:24px; color:#c0392b;">scanf("%f", &amp;d);</code>
+            <span style="font-size:22px; color:#4d6376;">（d 是 double）</span>
+          </td>
+          <td>double 必须用 <code class="inline" style="font-size:24px;">%lf</code></td>
+        </tr>
+        <tr>
+          <td>
+            <code class="inline" style="font-size:24px; color:#c0392b;">scanf("%d", &amp;x);</code>
+            <span style="font-size:22px; color:#4d6376;">（x 是 float）</span>
+          </td>
+          <td>float 必须用 <code class="inline" style="font-size:24px;">%f</code></td>
+        </tr>
       </tbody>
     </table>
-    <div class="box tip" style="margin-top:12px;">
+
+    <div class="box tip" style="margin-top:12px; font-size:30px; line-height:1.6;">
       <span class="label">养成习惯</span>
       写代码时，时刻问自己：<b>这个数据是什么类型？应该以什么格式输入输出？</b>
     </div>
   </div>
 </section>
 
-<!-- ================= 23 字符输入输出（基本） ================= -->
+<!-- ================= 25 字符输入输出（基本） ================= -->
 <section class="slide">
   <div class="s-title">字符输入输出：getchar() 与 putchar()</div>
   <div class="s-body">
@@ -1299,7 +1338,7 @@ printf(<span class="str">"x=%f"</span>, x);        <span class="cmt">// 输出 x
   </div>
 </section>
 
-<!-- ================= 24 字符与整数运算 ================= -->
+<!-- ================= 26 字符与整数运算 ================= -->
 <section class="slide">
   <div class="s-title">字符与整数的混合运算</div>
   <div class="s-body">
@@ -1331,12 +1370,12 @@ printf(<span class="str">"%c"</span>, result);        <span class="cmt">// 输�
   </div>
 </section>
 
-<!-- ================= 24 字符输入：连续读 3 个字符 ================= -->
+<!-- ================= 27 字符输入：连续读 3 个字符 ================= -->
 <section class="slide">
   <div class="s-title">连续读 3 个字符：空格和回车也是字符</div>
   <div class="s-body">
 
-    <div class="box tip" style="margin-top:0; font-size:30px; line-height:1.6;">
+    <div class="box tip" style="margin-top:0; font-size:32px; line-height:1.7;">
       <span class="label">注意</span>
       用 <code class="inline" style="font-size:28px;">%c</code> 读字符时，<b>空格、回车、Tab 都是有效字符</b>，会被原样读入。
     </div>
@@ -1344,7 +1383,7 @@ printf(<span class="str">"%c"</span>, result);        <span class="cmt">// 输�
     <div class="two wide" style="margin-top:14px; align-items:start;">
 
       <!-- 左栏：代码 -->
-      <pre class="code" style="font-size:26px; padding:14px 22px; line-height:1.5; margin-top:0;"><span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+      <pre class="code" style="font-size:30px; padding:14px 22px; line-height:1.6; margin-top:0;"><span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
 
 <span class="kw">int</span> main()
 {
@@ -1357,21 +1396,21 @@ printf(<span class="str">"%c"</span>, result);        <span class="cmt">// 输�
       <!-- 右栏：三种输入对照 -->
       <div>
         <div class="s-sub blue" style="margin-top:0;">三种输入方式对照</div>
-        <table class="tb" style="font-size:24px; line-height:1.5;">
+        <table class="tb" style="font-size:30px; line-height:1.7;">
           <thead>
             <tr><th style="width:40%">输入</th><th>输出</th></tr>
           </thead>
           <tbody>
             <tr>
-              <td><code class="inline" style="font-size:24px;">ABC</code> ⏎</td>
+              <td><code class="inline" style="font-size:24px;">ABC</code>⏎</td>
               <td><code class="inline" style="font-size:24px;">[A][B][C]</code> ✅</td>
             </tr>
             <tr>
-              <td><code class="inline" style="font-size:24px;">A B</code> ⏎</td>
+              <td><code class="inline" style="font-size:24px;">A B C</code>⏎</td>
               <td><code class="inline" style="font-size:24px;">[A][ ][B]</code> ❌</td>
             </tr>
             <tr>
-              <td><code class="inline" style="font-size:24px;">A</code> ⏎ <code class="inline" style="font-size:24px;">B</code> ⏎</td>
+              <td><code class="inline" style="font-size:24px;">A</code>⏎ <code class="inline" style="font-size:24px;">B</code>⏎</td>
               <td><code class="inline" style="font-size:24px;">[A][⏎][B]</code> ❌</td>
             </tr>
           </tbody>
@@ -1389,7 +1428,7 @@ printf(<span class="str">"%c"</span>, result);        <span class="cmt">// 输�
   </div>
 </section>
 
-<!-- ================= 25 输入三位整数的四种写法 ================= -->
+<!-- ================= 28 输入三位整数的四种写法 ================= -->
 <section class="slide">
   <div class="s-title">输入"三位整数"的四种写法对比</div>
   <div class="s-body">
@@ -1451,14 +1490,14 @@ printf("%d", a+b+c);</pre>
 scanf("%c%c%c",
       &a, &b, &c);
 printf("%d", 
-       a+b+c-3*'0'); // 还要转数字再加
+       a+b+c-3*'0'); // 转数字再加
 </pre>
         <p style="font-size:26px; line-height:1.5; margin-top:8px;">
           <b>输入：</b><code class="inline" style="font-size:26px;">123⏎</code><br>
           读到 <code class="inline" style="font-size:26px;">'1'</code> <code class="inline" style="font-size:26px;">'2'</code> <code class="inline" style="font-size:26px;">'3'</code>
         </p>
         <p style="font-size:26px; color:#c0392b; margin-top:6px; line-height:1.4;">
-          还要转换，多此一举
+          需要转换
         </p>
       </div>
 
@@ -1492,7 +1531,7 @@ printf("%d", a+b+c);</pre>
   </div>
 </section>
 
-<!-- ================= 25 输入缓冲区问题 ================= -->
+<!-- ================= 29 输入缓冲区问题 ================= -->
 <section class="slide">
   <div class="s-title">输入缓冲区问题：一个经典 Bug</div>
   <div class="s-body">
@@ -1524,7 +1563,7 @@ confirm = getchar();    <span class="cmt">// ← 这里读到的是回车符！<
   </div>
 </section>
 
-<!-- ================= 26 练习三 ================= -->
+<!-- ================= 30 练习三 ================= -->
 <section class="slide">
   <div class="s-title">练习三：字符处理</div>
   <div class="s-body">
@@ -1559,10 +1598,10 @@ confirm = getchar();    <span class="cmt">// ← 这里读到的是回车符！<
       <!-- 右栏：练习 2 -->
       <div>
         <div class="s-sub blue" style="margin-top:0;">练习 2：字符拼整数</div>
-        <p style="font-size:26px; line-height:1.6; margin:8px 0;">
+        <p style="font-size:28px; line-height:1.6; margin:8px 0;">
           <b>场景：</b>输入 3 个数字字符，拼成一个 3 位整数。
         </p>
-        <pre class="code" style="font-size:24px; padding:10px 18px; line-height:1.45; margin-top:0;"><span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+        <pre class="code" style="font-size:28px; padding:10px 18px; line-height:1.45; margin-top:0;"><span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
 <span class="kw">int</span> main()
 {
     <span class="kw">char</span> d1, d2, d3;
@@ -1570,19 +1609,15 @@ confirm = getchar();    <span class="cmt">// ← 这里读到的是回车符！<
     scanf(<span class="str">"%c%c%c"</span>, &amp;d1, &amp;d2, &amp;d3);
     value = (d1 - <span class="str">'0'</span>) * <span class="num">100</span>
           + (d2 - <span class="str">'0'</span>) * <span class="num">10</span>
-          + (d3 - <span class="str">'0'</span>);
+          + (d3 - <span class="str">'0'</span>);  // ← 字符转数字'1' - '0' = 1
     printf(<span class="str">"value = %d\n"</span>, value);
     <span class="kw">return</span> <span class="num">0</span>;
 }</pre>
-        <p style="font-size:24px; line-height:1.5; margin-top:8px;">
-          <b>输入：</b><code class="inline" style="font-size:24px;">123⏎</code>
-          <b>　　　输出：</b><code class="inline" style="font-size:24px;">value = 123</code>
+        <p style="font-size:28px; line-height:1.5; margin-top:8px;">
+          <b>输入：</b><code class="inline" style="font-size:28px;">123⏎</code>
+          <b>　　　输出：</b><code class="inline" style="font-size:28px;">value = 123</code>
         </p>
-        <div class="box tip" style="margin-top:8px; font-size:24px; line-height:1.45;">
-          <span class="label">关键</span>
-          <code class="inline" style="font-size:22px;">'1' - '0' = 1</code>，字符转数字；<br>
-          再按百位、十位、个位拼起来。
-        </div>
+        
       </div>
 
     </div>
@@ -1597,7 +1632,7 @@ confirm = getchar();    <span class="cmt">// ← 这里读到的是回车符！<
   </div>
 </section>
 
-<!-- ================= 27 基本语句 ================= -->
+<!-- ================= 31 基本语句 ================= -->
 <section class="slide">
   <div class="s-title">C 语言的基本语句</div>
   <div class="s-body">
@@ -1630,16 +1665,16 @@ confirm = getchar();    <span class="cmt">// ← 这里读到的是回车符！<
   </div>
 </section>
 
-<!-- ================= 28 顺序结构例：圆面积周长 ================= -->
+<!-- ================= 32 顺序结构例：圆面积周长 ================= -->
 <section class="slide">
   <div class="s-title">顺序结构例：求圆的面积和周长</div>
   <div class="s-body">
     <div class="two" style="margin-top:8px; align-items:start; grid-template-columns:0.8fr 1.6fr;">
 
       <!-- 左栏：算法分析（收窄） -->
-      <div>
+      <div><br>
         <div class="s-sub blue" style="margin-top:0;">算法分析</div>
-        <ol style="font-size:28px; line-height:1.7; margin-top:6px;">
+        <ol style="font-size:32px; line-height:1.8; margin-top:6px;">
           <li>输入半径 r（double）</li>
           <li>计算周长 c = 2πr</li>
           <li>计算面积 s = πr²</li>
@@ -1648,7 +1683,7 @@ confirm = getchar();    <span class="cmt">// ← 这里读到的是回车符！<
       </div>
 
       <!-- 右栏：代码（加宽） -->
-      <pre class="code" style="font-size:28px; padding:14px 22px; line-height:1.55; margin-top:0;"><span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+      <pre class="code" style="font-size:30px; padding:14px 22px; line-height:1.55; margin-top:0;"><span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
 <span class="kw">#define</span> PI <span class="num">3.14</span>
 
 <span class="kw">int</span> main()
@@ -1670,11 +1705,11 @@ confirm = getchar();    <span class="cmt">// ← 这里读到的是回车符！<
   </div>
 </section>
 
-<!-- ================= 29 顺序结构例：|1-x^3.6| ================= -->
+<!-- ================= 33 顺序结构例：|1-x^3.6| ================= -->
 <section class="slide">
   <div class="s-title">顺序结构例：已知 \(y = \left|1 - x^{3.6}\right|\)，输入 x，求 y</div>
   <div class="s-body">
-    <div class="two wide">
+    <div class="two wide"style="font-size:34px;line-height:1.7;">
       <pre class="code"><span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
 <span class="kw">#include</span> <span class="str">&lt;math.h&gt;</span>
 
@@ -1686,9 +1721,9 @@ confirm = getchar();    <span class="cmt">// ← 这里读到的是回车符！<
     printf(<span class="str">"y=%.3f\n"</span>, y);
     <span class="kw">return</span> <span class="num">0</span>;
 }</pre>
-      <div>
+      <div><br>
         <div class="s-sub blue" style="margin-top:0;">要点</div>
-        <ul style="font-size:28px;line-height:1.7;">
+        <ul style="font-size:32px;line-height:1.8;">
           <li>用数学函数需 <code class="inline">#include &lt;math.h&gt;</code></li>
           <li><code class="inline">pow(x, 3.6)</code> 求 x 的 3.6 次幂</li>
           <li><code class="inline">fabs()</code> 对浮点数求绝对值</li>
@@ -1699,7 +1734,7 @@ confirm = getchar();    <span class="cmt">// ← 这里读到的是回车符！<
   </div>
 </section>
 
-<!-- ================= 30 顺序结构例：三角形面积 ================= -->
+<!-- ================= 34 顺序结构例：三角形面积 ================= -->
 <section class="slide">
   <div class="s-title">顺序结构例：已知三边求三角形面积</div>
   <div class="s-body">
@@ -1729,7 +1764,7 @@ confirm = getchar();    <span class="cmt">// ← 这里读到的是回车符！<
             其中 \( s = \dfrac{a+b+c}{2} \)
           </li>
           <li style="margin-top:8px;">
-            <code class="inline" style="font-size:26px;">1.0/2</code> 保证结果是实数，切记不能写成1/2
+            <code class="inline" style="font-size:26px;">1.0/2</code> 保证结果是实数，切记不能写成<code class="inline"style="font-size=28px;">1/2</code>
           </li>
           <li>
             <code class="inline" style="font-size:26px;">sqrt()</code> 求平方根，需要
@@ -1742,7 +1777,7 @@ confirm = getchar();    <span class="cmt">// ← 这里读到的是回车符！<
   </div>
 </section>
 
-<!-- ================= 31 结束页 ================= -->
+<!-- ================= 35 结束页 ================= -->
 <section class="slide end">
   <div class="end-inner">
     <h2>谢　谢</h2>
