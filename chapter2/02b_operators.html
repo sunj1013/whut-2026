@@ -1,0 +1,2001 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>C 程序设计基础 · 第 2 章（下）运算符与类型转换</title>
+<style>
+  :root{
+    --fs-title: 48px;
+    --fs-body:  32px;
+    --fs-other: 30px;
+    --fs-list:  29px;
+    --blue-900:#0a3d63;
+    --blue-700:#124f83;
+    --blue-600:#1a6fb5;
+    --blue-400:#4a97d4;
+    --blue-100:#e8f2fb;
+    --orange:#e8720c;
+    --orange-soft:#fdf1e4;
+    --green:#2e8b57;
+    --green-soft:#eaf7ef;
+    --purple:#8e44ad;
+    --purple-soft:#f5ecfa;
+    --red:#c0392b;
+    --red-soft:#fdeceb;
+    --ink:#1d2b36;
+    --muted:#4d6376;
+    --line:#d6e2ee;
+  }
+
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+
+  html,body{
+    height:100%;overflow:hidden;background:var(--blue-900);
+    font-family:"Microsoft YaHei","PingFang SC","Hiragino Sans GB","Source Han Sans SC",sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  #stage{
+    position:fixed;left:50%;top:50%;
+    width:1600px;height:900px;
+    transform:translate(-50%,-50%) scale(var(--s,1));
+    transform-origin:center center;
+    background:#fff;overflow:hidden;
+    transition:opacity .22s ease;
+  }
+  body.blackout #stage{opacity:0;}
+
+  .slide{
+    position:absolute;inset:0;
+    display:none;flex-direction:column;
+    padding:30px 64px 60px;
+    background:linear-gradient(180deg,#ffffff 0%,#f4faff 100%);
+  }
+  .slide.active{display:flex;animation:fadeUp .26s ease;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+
+  @keyframes itemIn{
+    from{opacity:0;transform:translateY(18px);}
+    to{opacity:1;transform:none;}
+  }
+  .slide.active .s-title{animation:itemIn .42s ease both;}
+  .slide.active .s-body > *{animation:itemIn .42s ease both;}
+  .slide.active .s-body > *:nth-child(1){animation-delay:.08s;}
+  .slide.active .s-body > *:nth-child(2){animation-delay:.16s;}
+  .slide.active .s-body > *:nth-child(3){animation-delay:.24s;}
+  .slide.active .s-body > *:nth-child(4){animation-delay:.32s;}
+  .slide.active .s-body > *:nth-child(5){animation-delay:.40s;}
+  .slide.active .s-body > *:nth-child(6){animation-delay:.48s;}
+
+  .slide.cover.active .s-title,
+  .slide.cover.active .s-body > *,
+  .slide.end.active .s-title,
+  .slide.end.active .s-body > *{animation:none;}
+
+  .slide::after{
+    content:"";position:absolute;right:-90px;bottom:-90px;
+    width:300px;height:300px;border-radius:50%;
+    background:radial-gradient(circle,rgba(26,111,181,.10) 0%,rgba(26,111,181,0) 70%);
+    pointer-events:none;
+  }
+
+  .s-title{
+    flex:0 0 auto;align-self:flex-start;
+    background:linear-gradient(135deg,#1a6fb5 0%,#124f83 100%);
+    color:#fff;font-size:48px;font-weight:700;
+    letter-spacing:1.5px;line-height:1.15;
+    padding:14px 30px 14px 24px;
+    border-left:10px solid var(--orange);
+    border-radius:0 12px 12px 0;
+    margin-bottom:18px;
+    box-shadow:0 6px 16px rgba(18,79,131,.18);
+  }
+  .s-sub{
+    font-size:var(--fs-body);font-weight:700;color:var(--blue-700);
+    border-left:7px solid var(--orange);
+    padding:2px 0 2px 14px;margin:14px 0 10px;
+  }
+  .s-sub:first-child{margin-top:0;}
+  .s-sub.blue{border-left-color:var(--blue-600);}
+
+  .s-body{
+    flex:1 1 auto;min-height:0;overflow:hidden;
+    font-size:32px;line-height:1.5;color:var(--ink);
+  }
+  .s-body p{margin:8px 0;}
+  .s-body p:first-child{margin-top:0;}
+  .s-body ul,.s-body ol{padding-left:1.5em;margin:8px 0;}
+  .s-body li{margin:4px 0;}
+  .s-body ul>li::marker{color:var(--blue-600);}
+  .s-body ol>li::marker{color:var(--orange);font-weight:800;}
+  b,strong{color:var(--blue-700);}
+
+  table.tb{
+    width:100%;border-collapse:separate;border-spacing:0;
+    font-size:var(--fs-other);line-height:1.45;margin:6px 0;
+    border-radius:12px;overflow:hidden;
+    box-shadow:0 4px 14px rgba(18,79,131,.08);
+  }
+  table.tb thead th{
+    background:linear-gradient(135deg,#1a6fb5,#124f83);
+    color:#fff;font-weight:600;font-size:var(--fs-other);
+    padding:12px 18px;text-align:left;
+  }
+  table.tb td,table.tb tbody th{
+    padding:11px 18px;background:#fff;
+    border-bottom:1px solid var(--line);
+    vertical-align:top;
+  }
+  table.tb tbody tr:last-child td,
+  table.tb tbody tr:last-child th{border-bottom:none;}
+  table.tb tbody th{
+    background:#eaf3fb;color:var(--blue-700);
+    font-weight:600;text-align:left;white-space:nowrap;
+  }
+  table.tb tbody tr:nth-child(even) td{background:#f7fafd;}
+  .c-red{color:var(--red);font-weight:600;}
+  .c-green{color:var(--green);font-weight:700;}
+  .c-blue{color:var(--blue-600);font-weight:700;}
+
+  .box{
+    border-left:7px solid var(--blue-600);
+    background:var(--blue-100);
+    border-radius:0 10px 10px 0;
+    padding:16px 28px;margin:10px 0;
+    font-size:30px;line-height:1.7;
+  }
+  .box .label{
+    display:inline-block;font-weight:800;color:var(--blue-700);
+    margin-right:10px;
+  }
+  .box.tip{border-left-color:var(--green);background:var(--green-soft);}
+  .box.tip .label{color:var(--green);}
+  .box.warn{border-left-color:var(--orange);background:var(--orange-soft);}
+  .box.warn .label{color:#b95a05;}
+  .box.key{border-left-color:var(--purple);background:var(--purple-soft);}
+  .box.key .label{color:var(--purple);}
+  .box.red{border-left-color:var(--red);background:var(--red-soft);}
+  .box.red .label{color:var(--red);}
+
+  pre.code{
+    background:#0d2b45;color:#d8e9f5;
+    border-left:6px solid var(--orange);
+    border-radius:0 12px 12px 0;
+    padding:14px 22px;margin:8px 0;
+    font-family:Consolas,"Courier New",monospace;
+    font-size:28px;line-height:1.55;
+    white-space:pre;overflow:hidden;
+    box-shadow:0 8px 22px rgba(13,43,69,.22);
+  }
+  pre.code .kw{color:#6ec1ff;}
+  pre.code .str{color:#ffc17a;}
+  pre.code .cmt{color:#7fa5c0;font-style:italic;}
+  pre.code .num{color:#ff9d6b;}
+
+  code.inline{
+    font-family:Consolas,"Courier New",monospace;
+    background:var(--blue-100);color:#c0392b;
+    padding:2px 8px;font-size:28px;border-radius:5px;
+  }
+
+  .out{
+    background:#0d2b45;color:#bfe4ff;
+    border-left:6px solid var(--blue-400);
+    border-radius:0 12px 12px 0;
+    padding:12px 22px;margin:8px 0;
+    font-family:Consolas,"Courier New",monospace;
+    font-size:28px;line-height:1.5;white-space:pre;
+  }
+
+  .steps{display:flex;gap:10px;align-items:stretch;}
+  .step{
+    flex:1;background:#fff;border:1px solid var(--line);
+    border-top:7px solid var(--blue-600);
+    border-radius:0 0 14px 14px;
+    padding:14px 12px;text-align:center;
+    box-shadow:0 6px 16px rgba(18,79,131,.08);
+  }
+  .step.orange{border-top-color:var(--orange);}
+  .step.green{border-top-color:var(--green);}
+  .step.purple{border-top-color:var(--purple);}
+  .step .n{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:44px;height:44px;border-radius:50%;
+    background:linear-gradient(135deg,var(--orange),#c55807);
+    color:#fff;font-size:28px;font-weight:700;margin-bottom:8px;
+  }
+  .step .t{font-size:30px;font-weight:700;color:var(--blue-700);line-height:1.2;}
+  .step .d{font-size:26px;color:var(--muted);margin-top:6px;line-height:1.4;}
+  .arrow{
+    display:flex;align-items:center;justify-content:center;
+    color:var(--orange);font-size:34px;font-weight:700;
+  }
+
+  .grid{display:grid;gap:14px;}
+  .grid.c2{grid-template-columns:1fr 1fr;}
+  .grid.c3{grid-template-columns:repeat(3,1fr);}
+  .grid{ gap:26px 14px; }
+  .card{
+    background:#fff;border:1px solid var(--line);
+    border-top:7px solid var(--blue-600);
+    border-radius:0 0 16px 16px;
+    padding:22px 28px;
+    box-shadow:0 6px 16px rgba(18,79,131,.08);
+  }
+  .card.orange{border-top-color:var(--orange);}
+  .card.green{border-top-color:var(--green);}
+  .card.purple{border-top-color:var(--purple);}
+  .card.red{border-top-color:var(--red);}
+  .card h4{
+    font-size:30px;color:var(--blue-700);
+    margin-bottom:8px;display:flex;align-items:center;gap:10px;
+    line-height:1.2;
+  }
+  .card.orange h4{color:#b95a05;}
+  .card.green h4{color:var(--green);}
+  .card.purple h4{color:var(--purple);}
+  .card.red h4{color:var(--red);}
+  .card p{font-size:27px;color:var(--muted);line-height:1.7;margin:0;}
+  .card .ico{font-size:30px;line-height:1;}
+
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start;}
+  .two.wide{grid-template-columns:1.15fr 1fr;}
+
+  .feat{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px;}
+  .feat li{
+    display:flex;align-items:center;gap:22px;
+    background:#fff;border:1px solid var(--line);
+    border-left:7px solid var(--blue-600);
+    border-radius:0 12px 12px 0;
+    padding:12px 24px;
+    box-shadow:0 4px 10px rgba(18,79,131,.06);
+  }
+  .feat li:nth-child(even){border-left-color:var(--orange);}
+  .feat .k{
+    flex:0 0 auto;width:270px;
+    font-size:30px;font-weight:700;color:var(--blue-700);
+    line-height:1.25;
+  }
+  .feat .v{
+    font-size:27px;color:var(--muted);line-height:1.5;
+  }
+
+  .mem-diagram{
+    display:flex;justify-content:center;align-items:center;
+    gap:20px;margin:20px 0;
+    font-family:Consolas,"Courier New",monospace;
+  }
+  .mem-item{text-align:center;}
+  .mem-item .addr{
+    font-size:24px;color:var(--muted);margin-bottom:8px;
+    font-family:"Microsoft YaHei",sans-serif;font-weight:600;
+  }
+  .mem-item .cell{
+    min-width:200px;height:110px;padding:0 18px;
+    border:4px solid var(--blue-600);border-radius:10px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:40px;font-weight:800;
+  }
+  .mem-arrow{
+    font-size:44px;color:var(--orange);font-weight:800;
+  }
+
+  .slide.cover{
+    background:linear-gradient(135deg,#1a6fb5 0%,#0d4a7a 58%,#0a3d63 100%);
+    padding:0 110px 60px;justify-content:center;
+  }
+  .slide.cover::before{
+    content:"";position:absolute;right:-100px;top:-100px;
+    width:500px;height:500px;border-radius:50%;
+    background:radial-gradient(circle,rgba(232,114,12,.18) 0%,rgba(232,114,12,0) 70%);
+  }
+  .slide.cover::after{
+    content:"";position:absolute;left:-100px;bottom:-120px;
+    width:440px;height:440px;border-radius:50%;
+    background:radial-gradient(circle,rgba(74,151,212,.18) 0%,rgba(74,151,212,0) 70%);
+  }
+  .cover-inner{position:relative;z-index:2;}
+  .cover-kicker{
+    display:inline-block;font-size:var(--fs-other);letter-spacing:3px;
+    color:#ffd9b3;border:1px solid rgba(255,217,179,.55);
+    padding:8px 24px;margin-bottom:28px;border-radius:999px;
+  }
+  .cover h1{
+    font-size:82px;font-weight:800;color:#fff;
+    letter-spacing:5px;line-height:1.15;margin-bottom:16px;
+  }
+  .cover-bar{width:650px;height:8px;border-radius:4px;background:linear-gradient(90deg,#e8720c,#ffb26b);margin-bottom:22px;}
+  .cover-sub{font-size:40px;color:#a9d8f5;letter-spacing:3px;margin-bottom:36px;}
+  .cover-meta{font-size:var(--fs-other);color:#7fb2dd;letter-spacing:2px;}
+
+  .slide.end{
+    background:linear-gradient(135deg,#1a6fb5 0%,#0d4a7a 58%,#0a3d63 100%);
+    padding:0 110px 60px;justify-content:center;
+  }
+  .slide.end::before{
+    content:"";position:absolute;right:-100px;bottom:-120px;
+    width:500px;height:500px;border-radius:50%;
+    background:radial-gradient(circle,rgba(232,114,12,.16) 0%,rgba(232,114,12,0) 70%);
+  }
+  .end-inner{position:relative;z-index:2;}
+  .end h2{font-size:82px;font-weight:800;color:#fff;letter-spacing:10px;margin-bottom:22px;}
+  .end p{font-size:var(--fs-body);color:#a9d8f5;letter-spacing:2px;}
+
+  .pageinfo{
+    position:absolute;right:40px;top:22px;z-index:20;
+    font-size:var(--fs-other);color:var(--blue-600);letter-spacing:1px;
+    background:rgba(255,255,255,.95);
+    border:1px solid var(--line);border-radius:999px;
+    padding:5px 20px;
+    box-shadow:0 4px 10px rgba(18,79,131,.08);
+  }
+  .pageinfo b{font-size:var(--fs-other);color:var(--orange);}
+
+  .nav{
+    position:absolute;right:36px;bottom:14px;z-index:20;
+    display:flex;align-items:center;gap:10px;
+  }
+  .nav button{
+    height:50px;border:none;cursor:pointer;
+    background:linear-gradient(135deg,#1a6fb5,#124f83);
+    color:#fff;font-size:var(--fs-other);line-height:1;
+    display:flex;align-items:center;justify-content:center;
+    transition:all .18s;font-family:inherit;
+    border-radius:12px;width:50px;
+    box-shadow:0 5px 12px rgba(18,79,131,.28);
+  }
+  .nav button:hover{background:linear-gradient(135deg,#e8720c,#c55807);transform:translateY(-2px);}
+  .nav button:disabled{background:#b9cfe4;cursor:not-allowed;box-shadow:none;transform:none;}
+  .nav .tocbtn{width:auto;padding:0 22px;font-weight:700;letter-spacing:1px;}
+
+  .progress{
+    position:absolute;left:0;bottom:0;height:6px;width:0;z-index:20;
+    background:linear-gradient(90deg,#1a6fb5,#e8720c);
+    transition:width .3s ease;
+  }
+
+  .keyhint{
+    position:absolute;left:50%;bottom:18px;transform:translateX(-50%);
+    z-index:20;font-size:20px;color:#7fa8c4;letter-spacing:1px;
+    background:rgba(255,255,255,.85);border:1px solid var(--line);
+    border-radius:999px;padding:4px 16px;
+    transition:opacity .6s ease;
+  }
+  .keyhint.hide{opacity:0;}
+
+  .toc{
+    position:absolute;inset:0;z-index:40;
+    background:rgba(10,61,99,.96);
+    display:none;padding:44px 60px 60px;overflow:hidden;
+  }
+  .toc.show{display:block;}
+  .toc h3{font-size:40px;color:#fff;letter-spacing:4px;margin-bottom:6px;}
+  .toc .toc-bar{width:110px;height:6px;border-radius:3px;background:linear-gradient(90deg,#e8720c,#ffb26b);margin-bottom:20px;}
+  .toc-list{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:14px;align-items:start;
+  }
+  .toc-group{
+    background:rgba(255,255,255,.05);
+    border-radius:14px;
+    padding:12px 14px 16px;
+    border-top:5px solid var(--blue-400);
+  }
+  .toc-group:nth-child(2){border-top-color:var(--orange);}
+  .toc-group:nth-child(3){border-top-color:var(--green);}
+  .toc-group:nth-child(4){border-top-color:var(--purple);}
+  .toc-group-title{
+    font-size:22px;color:#ffc17a;font-weight:800;
+    letter-spacing:1px;margin-bottom:10px;
+    padding-bottom:8px;
+    border-bottom:1px dashed rgba(255,255,255,.18);
+    line-height:1.25;
+  }
+  .toc-group a{
+    display:block;color:#cfe6f7;font-size:20px;
+    padding:8px 12px;border-radius:8px;
+    cursor:pointer;margin-bottom:4px;
+    text-decoration:none;line-height:1.35;
+    transition:all .16s;
+  }
+  .toc-group a:hover{background:linear-gradient(90deg,#e8720c,#c55807);color:#fff;}
+  .toc-close{
+    position:absolute;right:40px;top:22px;
+    background:none;border:1px solid #7fb2dd;color:#cfe6f7;
+    font-size:var(--fs-other);padding:7px 22px;cursor:pointer;font-family:inherit;
+    border-radius:12px;
+  }
+  .toc-close:hover{background:#e8720c;border-color:#e8720c;color:#fff;}
+</style>
+
+<!-- MathJax 配置：用于渲染 LaTeX 数学公式 -->
+<script>
+  window.MathJax = {
+    tex: {
+      inlineMath: [['\\(', '\\)']],
+      displayMath: [['\\[', '\\]']],
+      processEscapes: true
+    },
+    svg: {
+      fontCache: 'global'
+    },
+    options: {
+      skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js" id="MathJax-script" async></script>
+</head>
+<body>
+
+<div id="stage">
+
+  <!-- 1 封面 -->
+  <section class="slide cover active">
+    <div class="cover-inner">
+      <div class="cover-kicker">武汉理工大学 人工智能学院</div>
+      <h1>C 程序设计基础</h1>
+      <div class="cover-bar"></div>
+      <div class="cover-sub">第 2 章（下）运算符与类型转换</div>
+      <div class="cover-meta">主讲：孙　骏</div>
+    </div>
+  </section>
+
+  <!-- 2 本章内容 -->
+  <section class="slide">
+    <div class="s-title">本章内容</div>
+    <div class="s-body">
+      <div class="grid c2">
+        <div class="card"><h4><span class="ico">📐</span>程序三段式结构</h4><p>定义变量 → 计算/处理 → 输出结果</p></div>
+        <div class="card orange"><h4><span class="ico">🔢</span>常量与变量</h4><p>字面量、符号常量、数据类型、变量定义与初始化</p></div>
+        <div class="card green"><h4><span class="ico">📤</span>输出函数 printf()</h4><p>格式字符、常用用法</p></div>
+        <div class="card purple"><h4><span class="ico">📥</span>输入函数 scanf()</h4><p>地址表列、格式字符、常见陷阱</p></div>
+        <div class="card red"><h4><span class="ico">➗</span>运算符与类型转换</h4><p>算术运算符、赋值运算符、数据类型转换</p></div>
+        <div class="card"><h4><span class="ico">🔤</span>字符处理与综合</h4><p>字符输入输出、字符与整数运算、顺序结构程序设计</p></div>
+      </div>
+    </div>
+  </section>
+
+
+<!-- ================= 1 本讲内容 ================= -->
+<section class="slide">
+  <div class="s-title">本讲内容</div>
+  <div class="s-body">
+    <div class="grid c2">
+      <div class="card"><h4><span class="ico">📋</span>运算符总览</h4><p>14 类运算符</p></div>
+      <div class="card orange"><h4><span class="ico">➕</span>算术运算</h4><p><b>+ - * / % </b></p></div>
+      <div class="card green"><h4><span class="ico">💾</span>赋值运算</h4><p> 赋值与复合赋值、从右向左</p></div>
+      <div class="card purple"><h4><span class="ico">++</span>自增自减</h4><p><b>++i</b> 、 <b>i++</b></p></div>
+      <div class="card red"><h4><span class="ico">🔄</span>类型转换</h4><p>隐式、强制、混合运算</p></div>
+      <div class="card"><h4><span class="ico">🔤</span>字符处理</h4><p>字符 I/O、字符与整数运算</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 2 学习目标 ================= -->
+<section class="slide">
+  <div class="s-title">本讲学习目标</div>
+  <div class="s-body">
+    <ul class="feat">
+      <li><span class="k">① 运算符总览</span><span class="v">了解 14 类运算符，建立全局观</span></li>
+      <li><span class="k">② 算术运算</span><span class="v">+ - * / % 优先级与结合方向，特别要注意整除与取余</span></li>
+      <li><span class="k">③ 赋值运算</span><span class="v">= 与复合赋值，注意类型转换规则</span></li>
+      <li><span class="k">④ 自增自减</span><span class="v">前置与后置的区别</span></li>
+      <li><span class="k">⑤ 逗号与 sizeof</span><span class="v">优先级最低、求字节数</span></li>
+      <li><span class="k">⑥ 类型转换</span><span class="v">隐式、强制、混合运算</span></li>
+      <li><span class="k">⑦ 字符处理</span><span class="v">字符 I/O、字符与整数运算、缓冲区</span></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ================= 3 运算符总览 ================= -->
+<section class="slide">
+  <div class="s-title">C 语言的运算符总览</div>
+  <div class="s-body">
+    
+    <div class="box key" style="margin-top:10px;">
+      <span class="label">表达式</span>
+      用<b>运算符</b>将若干个<b>操作数</b>连接起来构成的式子。<br>
+      表达式的<b>值</b>是运算结果，表达式的<b>类型</b>是结果值的类型。
+    </div>
+
+    <table class="tb" style="font-size:24px;">
+      <thead><tr><th style="width:6%">#</th><th style="width:22%">类别</th><th style="width:36%">运算符</th><th style="width:36%">典型应用</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>算术运算符</td><td><code class="inline">+ - * / %</code></td><td>顺序结构</td></tr>
+        <tr><td>2</td><td>自增、自减</td><td><code class="inline">++ --</code></td><td>循环结构</td></tr>
+        <tr><td>3</td><td>关系运算符</td><td><code class="inline">&gt; &lt; &gt;= &lt;= == !=</code></td><td>选择结构</td></tr>
+        <tr><td>4</td><td>逻辑运算符</td><td><code class="inline">! &amp;&amp; ||</code></td><td>选择结构</td></tr>
+        <tr><td>5</td><td>位运算符</td><td><code class="inline">&lt;&lt; &gt;&gt; ~ | ^ &amp;</code></td><td>底层操作</td></tr>
+        <tr><td>6</td><td>赋值运算符</td><td><code class="inline">= += -= *= /= %=</code></td><td>顺序结构</td></tr>
+        <tr><td>7</td><td>条件运算符</td><td><code class="inline">? :</code></td><td>选择结构</td></tr>
+        <tr><td>8</td><td>逗号运算符</td><td><code class="inline">,</code></td><td>简化书写</td></tr>
+        <tr><td>9</td><td>指针运算符</td><td><code class="inline">* &amp;</code></td><td>指针</td></tr>
+        <tr><td>10</td><td>求字节数</td><td><code class="inline">sizeof</code></td><td>顺序结构</td></tr>
+        <tr><td>11</td><td>强制类型转换</td><td><code class="inline">(类型)</code></td><td>顺序结构</td></tr>
+        <tr><td>12</td><td>结构体成员</td><td><code class="inline">. -&gt;</code></td><td>结构体</td></tr>
+        <tr><td>13</td><td>下标运算符</td><td><code class="inline">[]</code></td><td>数组</td></tr>
+        <tr><td>14</td><td>函数调用</td><td><code class="inline">()</code></td><td>函数</td></tr>
+      </tbody>
+    </table>
+      </div>
+</section>
+
+<!-- ================= 4 算术运算符 ================= -->
+<section class="slide">
+  <div class="s-title">算术运算符与表达式</div>
+  <div class="s-body">
+    <table class="tb">
+      <thead><tr><th style="width:12%">运算符</th><th style="width:20%">名称</th><th style="width:26%">示例</th><th style="width:42%">结果与类型</th></tr></thead>
+      <tbody>
+        <tr><th>+</th><td>加法（双目）</td><td>1 + 2.6</td><td>3.6 (double)</td></tr>
+        <tr><th>-</th><td>减法（双目）</td><td>3 - 1</td><td>2 (int)</td></tr>
+        <tr><th>*</th><td>乘法（双目）</td><td>4 * 3</td><td>12 (int)</td></tr>
+        <tr><th>/</th><td>除法（双目）</td><td>4 / 3</td><td>1 (int)</td></tr>
+        <tr><th>%</th><td>求余（双目）</td><td>8 % 5</td><td>3 (int)</td></tr>
+        <tr><th>+</th><td>正号（单目）</td><td>+2.6</td><td>2.6 (double)</td></tr>
+        <tr><th>-</th><td>负号（单目）</td><td>-3</td><td>-3 (int)</td></tr>
+      </tbody>
+    </table>
+    <div class="box warn" style="margin-top:10px;">
+      <span class="label">优先级</span>
+      <b> - </b>(取负) (2) →  <b>* / % </b> (3) → <b> + - </b>(4)
+    </div>
+  </div>
+</section>
+
+<!-- ================= 5 整除与取余 ================= -->
+<section class="slide">
+  <div class="s-title">整数除法与求余：最易错的两个运算符</div>
+  <div class="s-body">
+    <div class="two">
+      <div class="card red">
+        <h4 style="font-size:32px;"><span class="ico">⚠️</span>/ 整除</h4>
+        <p style="font-size:32px; line-height:1.7;">
+          两整数相除，结果仍为整数<br><br>
+          <code class="inline" style="font-size:30px;">5 / 2 = 2</code><br>
+          <code class="inline" style="font-size:30px;">-5 / 2.0 = -2.5</code><br><br>
+          一旦有一边是实数，结果就是实数
+        </p>
+      </div>
+      <div class="card orange">
+        <h4 style="font-size:32px;"><span class="ico">⚠️</span>% 求余</h4>
+        <p style="font-size:32px; line-height:1.7;">
+          只有两边都是整数才能求余<br><br>
+          <code class="inline" style="font-size:30px;">5 % 2 = 1</code><br>
+          <code class="inline" style="font-size:30px;">-5 % 2 = -1</code><br>
+          <code class="inline" style="font-size:30px;">5.5 % 2</code> ← 非法
+        </p>
+      </div>
+    </div>
+    <pre class="code" style="margin-top:12px; font-size:30px;"><span class="kw">int</span> num = <span class="num">123</span>;
+<span class="kw">int</span> a, b, c;
+a = num % <span class="num">10</span>;         <span class="cmt">// 个位：3</span>
+b = num / <span class="num">10</span> % <span class="num">10</span>;      <span class="cmt">// 十位：2</span>
+c = num / <span class="num">100</span>;           <span class="cmt">// 百位：1</span></pre>
+  </div>
+</section>
+
+<!-- ================= 6 求余符号规则 ================= -->
+<section class="slide">
+  <div class="s-title">求余 % 的符号规则</div>
+  <div class="s-body">
+    <div class="box key" style="margin-top:0;">
+      <span class="label">核心规则</span>
+      <b>余数的符号与被余数（左操作数）的符号相同</b>。
+    </div>
+    <table class="tb">
+      <thead><tr><th style="width:40%">表达式</th><th style="width:30%">结果</th><th style="width:30%">符号来源</th></tr></thead>
+      <tbody>
+        <tr><td><code class="inline">15 % 11</code></td><td>4</td><td>+（左）</td></tr>
+        <tr><td><code class="inline">-15 % 11</code></td><td>-4</td><td>−（左）</td></tr>
+        <tr><td><code class="inline">15 % -11</code></td><td>4</td><td>+（左）</td></tr>
+        <tr><td><code class="inline">-15 % -11</code></td><td>-4</td><td>−（左）</td></tr>
+      </tbody>
+    </table>
+    <div class="box tip" style="margin-top:10px;">
+      <span class="label">记忆口诀</span>
+      余数的符号，<b>看左边数的符号</b>。
+    </div>
+  </div>
+</section>
+
+<!-- ================= 7 复合赋值 ================= -->
+<section class="slide">
+  <div class="s-title">复合赋值运算符</div>
+  <div class="s-body">
+    <table class="tb" style="font-size:28px; line-height:1.3; margin-top:0;">
+      <thead>
+        <tr><th style="width:14%">运算符</th><th style="width:28%">表达式</th><th style="width:58%">等价于</th></tr>
+      </thead>
+      <tbody>
+        <tr><th>+=</th><td>a += 3</td><td>a = a + 3</td></tr>
+        <tr><th>-=</th><td>a -= 4</td><td>a = a - 4</td></tr>
+        <tr><th>*=</th><td>a *= 9</td><td>a = a * 9</td></tr>
+        <tr><th>/=</th><td>a /= 5</td><td>a = a / 5</td></tr>
+        <tr><th>%=</th><td>a %= 6</td><td>a = a % 6</td></tr>
+      </tbody>
+    </table>
+    <pre class="code" style="margin-top:10px; font-size:28px; padding:10px 20px; line-height:1.45;"><span class="kw">int</span> a = <span class="num">12</span>;
+a += a -= a * a;
+<span class="cmt">// ① a = a - a*a  → a = 12 - 144 = -132</span>
+<span class="cmt">// ② a = a + (-132) → a = -264</span></pre>
+    <div class="box warn" style="margin-top:10px; font-size:28px; line-height:1.6;">
+      <span class="label">说明</span>
+      所有赋值运算符的优先级相同，结合方向<b>从右向左</b>；<br>
+      算术运算符的优先级<b>高于</b>赋值运算符，<code class="inline">a *= 3 + 2</code> 等价于 <code class="inline">a = a * (3 + 2)</code>。
+    </div>
+  </div>
+</section>
+
+<!-- ================= 8 自增自减 ================= -->
+<section class="slide">
+  <div class="s-title">自增、自减运算符 ++、--</div>
+  <div class="s-body">
+    <p style="font-size:32px;"><b>作用：</b>使变量值加 1 或减 1。</p>
+    <div class="two">
+      <div class="card">
+        <h4 style="font-size:32px;"><span class="ico">➡️</span>前置 ++i / --i</h4>
+        <p style="font-size:32px; line-height:1.6;">
+          先执行 i+1 或 i-1，
+          再使用 i 的值<br><br>
+          <code class="inline" style="font-size:30px;">j=3;<br> k=++j;</code>   → k=4, j=4
+        </p>
+      </div>
+      <div class="card orange">
+        <h4 style="font-size:32px;"><span class="ico">⬅️</span>后置 i++ / i--</h4>
+        <p style="font-size:32px; line-height:1.6;">
+          先使用 i 的值，
+          再执行 i+1 或 i-1<br><br>
+          <code class="inline" style="font-size:30px;">j=3;<br> k=j++;</code>    → k=3, j=4
+        </p>
+      </div>
+    </div>
+    <pre class="code" style="margin-top:12px; font-size:30px; padding:12px 22px; line-height:1.5;"><span class="kw">int</span> a = <span class="num">3</span>, b = <span class="num">5</span>, c;
+c = (++a) * b;    <span class="cmt">// a先变4，c = 4 * 5 = 20</span>
+a = <span class="num">3</span>;
+c = (a++) * b;    <span class="cmt">// c = 3 * 5 = 15，然后 a 变 4</span></pre>
+    <div class="box warn" style="margin-top:10px; font-size:32px; line-height:1.6;">
+      <span class="label">注意</span>
+      ++ / -- 只能用于<b>变量</b>，不能用于常量或表达式：<code class="inline" style="font-size:30px;">5++</code>、<code class="inline" style="font-size:30px;">(a+b)++</code> 都是非法。
+    </div>
+  </div>
+</section>
+
+
+
+<!-- ================= 10 逗号运算符 ================= -->
+<section class="slide">
+  <div class="s-title">逗号运算符和逗号表达式</div>
+  <div class="s-body">
+    <div class="s-sub blue">格式</div>
+    <pre class="code">表达式1, 表达式2, ..., 表达式n</pre>
+    <ul style="font-size:30px;line-height:1.7;">
+      <li>优先级<b>最低</b>（15），结合方向 <b>从左至右</b></li>
+      <li>执行时依次计算各表达式的值</li>
+      <li>整个逗号表达式的值 = <b>表达式 n 的值</b></li>
+    </ul>
+    <pre class="code" style="margin-top:10px;"><span class="kw">int</span> a;
+a = <span class="num">3</span>*<span class="num">5</span>, a*<span class="num">4</span>, a+<span class="num">5</span>;      <span class="cmt">// a = 15，表达式的值为 20</span>
+
+<span class="kw">int</span> x, y = <span class="num">7</span>;
+<span class="kw">float</span> z = <span class="num">4</span>;
+x = (y = y + <span class="num">6</span>, y / z);   <span class="cmt">// y=13, 13/4.0=3.25, x=3</span></pre>
+  </div>
+</section>
+
+<!-- ================= 11 逗号 vs 分隔符 ================= -->
+<section class="slide">
+  <div class="s-title">注意：逗号运算符 vs 逗号分隔符</div>
+  <div class="s-body">
+    <table class="tb">
+      <thead><tr><th style="width:50%">逗号运算符</th><th style="width:50%">逗号分隔符</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code class="inline">x = (a=3, 6*a);</code></td>
+          <td><code class="inline">printf("%d,%d", a, b);</code></td>
+        </tr>
+        <tr>
+          <td>连接两个表达式，<b>有运算含义</b></td>
+          <td>分隔参数，<b>只是标点</b></td>
+        </tr>
+        <tr>
+          <td>表达式的一部分，产生一个值</td>
+          <td>函数调用的参数列表</td>
+        </tr>
+        <tr>
+          <td><code class="inline">int a;</code><br><code class="inline">a = (3, 5);</code> → a = 5</td>
+          <td><code class="inline">int a, b, c;</code> → 声明三个变量</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="box tip" style="margin-top:14px;">
+      <span class="label">区分方法</span>
+      看它<b>出现在哪里</b>：<br>
+      · 在 <code class="inline">( )</code> 里、<code class="inline">=</code> 的右边，是<b>运算符</b><br>
+      · 在声明、参数列表中，是<b>分隔符</b>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 12 sizeof 运算符 ================= -->
+<section class="slide">
+  <div class="s-title">sizeof 运算符</div>
+  <div class="s-body">
+    <div class="s-sub blue">两种格式</div>
+    <pre class="code"><span class="kw">sizeof</span>(类型定义符)
+<span class="kw">sizeof</span>(表达式)</pre>
+    <p><b>功能：</b>返回各种数据类型或表达式所占的<b>字节数</b>。</p>
+    <table class="tb" style="margin-top:10px;">
+      <thead><tr><th style="width:50%">表达式</th><th style="width:50%">值</th></tr></thead>
+      <tbody>
+        <tr><td><code class="inline">sizeof(char)</code></td><td>1</td></tr>
+        <tr><td><code class="inline">sizeof(int)</code></td><td>4（多数编译器）</td></tr>
+        <tr><td><code class="inline">sizeof(float)</code></td><td>4</td></tr>
+        <tr><td><code class="inline">sizeof(double)</code></td><td>8</td></tr>
+        <tr><td><code class="inline">sizeof('a' + 2)</code></td><td>4（char 提升为 int）</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ================= 13 sizeof 使用示例 ================= -->
+<section class="slide">
+  <div class="s-title">sizeof 的使用示例</div>
+  <div class="s-body">
+    <div class="two wide" style="margin-top:0; align-items:start;">
+
+      <!-- 左栏：代码 -->
+      <pre class="code" style="margin-top:0; font-size:32px; line-height:1.5; padding:12px 20px;"><span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+
+<span class="kw">int</span> main()
+{
+    <span class="kw">float</span> f;
+    <span class="kw">int</span> a;
+    printf(<span class="str">"%d\n"</span>, <span class="kw">sizeof</span>(f));        <span class="cmt">// 输出 4</span>
+    printf(<span class="str">"%d\n"</span>, <span class="kw">sizeof</span>(<span class="kw">char</span>));     <span class="cmt">// 输出 1</span>
+    printf(<span class="str">"%d\n"</span>, <span class="kw">sizeof</span>(a + <span class="num">2</span>));    <span class="cmt">// a+2 为 int，输出 4</span>
+    printf(<span class="str">"%d\n"</span>, <span class="kw">sizeof</span>(<span class="num">2.5</span>));       <span class="cmt">// 2.5 为 double，输出 8</span>
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre>
+
+      <!-- 右栏：常见用途 + 说明 -->
+      <div>
+        <div class="box tip" style="margin-top:0; font-size:32px; line-height:1.7;">
+          <span class="label">常见用途</span>
+          · 计算数组长度：<br>
+          <code class="inline" style="font-size:30px;">sizeof(arr) / sizeof(arr[0])</code><br>
+          （第 5 章）<br><br>
+          · 判断本机 int、long 等类型占用的字节数<br><br>
+          · 内存分配时确定大小（第 7 章）
+        </div>
+
+        <div class="box key" style="margin-top:12px; font-size:30px; line-height:1.7;">
+          <span class="label">观察</span>
+          <code class="inline" style="font-size:30px;">sizeof</code> 是<b>运算符</b>，不是函数。<br>
+          它的参数在<b>编译时</b>求值，不产生运行时开销。
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ================= 14 练习二（1） ================= -->
+<section class="slide">
+  <div class="s-title">练习二（1）：求两整数的商和余数</div>
+  <div class="s-body">
+    <div class="box tip" style="margin-top:0;">
+      <span class="label">目标</span>
+      巩固 <code class="inline">/</code>、<code class="inline">%</code>、整除与取余的用法。
+    </div>
+
+    <div class="two wide" style="margin-top:14px; align-items:start;">
+
+      <!-- 左栏：代码 -->
+      <pre class="code" style="font-size:30px; padding:14px 22px; line-height:1.5; margin-top:0;"><span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="kw">int</span> main()
+{
+    <span class="kw">int</span> a, b;
+    scanf(<span class="str">"%d %d"</span>, &amp;a, &amp;b);
+    printf(<span class="str">"%d / %d = %d\n"</span>, a, b, a / b);
+    printf(<span class="str">"%d %% %d = %d\n"</span>, a, b, a % b);
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre>
+
+      <!-- 右栏：说明 + 运行示例 -->
+      <div>
+        <div class="s-sub blue" style="margin-top:0;">运行示例</div>
+        <div class="out" style="font-size:28px; line-height:1.5;">输入：17 5⏎
+输出：17 / 5 = 3
+　　　17 % 5 = 2</div>
+
+        <div class="box key" style="margin-top:14px; font-size:30px; line-height:1.6;">
+          <span class="label">关键点</span><br>
+          · <code class="inline" style="font-size:30px;">/</code> 整除：结果舍去小数部分<br>
+          · <code class="inline" style="font-size:30px;">%</code> 求余：只能用于整数<br>
+          · 输出 <code class="inline" style="font-size:30px;">%</code> 本身要写成 <code class="inline" style="font-size:30px;">%%</code>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="box warn" style="margin-top:16px; font-size:30px; line-height:1.6;">
+      <span class="label">易错</span>
+      <code class="inline" style="font-size:28px;">5 / 2 = 2</code>（不是 2.5）；
+      若想得到 2.5，写成 <code class="inline" style="font-size:28px;">5.0 / 2</code> 或 <code class="inline" style="font-size:28px;">(double)5 / 2</code>。
+    </div>
+
+  </div>
+</section>
+
+<!-- ================= 14 练习二（2）对比 ================= -->
+<section class="slide">
+  <div class="s-title">练习二（2）：求三位整数各位数字之和</div>
+  <div class="s-body">
+    <div class="box tip" style="margin-top:0;">
+      <span class="label">题目</span>
+      输入一个三位正整数，分别求它的百位、十位、个位，输出三个数字之和。
+    </div>
+
+    <div class="two" style="margin-top:14px; align-items:start;">
+
+      <!-- 左栏：错误写法 -->
+      <div>
+        <div class="s-sub blue" style="margin-top:0; color:#c0392b; border-left-color:#c0392b;">
+          ❌ 错误写法：输入三个整数
+        </div>
+        <pre class="code" style="font-size:28px; padding:10px 18px; line-height:1.5; margin-top:0;"><span class="kw">int</span> a, b, c;
+scanf(<span class="str">"%d%d%d"</span>, &amp;a, &amp;b, &amp;c);
+printf(<span class="str">"%d"</span>, a + b + c);</pre>
+        <p style="font-size:28px; line-height:1.5; margin-top:8px;">
+          <b>输入：</b><code class="inline" style="font-size:28px;">1 2 3 ⏎</code>
+          <b>　　　　输出：</b><code class="inline" style="font-size:28px;">6</code>
+        </p>
+        <div class="box red" style="margin-top:8px; font-size:28px; line-height:1.5;">
+          <span class="label">问题</span>
+          按scanf写法，输入时三个数必须分隔开"1 2 3"——<b>对输入格式要求不匹配</b>。
+        </div>
+      </div>
+
+      <!-- 右栏：正确写法 -->
+      <div>
+        <div class="s-sub blue" style="margin-top:0; color:#2e8b57; border-left-color:#2e8b57;">
+          ✅ 正确写法：输入一个三位整数
+        </div>
+        <pre class="code" style="font-size:28px; padding:10px 18px; line-height:1.4; margin-top:0;"><span class="kw">int</span> x, a, b, c;
+scanf(<span class="str">"%d"</span>, &amp;x);
+a = x / <span class="num">100</span>;　　　　　　// 求百位
+b = x / <span class="num">10</span> % <span class="num">10</span>;  　　　// 求十位
+c = x % <span class="num">10</span>;  　　　　　　// 求个位
+printf(<span class="str">"%d\n"</span>, a + b + c);</pre>
+        <p style="font-size:28px; line-height:1.5; margin-top:8px;">
+          <b>输入：</b><code class="inline" style="font-size:28px;">123⏎</code>
+          <b>　　　　输出：</b><code class="inline" style="font-size:28px;">6</code>
+        </p>
+       
+      </div>
+
+    </div>
+
+    <div class="box warn" style="margin-top:14px; font-size:30px; line-height:1.55;">
+      <span class="label">结论</span>
+      读题目时，要看清<b>输入格式</b>：<br>
+      题目说"输入一个三位整数"，就必须写 <code class="inline" style="font-size:30px;">scanf("%d", &amp;x);</code>，不能写成三个 <code class="inline" style="font-size:30px;">%d</code>。
+    </div>
+
+  </div>
+</section>
+
+<!-- ================= 14 scanf 返回值 ================= -->
+<section class="slide">
+  <div class="s-title">scanf 返回值：判断输入是否成功</div>
+  <div class="s-body">
+
+    <div class="box key" style="margin-top:0; font-size:30px; line-height:1.65;">
+      <span class="label">定义</span>
+      <code class="inline" style="font-size:28px;">scanf</code> 的返回值是一个<b>整数</b>，表示<b>成功读入的数据个数,一个都没读到，返回 0。</b>
+    </div>
+
+    <div class="two" style="margin-top:14px; align-items:start;">
+
+      <!-- 左栏：单个数 -->
+      <div>
+        <div class="s-sub blue" style="margin-top:0;">读 1 个数</div>
+        <pre class="code" style="font-size:28px; padding:10px 18px; line-height:1.4; margin-top:0;"><span class="kw">int</span> x;
+<span class="kw">int</span> n = scanf(<span class="str">"%d"</span>, &amp;x);
+printf(<span class="str">"n=%d, x=%d\n"</span>, n, x);</pre>
+        <table class="tb" style="margin-top:8px; font-size:28px; line-height:1.4;">
+          <thead><tr><th>输入</th><th>n</th><th>x</th></tr></thead>
+          <tbody>
+            <tr><td><code class="inline" style="font-size:28px;">123⏎</code></td><td class="c-green">1</td><td>123</td></tr>
+            <tr><td><code class="inline" style="font-size:28px;">abc⏎</code></td><td class="c-red">0</td><td>原值</td></tr>
+          </tbody>
+        </table>
+        <p style="font-size:28px; line-height:1.5; margin-top:8px;">
+          读成功 → <b>n=1</b>；<br>
+          读失败（遇到非数字）→ <b>n=0</b>，x 保持原值。
+        </p>
+      </div>
+
+      <!-- 右栏：多个数 -->
+      <div>
+        <div class="s-sub blue" style="margin-top:0;">读 2 个数</div>
+        <pre class="code" style="font-size:28px; padding:10px 18px; line-height:1.4; margin-top:0;"><span class="kw">int</span> a, b;
+<span class="kw">int</span> n = scanf(<span class="str">"%d%d"</span>, &amp;a, &amp;b);
+printf(<span class="str">"n=%d\n"</span>, n);</pre>
+        <table class="tb" style="margin-top:8px; font-size:28px; line-height:1.4;">
+          <thead><tr><th>输入</th><th>n</th><th>结果</th></tr></thead>
+          <tbody>
+            <tr><td><code class="inline" style="font-size:28px;">12 34⏎</code></td><td class="c-green">2</td><td>a=12, b=34</td></tr>
+            <tr><td><code class="inline" style="font-size:28px;">12⏎</code></td><td class="c-red">1</td><td>a=12, b 原值</td></tr>
+            <tr><td><code class="inline" style="font-size:28px;">ab⏎</code></td><td class="c-red">0</td><td>a、b 都保持原值</td></tr>
+          </tbody>
+        </table>
+        <p style="font-size:28px; line-height:1.5; margin-top:8px;">
+          有几个数读成功，返回值就是几。
+        </p>
+      </div>
+
+    </div>
+
+    
+  </div>
+</section>
+
+<!-- ================= 14 练习二（二）scanf 应用 ================= -->
+<section class="slide">
+  <div class="s-title">scanf 返回值有什么用</div>
+  <div class="s-body">
+
+    <p style="font-size:30px; line-height:1.6; margin-bottom:14px;">
+      <b>核心用途：</b>判断输入是否成功，避免"读失败还用错数据"。
+    </p>
+
+    <div class="two" style="align-items:start;">
+
+      <!-- 左栏：不用返回值 -->
+      <div class="card red">
+        <h4 style="font-size:30px;"><span class="ico">❌</span>不看返回值</h4>
+        <pre class="code" style="font-size:28px; padding:10px 18px; line-height:1.4; margin-top:8px;"><span class="kw">int</span> x;
+scanf(<span class="str">"%d"</span>, &amp;x);
+printf(<span class="str">"x=%d\n"</span>, x);</pre>
+        <p style="font-size:28px; line-height:1.55; margin-top:8px;">
+          输入 <code class="inline" style="font-size:28px;">abc</code> 时：<br>
+          · <code class="inline" style="font-size:28px;">x</code> 保持原值，通常是随机数<br>
+          · 但程序<b>毫不知情</b>，继续往下执行<br>
+          · 输出结果不可预知
+        </p>
+      </div>
+
+      <!-- 右栏：看返回值 -->
+      <div class="card green">
+        <h4 style="font-size:30px;"><span class="ico">✅</span>看返回值</h4>
+        <pre class="code" style="font-size:28px; padding:10px 18px; line-height:1.4; margin-top:8px;"><span class="kw">int</span> x;
+<span class="kw">if</span> (scanf(<span class="str">"%d"</span>, &amp;x) == <span class="num">1</span>) {
+    printf(<span class="str">"读入成功: %d\n"</span>, x);
+} <span class="kw">else</span> {
+    printf(<span class="str">"输入无效\n"</span>);
+}</pre>
+        <p style="font-size:28px; line-height:1.55; margin-top:8px;">
+          输入 <code class="inline" style="font-size:28px;">abc</code> 时：<br>
+          · 返回值是 0，不满足 <code class="inline" style="font-size:28px;">== 1</code><br>
+          · 程序走 else 分支，提示"输入无效"<br>
+          · <b>不会用错数据</b>
+        </p>
+      </div>
+
+    </div>
+
+    <div class="box tip" style="margin-top:16px; font-size:28px; line-height:1.6;">
+      <span class="label">课堂练习</span>
+      在第 14 页的"求三位整数各位数字之和"程序里，
+      用 <code class="inline" style="font-size:26px;">if (scanf("%d", &amp;x) == 1)</code> 判断输入是否合法，
+      若不合法则输出"输入无效"。
+    </div>
+
+  </div>
+</section>
+
+<!-- ================= 15 类型转换：为什么需要 ================= -->
+<section class="slide">
+  <div class="s-title">为什么需要类型转换</div>
+  <div class="s-body">
+    <div class="two">
+      <div class="card">
+        <h4 style="font-size:32px;"><span class="ico">✅</span>类型相同</h4>
+        <p style="font-size:32px; line-height:1.7;">
+          直接运算，结果类型不变<br><br>
+          <code class="inline" style="font-size:30px;">1 / 2</code> → 两个 int，结果 <b>0</b>（int）<br>
+          <code class="inline" style="font-size:30px;">1.0 / 2.0</code> → 两个 double，结果 <b>0.5</b>
+        </p>
+      </div>
+      <div class="card orange">
+        <h4 style="font-size:32px;"><span class="ico">🔄</span>类型不同</h4>
+        <p style="font-size:32px; line-height:1.7;">
+          需转换为同一类型再运算<br><br>
+          <code class="inline" style="font-size:30px;">1.0 / 2</code> → int 转 double，结果 <b>0.5</b><br>
+          <code class="inline" style="font-size:30px;">'a' + 3</code> → char 转 int，结果 <b>100</b>
+        </p>
+      </div>
+    </div>
+    <div class="box key" style="margin-top:14px; font-size:32px; line-height:1.7;">
+      <span class="label">核心</span>
+      C 语言中类型转换有两种方式：<b>隐式转换（自动）</b>和<b>强制转换（手动）</b>。
+    </div>
+  </div>
+</section>
+
+<!-- ================= 16 隐式类型转换 ================= -->
+<section class="slide">
+  <div class="s-title">隐式类型转换（自动）</div>
+  <div class="s-body" style="display:flex; flex-direction:column; justify-content:center;">
+
+    <p style="font-size:32px; line-height:1.7; margin-bottom:18px;">
+      由编译系统自动完成，程序员无需干预。<br>
+      方向是：向<b>字节数多（精度高）</b>的类型转换。
+    </p>
+
+    <table class="tb" style="font-size:30px; line-height:1.6;">
+      <thead>
+        <tr><th style="width:30%">规则</th><th style="width:70%">示例</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th style="padding:18px 22px;">float → double</th>
+          <td style="padding:18px 22px;">
+            表达式中只要有 float，一律先转 double：<br>
+            <code class="inline" style="font-size:28px;">5 / 2.0</code> → <b>2.5</b>
+          </td>
+        </tr>
+        <tr>
+          <th style="padding:18px 22px;">char → int</th>
+          <td style="padding:18px 22px;">
+            字符参与运算用 ASCII 码值：<br>
+            <code class="inline" style="font-size:28px;">'a' + 3</code> → <b>100</b>
+          </td>
+        </tr>
+        <tr>
+          <th style="padding:18px 22px;">int → double</th>
+          <td style="padding:18px 22px;">
+            <code class="inline" style="font-size:28px;">5.0 / 2</code> → 2 转 double → <b>2.5</b>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="box tip" style="margin-top:20px; font-size:32px; line-height:1.7;">
+      <span class="label">方向</span>
+      char/short → int → unsigned → long → double，<b>由低到高</b>自动提升。
+    </div>
+
+  </div>
+</section>
+
+<!-- ================= 17 混合运算类型推导 ================= -->
+<section class="slide">
+  <div class="s-title">混合运算与自动类型转换</div>
+  <div class="s-body">
+    <div class="box key" style="margin-top:0;">
+      <span class="label">自动类型转换</span>
+      不同类型的数据在运算时，先转换为同类型再运算，由<b>编译系统自动完成</b>。
+    </div>
+    <pre class="code" style="margin-top:10px;"><span class="kw">char</span> ch = <span class="num">1</span>;
+<span class="kw">int</span> i = <span class="num">1</span>;
+<span class="kw">float</span> f = <span class="num">1.5</span>;
+<span class="kw">double</span> d = <span class="num">1.3</span>, dd;
+
+dd = (ch / i) + (f * d) + (f + i);</pre>
+    <table class="tb">
+      <thead><tr><th style="width:34%">子表达式</th><th style="width:33%">运算类型</th><th style="width:33%">结果类型</th></tr></thead>
+      <tbody>
+        <tr><td><code class="inline">ch / i</code></td><td>char ÷ int → int</td><td>int</td></tr>
+        <tr><td><code class="inline">f * d</code></td><td>float × double → double</td><td>double</td></tr>
+        <tr><td><code class="inline">f + i</code></td><td>float + int → double</td><td>double</td></tr>
+        <tr><td>三项相加</td><td>int + double + double</td><td>double</td></tr>
+        <tr><td>赋给 dd</td><td>double → double</td><td>double</td></tr>
+      </tbody>
+    </table>
+    <div class="box tip" style="margin-top:10px;">
+      <span class="label">转换方向</span>
+      <b>char/short → int → unsigned → long → float → double</b>，由低到高。
+    </div>
+  </div>
+</section>
+
+<!-- ================= 18 赋值中的隐式转换 ================= -->
+<section class="slide">
+  <div class="s-title">赋值表达式中的隐式类型转换</div>
+  <div class="s-body">
+    <p style="font-size:32px; line-height:1.7; margin-bottom:14px;">
+      <b>原则：</b>右边的值会转换为左边变量的类型。
+    </p>
+    <div class="two">
+      <div class="card green">
+        <h4 style="font-size:32px;"><span class="ico">⬆️</span>低 → 高</h4>
+        <p style="font-size:32px; line-height:1.7;">
+          整型赋给实型：<br>
+          值以浮点形式存储，<b>大小不变</b><br><br>
+          <code class="inline" style="font-size:30px;">int i = 10;</code><br>
+          <code class="inline" style="font-size:30px;">float f = i;</code> → f = 10.0
+        </p>
+      </div>
+      <div class="card red">
+        <h4 style="font-size:32px;"><span class="ico">⚠️</span>高 → 低</h4>
+        <p style="font-size:32px; line-height:1.7;">
+          实型赋给整型：<br>
+          <b>直接截断小数部分</b>（不是四舍五入）<br><br>
+          <code class="inline" style="font-size:30px;">int i = 2.56;</code> → i = 2<br>
+          <code class="inline" style="font-size:30px;">int i = 2.99;</code> → i = 2
+        </p>
+      </div>
+    </div>
+    <div class="box warn" style="margin-top:14px; font-size:32px; line-height:1.7;">
+      <span class="label">警告</span>
+      高精度 → 低精度可能<b>丢失信息</b>，使用时要特别小心。
+    </div>
+  </div>
+</section>
+
+<!-- ================= 19 强制类型转换 ================= -->
+<section class="slide">
+  <div class="s-title">强制类型转换</div>
+  <div class="s-body">
+    <div class="s-sub blue">一般格式</div>
+    <pre class="code">(类型名)(表达式)</pre>
+    <div class="s-sub blue">示例对比</div>
+    <pre class="code">(<span class="kw">double</span>)<span class="num">3</span> / <span class="num">2</span>       <span class="cmt">// 3 先转 double，结果 1.5</span>
+(<span class="kw">double</span>)(<span class="num">3</span> / <span class="num">2</span>)     <span class="cmt">// 先算 3/2 = 1，再转 double → 1.0</span>
+
+(<span class="kw">int</span>)<span class="num">3.6</span>            <span class="cmt">// 截断小数 → 3</span>
+(<span class="kw">int</span>)(x + <span class="num">7.4</span>)      <span class="cmt">// 先算 x+7.4，再整体截断</span>
+(<span class="kw">int</span>)x + <span class="num">7.4</span>        <span class="cmt">// 先截断 x，再加 7.4</span></pre>
+    <div class="box key" style="margin-top:10px;">
+      <span class="label">关键</span>
+      强制转换只改变<b>表达式结果的类型</b>，<b>变量本身的值及类型不会改变</b>。<br>
+      如 <code class="inline">float x = 3.6;</code>，<code class="inline">(int)x</code> 之后，x 的值还是 3.6。
+    </div>
+  </div>
+</section>
+
+<!-- ================= 20 强制转换易错例 ================= -->
+<section class="slide">
+  <div class="s-title">强制类型转换的易错点</div>
+  <div class="s-body" style="display:flex; flex-direction:column; justify-content:center; gap:22px;">
+
+    <div class="card" style="padding:18px 28px;">
+      <h4 style="font-size:32px; margin-bottom:10px;">
+        <span class="ico">⚠️</span>易错例一：括号位置决定作用范围
+      </h4>
+      <pre class="code" style="font-size:30px; padding:10px 18px; line-height:1.7; margin-top:0;"><span class="kw">float</span> x = <span class="num">3.8</span>;
+<span class="kw">int</span> a = (<span class="kw">int</span>)x + <span class="num">7.4</span>;      <span class="cmt">// (int)3.8 = 3，3 + 7.4 = 10.4 → a = 10</span>
+<span class="kw">int</span> b = (<span class="kw">int</span>)(x + <span class="num">7.4</span>);    <span class="cmt">// x + 7.4 = 11.2，(int)11.2 = 11 → b = 11</span></pre>
+      <p style="font-size:30px; line-height:1.7; color:#c0392b; margin-top:8px;">
+        <b>结论：</b>括号的位置决定了强制转换的作用范围。
+      </p>
+    </div>
+
+    <div class="card orange" style="padding:18px 28px;">
+      <h4 style="font-size:32px; margin-bottom:10px;">
+        <span class="ico">⚠️</span>易错例二：不改变变量本身的类型
+      </h4>
+      <pre class="code" style="font-size:30px; padding:10px 18px; line-height:1.7; margin-top:0;"><span class="kw">float</span> x = <span class="num">2.8</span>;
+x = (<span class="kw">int</span>)x;             <span class="cmt">// x 的值变为 2.0，但 x 的类型还是 float</span>
+printf(<span class="str">"x=%f"</span>, x);        <span class="cmt">// 输出 x=2.000000</span></pre>
+    </div>
+
+  </div>
+</section>
+
+<!-- ================= 21 数学表达式转 C ================= -->
+<section class="slide">
+  <div class="s-title">把数学表达式写成 C 表达式</div>
+  <div class="s-body">
+    <table class="tb">
+      <thead><tr><th style="width:40%">数学表达式</th><th style="width:60%">C 表达式</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>\(s = \dfrac{1}{xyz}\)</td>
+          <td><code class="inline">s = 1.0 / (x*y*z)</code><br><code class="inline">s = 1.0/x/y/z</code></td>
+        </tr>
+        <tr>
+          <td>\(s = \dfrac{1}{4}\left(x^2 + y^{-3}\right)\)</td>
+          <td><code class="inline">s = 0.25*(x*x + 1.0/y/y/y)</code></td>
+        </tr>
+        <tr>
+          <td>\(\dfrac{\tan x + \cot x}{\sin x + \cos x}\)</td>
+          <td><code class="inline">(tan(x) + 1/tan(x)) / (sin(x) + cos(x))</code><br><span style="font-size:22px;color:#c0392b;">注意：x 是弧度，不是角度</span></td>
+        </tr>
+        <tr>
+          <td>\(\sqrt{\dfrac{e^x}{y - 2}}\)</td>
+          <td><code class="inline">sqrt(exp(x) / (y-2))</code></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="box warn" style="margin-top:6px;">
+      <span class="label">易错写法</span>
+      <code class="inline">s = 0.25(x*x + 1.0/y/y/y)</code> ✗ —— <b>缺少乘号 <code class="inline">*</code></b>，C 语言不会自动补乘号。
+    </div>
+    <div class="box tip" style="margin-top:6px;">
+      <span class="label">使用数学函数需注意</span>
+      ① 必须写 <code class="inline">#include &lt;math.h&gt;</code>；
+      ② 参数个数、类型、单位要正确；
+      ③ 注意函数返回值的类型和单位。
+    </div>
+  </div>
+</section>
+
+<!-- ================= 22 格式匹配陷阱 ================= -->
+<section class="slide">
+  <div class="s-title">格式符与数据类型必须匹配</div>
+  <div class="s-body">
+    <div class="box red" style="margin-top:0;">
+      <span class="label">警告</span>
+      printf / scanf 中，如果格式符与变量类型不一致，变量将得不到正确的数据，或输出结果错误。
+    </div>
+    <table class="tb" style="margin-top:12px;">
+      <thead><tr><th style="width:45%">错误写法</th><th style="width:55%">原因</th></tr></thead>
+      <tbody>
+        <tr><td class="c-red">printf("%d", 6 * fabs(-4));</td><td>fabs() 返回 double，应用 %f</td></tr>
+        <tr><td class="c-red">printf("%f", 6 * abs(-4));</td><td>abs() 返回 int，应用 %d</td></tr>
+        <tr><td class="c-red">scanf("%f", &amp;d);（d 是 double）</td><td>double 必须用 %lf</td></tr>
+        <tr><td class="c-red">scanf("%d", &amp;x);（x 是 float）</td><td>float 必须用 %f</td></tr>
+      </tbody>
+    </table>
+    <div class="box tip" style="margin-top:12px;">
+      <span class="label">养成习惯</span>
+      写代码时，时刻问自己：<b>这个数据是什么类型？应该以什么格式输入输出？</b>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 23 字符输入输出（基本） ================= -->
+<section class="slide">
+  <div class="s-title">字符输入输出：getchar() 与 putchar()</div>
+  <div class="s-body">
+
+    <div class="two">
+      <div class="card">
+        <h4 style="font-size:30px;"><span class="ico">⌨️</span>getchar()　<b>字符输入</b></h4>
+        <p style="font-size:28px; line-height:1.7;">
+          <code class="inline" style="font-size:28px;">ch = getchar();</code><br>
+          等价于 <code class="inline" style="font-size:28px;">scanf("%c", &amp;ch);</code>
+        </p>
+      </div>
+      <div class="card orange">
+        <h4 style="font-size:30px;"><span class="ico">🖨️</span>putchar()　<b>字符输出</b></h4>
+        <p style="font-size:28px; line-height:1.7;">
+          <code class="inline" style="font-size:28px;">putchar(ch);</code><br>
+          等价于 <code class="inline" style="font-size:28px;">printf("%c", ch);</code>
+        </p>
+      </div>
+    </div>
+
+    <div class="s-sub blue" style="margin-top:18px;">示例：putchar 的三种写法</div>
+    <pre class="code" style="font-size:28px; padding:14px 22px; line-height:1.55; margin-top:0;"><span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+
+<span class="kw">int</span> main()
+{
+    putchar(<span class="num">65</span>);        <span class="cmt">// 输出字符 'A'（ASCII 65）</span>
+    putchar(<span class="str">'A'</span>);      <span class="cmt">// 输出字符 'A'</span>
+    putchar(<span class="str">'a'</span>-<span class="num">32</span>);   <span class="cmt">// 输出字符 'A'（小写转大写）</span>
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre>
+
+    <div class="two" style="margin-top:12px; align-items:start;">
+      <div>
+        <div class="s-sub blue" style="margin-top:0;">运行结果</div>
+        <div class="out" style="font-size:28px; line-height:1.5;">AAA</div>
+      </div>
+      <div class="box tip" style="margin-top:0; font-size:28px; line-height:1.6;">
+        <span class="label">观察</span>
+        <code class="inline" style="font-size:26px;">65</code>、<code class="inline" style="font-size:26px;">'A'</code>、<code class="inline" style="font-size:26px;">'a'-32</code>
+        三种写法，结果都是字符 <b>A</b>。
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ================= 24 字符与整数运算 ================= -->
+<section class="slide">
+  <div class="s-title">字符与整数的混合运算</div>
+  <div class="s-body">
+    <div class="s-sub blue">字符可以直接参与算术运算</div>
+    <pre class="code"><span class="kw">char</span> ch = <span class="str">'A'</span>;
+<span class="kw">int</span> result = ch + <span class="num">10</span>;      <span class="cmt">// 65 + 10 = 75</span>
+printf(<span class="str">"%c"</span>, result);        <span class="cmt">// 输出 'K' (ASCII 75)</span></pre>
+    <div class="two" style="margin-top:12px;">
+      <div class="card green">
+        <h4><span class="ico">🔁</span>大小写转换</h4>
+        <p>
+          大写转小写：<code class="inline">ch = ch + 32;</code><br>
+          小写转大写：<code class="inline">ch = ch - 32;</code>
+        </p>
+      </div>
+      <div class="card orange">
+        <h4><span class="ico">🔢</span>数字字符 ↔ 数字</h4>
+        <p>
+          字符转数字：<code class="inline">int num = ch - '0';</code><br>
+          数字转字符：<code class="inline">char ch = num + '0';</code>
+        </p>
+      </div>
+    </div>
+    <div class="box tip" style="margin-top:12px;">
+      <span class="label">应用</span>
+      把字符 <code class="inline">'8'</code>、<code class="inline">'5'</code>、<code class="inline">'2'</code>、<code class="inline">'0'</code> 拼成整数 8520：<br>
+      <code class="inline">value = (d1-'0')*1000 + (d2-'0')*100 + (d3-'0')*10 + (d4-'0');</code>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 24 字符输入：连续读 3 个字符 ================= -->
+<section class="slide">
+  <div class="s-title">连续读 3 个字符：空格和回车也是字符</div>
+  <div class="s-body">
+
+    <div class="box tip" style="margin-top:0; font-size:30px; line-height:1.6;">
+      <span class="label">注意</span>
+      用 <code class="inline" style="font-size:28px;">%c</code> 读字符时，<b>空格、回车、Tab 都是有效字符</b>，会被原样读入。
+    </div>
+
+    <div class="two wide" style="margin-top:14px; align-items:start;">
+
+      <!-- 左栏：代码 -->
+      <pre class="code" style="font-size:26px; padding:14px 22px; line-height:1.5; margin-top:0;"><span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+
+<span class="kw">int</span> main()
+{
+    <span class="kw">char</span> a, b, c;
+    scanf(<span class="str">"%c%c%c"</span>, &amp;a, &amp;b, &amp;c);
+    printf(<span class="str">"[%c][%c][%c]\n"</span>, a, b, c);
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre>
+
+      <!-- 右栏：三种输入对照 -->
+      <div>
+        <div class="s-sub blue" style="margin-top:0;">三种输入方式对照</div>
+        <table class="tb" style="font-size:24px; line-height:1.5;">
+          <thead>
+            <tr><th style="width:40%">输入</th><th>输出</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code class="inline" style="font-size:24px;">ABC</code> ⏎</td>
+              <td><code class="inline" style="font-size:24px;">[A][B][C]</code> ✅</td>
+            </tr>
+            <tr>
+              <td><code class="inline" style="font-size:24px;">A B</code> ⏎</td>
+              <td><code class="inline" style="font-size:24px;">[A][ ][B]</code> ❌</td>
+            </tr>
+            <tr>
+              <td><code class="inline" style="font-size:24px;">A</code> ⏎ <code class="inline" style="font-size:24px;">B</code> ⏎</td>
+              <td><code class="inline" style="font-size:24px;">[A][⏎][B]</code> ❌</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+    <div class="box warn" style="margin-top:14px; font-size:28px; line-height:1.65;">
+      <span class="label">结论</span>
+      想读入 <code class="inline" style="font-size:26px;">A</code>、<code class="inline" style="font-size:26px;">B</code>、<code class="inline" style="font-size:26px;">C</code> 三个字符，
+      必须<b>连续输入</b> <code class="inline" style="font-size:26px;">ABC</code>，中间不能加空格或回车。
+    </div>
+
+  </div>
+</section>
+
+<!-- ================= 25 输入三位整数的四种写法 ================= -->
+<section class="slide">
+  <div class="s-title">输入"三位整数"的四种写法对比</div>
+  <div class="s-body">
+
+    <div class="box tip" style="margin-top:0; font-size:28px; line-height:1.55;">
+      <span class="label">题目</span>
+      输入一个三位整数 <code class="inline" style="font-size:26px;">123</code>，求各位数字之和 → <code class="inline" style="font-size:26px;">6</code>
+    </div>
+
+    <div class="four-col" style="display:grid; grid-template-columns:1fr 1fr 1fr 1fr; gap:12px; margin-top:14px;">
+
+      <!-- 写法 1：推荐 -->
+      <div class="card green" style="padding:12px 14px;">
+        <h4 style="font-size:26px; margin-bottom:8px; line-height:1.3;">
+          ✅ 读整数 + 拆分<br>
+          <span style="font-size:26px; color:#2e8b57;">（推荐）</span>
+        </h4>
+        <pre class="code" style="font-size:26px; padding:8px 12px; line-height:1.4; margin-top:0; white-space:pre-wrap;">int x, a, b, c;
+scanf("%d", &x);
+a = x / 100;
+b = x / 10 % 10;
+c = x % 10;
+printf("%d", a+b+c);</pre>
+        <p style="font-size:26px; line-height:1.5; margin-top:8px;">
+          <b>输入：</b><code class="inline" style="font-size:26px;">123⏎</code><br>
+          <b>输出：</b><code class="inline" style="font-size:26px;">6</code> ✅
+        </p>
+        <p style="font-size:26px; color:#2e8b57; margin-top:6px; line-height:1.4;">
+          与题目格式一致
+        </p>
+      </div>
+
+      <!-- 写法 2：输入三个整数 -->
+      <div class="card red" style="padding:12px 14px;">
+        <h4 style="font-size:26px; margin-bottom:8px; line-height:1.3;">
+          ❌ 输入三个整数<br>
+          <span style="font-size:22px; color:#c0392b;">（不推荐）</span>
+        </h4>
+        <pre class="code" style="font-size:26px; padding:8px 12px; line-height:1.4; margin-top:0; white-space:pre-wrap;">int a, b, c;
+scanf("%d%d%d",
+      &a, &b, &c);
+printf("%d", a+b+c);</pre>
+        <p style="font-size:26px; line-height:1.5; margin-top:8px;">
+          <b>输入：</b><code class="inline" style="font-size:26px;">1 2 3⏎</code><br>
+          <b>输出：</b><code class="inline" style="font-size:26px;">6</code>
+        </p>
+        <p style="font-size:26px; color:#c0392b; margin-top:6px; line-height:1.4;">
+          格式与题目不符
+        </p>
+      </div>
+
+      <!-- 写法 3：输入三个字符 -->
+      <div class="card red" style="padding:12px 14px;">
+        <h4 style="font-size:26px; margin-bottom:8px; line-height:1.3;">
+          ❌ 输入三个字符<br>
+          <span style="font-size:22px; color:#c0392b;">（不推荐）</span>
+        </h4>
+        <pre class="code" style="font-size:26px; padding:8px 12px; line-height:1.4; margin-top:0; white-space:pre-wrap;">char a, b, c;
+scanf("%c%c%c",
+      &a, &b, &c);
+printf("%d", 
+       a+b+c-3*'0'); // 还要转数字再加
+</pre>
+        <p style="font-size:26px; line-height:1.5; margin-top:8px;">
+          <b>输入：</b><code class="inline" style="font-size:26px;">123⏎</code><br>
+          读到 <code class="inline" style="font-size:26px;">'1'</code> <code class="inline" style="font-size:26px;">'2'</code> <code class="inline" style="font-size:26px;">'3'</code>
+        </p>
+        <p style="font-size:26px; color:#c0392b; margin-top:6px; line-height:1.4;">
+          还要转换，多此一举
+        </p>
+      </div>
+
+      <!-- 写法 4：%1d 逐位读 -->
+      <div class="card orange" style="padding:12px 14px;">
+        <h4 style="font-size:26px; margin-bottom:8px; line-height:1.3;">
+          ⚠️ %1d 逐位读<br>
+          <span style="font-size:26px; color:#b95a05;">（非标准）</span>
+        </h4>
+        <pre class="code" style="font-size:26px; padding:8px 12px; line-height:1.4; margin-top:0; white-space:pre-wrap;">int a, b, c;
+scanf("%1d%1d%1d",
+      &a, &b, &c);
+printf("%d", a+b+c);</pre>
+        <p style="font-size:26px; line-height:1.5; margin-top:8px;">
+          <b>输入：</b><code class="inline" style="font-size:26px;">123⏎</code><br>
+          <b>输出：</b><code class="inline" style="font-size:26px;">6</code>
+        </p>
+        <p style="font-size:26px; color:#b95a05; margin-top:6px; line-height:1.4;">
+          非通用写法，不推荐
+        </p>
+      </div>
+
+    </div>
+
+    <div class="box warn" style="margin-top:14px; font-size:26px; line-height:1.55;">
+      <span class="label">结论</span>
+      题目说"输入一个三位整数"，就要用 <code class="inline" style="font-size:26px;">scanf("%d", &amp;x);</code> 读入，再用 <code class="inline" style="font-size:26px;">/</code> 和 <code class="inline" style="font-size:26px;">%</code> 拆分。
+      <br><b>输入格式必须与题目要求完全一致</b>，否则自动评测会判错。
+    </div>
+
+  </div>
+</section>
+
+<!-- ================= 25 输入缓冲区问题 ================= -->
+<section class="slide">
+  <div class="s-title">输入缓冲区问题：一个经典 Bug</div>
+  <div class="s-body">
+    <div class="two wide">
+      <pre class="code"><span class="cmt">// 问题代码（有 Bug）</span>
+<span class="kw">int</span> choice;
+<span class="kw">char</span> confirm;
+
+printf(<span class="str">"请输入您的选择（1-3）："</span>);
+scanf(<span class="str">"%d"</span>, &amp;choice);
+
+printf(<span class="str">"确认继续吗？(y/n)："</span>);
+confirm = getchar();    <span class="cmt">// ← 这里读到的是回车符！</span></pre>
+      <div>
+        <div class="s-sub blue" style="margin-top:0;">为什么会这样</div>
+        <p style="font-size:32px;line-height:1.7;">
+          输入整数后按回车，<b>回车符留在缓冲区</b>；<br>
+          紧接着的 <code class="inline">getchar()</code> 直接读走这个回车符，<br>
+          而不是等用户输入 y 或 n。
+        </p>
+      </div>
+    </div>
+    <div class="box tip" style="margin-top:12px;">
+      <span class="label">解决方法</span><br>
+      ① 在 <code class="inline">getchar()</code> 前加一个 <code class="inline">getchar();</code> 吃掉回车；<br>
+      ② 用 <code class="inline">scanf(" %c", &amp;ch);</code>（%c 前加空格）跳过前面所有空白字符。<br>
+      ② 用 <code class="inline">scanf("%d\n", &amp;choice);</code>（%d 后加空格也可以）表示忽略整数之后的所有空白字符。
+    </div>
+  </div>
+</section>
+
+<!-- ================= 26 练习三 ================= -->
+<section class="slide">
+  <div class="s-title">练习三：字符处理</div>
+  <div class="s-body">
+   
+    <div class="two" style="margin-top:14px; align-items:start;">
+
+      <!-- 左栏：练习 1 -->
+      <div>
+        <div class="s-sub blue" style="margin-top:0;">练习 1：大写字母转小写</div>
+        <p style="font-size:26px; line-height:1.6; margin:8px 0;">
+          <b>场景：</b>输入一个大写字母，输出对应的小写字母。
+        </p>
+        <pre class="code" style="font-size:24px; padding:10px 18px; line-height:1.45; margin-top:0;"><span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="kw">int</span> main()
+{
+    <span class="kw">char</span> ch;
+    ch = getchar();
+    putchar(ch + <span class="num">32</span>);     <span class="cmt">// 大写转小写</span>
+    putchar(<span class="str">'\n'</span>);
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre>
+        <p style="font-size:24px; line-height:1.5; margin-top:8px;">
+          <b>输入：</b><code class="inline" style="font-size:24px;">A⏎</code>
+          <b>　　　输出：</b><code class="inline" style="font-size:24px;">a</code>
+        </p>
+        <div class="box tip" style="margin-top:8px; font-size:24px; line-height:1.45;">
+          <span class="label">关键</span>
+          'A' = 65，'a' = 97，差值恰好是 <b>32</b>。
+        </div>
+      </div>
+
+      <!-- 右栏：练习 2 -->
+      <div>
+        <div class="s-sub blue" style="margin-top:0;">练习 2：字符拼整数</div>
+        <p style="font-size:26px; line-height:1.6; margin:8px 0;">
+          <b>场景：</b>输入 3 个数字字符，拼成一个 3 位整数。
+        </p>
+        <pre class="code" style="font-size:24px; padding:10px 18px; line-height:1.45; margin-top:0;"><span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="kw">int</span> main()
+{
+    <span class="kw">char</span> d1, d2, d3;
+    <span class="kw">int</span> value;
+    scanf(<span class="str">"%c%c%c"</span>, &amp;d1, &amp;d2, &amp;d3);
+    value = (d1 - <span class="str">'0'</span>) * <span class="num">100</span>
+          + (d2 - <span class="str">'0'</span>) * <span class="num">10</span>
+          + (d3 - <span class="str">'0'</span>);
+    printf(<span class="str">"value = %d\n"</span>, value);
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre>
+        <p style="font-size:24px; line-height:1.5; margin-top:8px;">
+          <b>输入：</b><code class="inline" style="font-size:24px;">123⏎</code>
+          <b>　　　输出：</b><code class="inline" style="font-size:24px;">value = 123</code>
+        </p>
+        <div class="box tip" style="margin-top:8px; font-size:24px; line-height:1.45;">
+          <span class="label">关键</span>
+          <code class="inline" style="font-size:22px;">'1' - '0' = 1</code>，字符转数字；<br>
+          再按百位、十位、个位拼起来。
+        </div>
+      </div>
+
+    </div>
+
+    <div class="box warn" style="margin-top:14px; font-size:28px; line-height:1.55;">
+      <span class="label">易错点</span>
+      · <code class="inline" style="font-size:26px;">%c</code> 不跳过空格，连续输入不能加分隔符；<br>
+      · 字符参与运算时用的是 <b>ASCII 码</b>，不是字符本身；<br>
+      · <code class="inline" style="font-size:26px;">'1' - '0' = 1</code>，这是字符转数字的标准写法。
+    </div>
+
+  </div>
+</section>
+
+<!-- ================= 27 基本语句 ================= -->
+<section class="slide">
+  <div class="s-title">C 语言的基本语句</div>
+  <div class="s-body">
+    <div class="grid c3"style="font-size:32px;line-height:1.7;">
+      <div class="card">
+        <h4><span class="ico">⭕</span>空语句</h4>
+        <p>单独一个分号 <code class="inline">;</code><br>语法上是一条语句，不做任何操作</p>
+      </div>
+      <div class="card orange">
+        <h4><span class="ico">📝</span>表达式语句</h4>
+        <p>表达式加分号<br><code class="inline">a + b;</code><br> <code class="inline">x = 5;</code></p>
+      </div>
+      <div class="card green">
+        <h4><span class="ico">💾</span>赋值语句</h4>
+        <p>由赋值表达式加分号构成<br><code class="inline">a = b + 3;</code></p>
+      </div>
+      <div class="card purple">
+        <h4><span class="ico">📞</span>函数调用语句</h4>
+        <p>函数调用加分号<br><code class="inline">printf("Hi");</code></p>
+      </div>
+      <div class="card red">
+        <h4><span class="ico">🧱</span>复合语句</h4>
+        <p>用 <code class="inline">{ }</code> 括起来，语法上等同一条语句<br><code class="inline">{ t=a; a=b; b=t; }</code></p>
+      </div>
+      <div class="card">
+        <h4><span class="ico">🔀</span>控制语句</h4>
+        <p><code class="inline">if</code>、<code class="inline">switch</code>、<code class="inline">while</code>、<code class="inline">for</code>、<code class="inline">break</code>、<code class="inline">continue</code>、<code class="inline">goto</code>、<code class="inline">return</code></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 28 顺序结构例：圆面积周长 ================= -->
+<section class="slide">
+  <div class="s-title">顺序结构例：求圆的面积和周长</div>
+  <div class="s-body">
+    <div class="two" style="margin-top:8px; align-items:start; grid-template-columns:0.8fr 1.6fr;">
+
+      <!-- 左栏：算法分析（收窄） -->
+      <div>
+        <div class="s-sub blue" style="margin-top:0;">算法分析</div>
+        <ol style="font-size:28px; line-height:1.7; margin-top:6px;">
+          <li>输入半径 r（double）</li>
+          <li>计算周长 c = 2πr</li>
+          <li>计算面积 s = πr²</li>
+          <li>输出 c 和 s</li>
+        </ol>
+      </div>
+
+      <!-- 右栏：代码（加宽） -->
+      <pre class="code" style="font-size:28px; padding:14px 22px; line-height:1.55; margin-top:0;"><span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="kw">#define</span> PI <span class="num">3.14</span>
+
+<span class="kw">int</span> main()
+{
+    <span class="kw">double</span> r, c, s;
+    scanf(<span class="str">"%lf"</span>, &amp;r);
+    c = <span class="num">2</span> * PI * r;
+    s = PI * r * r;
+    printf(<span class="str">"c=%lf,s=%lf\n"</span>, c, s);
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre>
+
+    </div>
+
+    <div class="box tip" style="margin-top:14px; font-size:28px; line-height:1.55;">
+      <span class="label">要点</span>
+      ① 分析清楚输入量、输出量；② 按"输入 → 计算 → 输出"顺序写；③ 用符号常量 PI 便于修改。
+    </div>
+  </div>
+</section>
+
+<!-- ================= 29 顺序结构例：|1-x^3.6| ================= -->
+<section class="slide">
+  <div class="s-title">顺序结构例：已知 \(y = \left|1 - x^{3.6}\right|\)，输入 x，求 y</div>
+  <div class="s-body">
+    <div class="two wide">
+      <pre class="code"><span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;math.h&gt;</span>
+
+<span class="kw">int</span> main()
+{
+    <span class="kw">double</span> x, y;
+    scanf(<span class="str">"%lf"</span>, &amp;x);
+    y = fabs(<span class="num">1</span> - pow(x, <span class="num">3.6</span>));
+    printf(<span class="str">"y=%.3f\n"</span>, y);
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre>
+      <div>
+        <div class="s-sub blue" style="margin-top:0;">要点</div>
+        <ul style="font-size:28px;line-height:1.7;">
+          <li>用数学函数需 <code class="inline">#include &lt;math.h&gt;</code></li>
+          <li><code class="inline">pow(x, 3.6)</code> 求 x 的 3.6 次幂</li>
+          <li><code class="inline">fabs()</code> 对浮点数求绝对值</li>
+          <li><code class="inline">%.3f</code> 输出保留 3 位小数</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 30 顺序结构例：三角形面积 ================= -->
+<section class="slide">
+  <div class="s-title">顺序结构例：已知三边求三角形面积</div>
+  <div class="s-body">
+    <div class="two" style="margin-top:8px; align-items:start; grid-template-columns:1.3fr 1fr;">
+
+      <!-- 左栏：代码 -->
+      <pre class="code" style="font-size:28px; padding:14px 22px; line-height:1.55; margin-top:0;"><span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;math.h&gt;</span>
+
+<span class="kw">int</span> main()
+{
+    <span class="kw">float</span> a, b, c, s, area;
+    a = <span class="num">3</span>; b = <span class="num">4</span>; c = <span class="num">6</span>;
+    s = <span class="num">1.0</span>/<span class="num">2</span> * (a + b + c);
+    area = sqrt(s*(s-a)*(s-b)*(s-c));
+    printf(<span class="str">"area=%.2f\n"</span>, area);
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre>
+
+      <!-- 右栏：要点 -->
+      <div>
+        <div class="s-sub blue" style="margin-top:0;">要点</div>
+        <ul style="font-size:28px; line-height:1.7;">
+          <li>
+            海伦公式：<br>
+            \[ \text{area} = \sqrt{s(s-a)(s-b)(s-c)} \]
+            其中 \( s = \dfrac{a+b+c}{2} \)
+          </li>
+          <li style="margin-top:8px;">
+            <code class="inline" style="font-size:26px;">1.0/2</code> 保证结果是实数，切记不能写成1/2
+          </li>
+          <li>
+            <code class="inline" style="font-size:26px;">sqrt()</code> 求平方根，需要
+            <code class="inline" style="font-size:26px;">math.h</code>
+          </li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ================= 31 结束页 ================= -->
+<section class="slide end">
+  <div class="end-inner">
+    <h2>谢　谢</h2>
+    <p>下一讲：第 3 章　选择结构程序设计</p>
+  </div>
+</section>
+
+ 
+
+  <!-- 导航 UI -->
+  <div class="pageinfo"><b id="cur">1</b> / <span id="total">37</span></div>
+
+  <div class="nav">
+    <button class="tocbtn" id="btnToc" title="目录（按 O 键）">目录</button>
+    <button id="btnPrev" title="上一页（←）">‹</button>
+    <button id="btnNext" title="下一页（→ / 空格）">›</button>
+  </div>
+
+  <div class="keyhint" id="keyhint">← → 翻页　·　空格下一页　·　B 黑屏　·　O 目录　·　Esc 关闭</div>
+  <div class="progress" id="progress"></div>
+
+  <div class="toc" id="toc">
+    <button class="toc-close" id="btnTocClose">关闭 ✕</button>
+    <h3>目录</h3>
+    <div class="toc-bar"></div>
+    <div class="toc-list" id="tocList"></div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  var stage   = document.getElementById('stage');
+  var slides  = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var total   = slides.length;
+  var cur     = 0;
+  var curEl   = document.getElementById('cur');
+  var bar     = document.getElementById('progress');
+  var btnPrev = document.getElementById('btnPrev');
+  var btnNext = document.getElementById('btnNext');
+  var toc     = document.getElementById('toc');
+  var tocList = document.getElementById('tocList');
+  var keyhint = document.getElementById('keyhint');
+
+  document.getElementById('total').textContent = total;
+
+
+ var tocGroups = [
+  {
+    title: '开场',
+    items: [
+      { i: 0, t: '封面' },
+      { i: 1, t: '本章内容' },
+      { i: 2, t: '本讲内容' },
+      { i: 3, t: '学习目标' }
+    ]
+  },
+  {
+    title: '一、运算符总览',
+    items: [
+      { i: 4, t: '运算符总览' }
+    ]
+  },
+  {
+    title: '二、算术运算',
+    items: [
+      { i: 5, t: '算术运算符' },
+      { i: 6, t: '整除与取余' },
+      { i: 7, t: '求余符号规则' }
+    ]
+  },
+  {
+    title: '三、赋值与自增自减',
+    items: [
+      { i: 8,  t: '复合赋值' },
+      { i: 9,  t: '自增自减' }
+    ]
+  },
+  {
+    title: '四、逗号与 sizeof',
+    items: [
+      { i: 10, t: '逗号运算符' },
+      { i: 11, t: '逗号 vs 分隔符' },
+      { i: 12, t: 'sizeof 运算符' },
+      { i: 13, t: 'sizeof 使用示例' }
+    ]
+  },
+  {
+    title: '五、练习二与 scanf 返回值',
+    items: [
+      { i: 14, t: '练习二（1）：商与余数' },
+      { i: 15, t: '练习二（2）：三位整数' },
+      { i: 16, t: 'scanf 返回值：定义' },
+      { i: 17, t: 'scanf 返回值：应用' }
+    ]
+  },
+  {
+    title: '六、类型转换',
+    items: [
+      { i: 18, t: '为什么需要转换' },
+      { i: 19, t: '隐式类型转换' },
+      { i: 20, t: '混合运算类型推导' },
+      { i: 21, t: '赋值中的转换' },
+      { i: 22, t: '强制类型转换' },
+      { i: 23, t: '强制转换易错例' },
+      { i: 24, t: '数学表达式转 C' },
+      { i: 25, t: '格式匹配陷阱' }
+    ]
+  },
+  {
+    title: '七、字符处理',
+    items: [
+      { i: 26, t: '字符输入输出（基本）' },
+      { i: 27, t: '字符与整数运算' },
+      { i: 28, t: '连续读 3 个字符' },
+      { i: 29, t: '输入三位整数的四种写法' },
+      { i: 30, t: '输入缓冲区问题' },
+      { i: 31, t: '练习三：字符处理' }
+    ]
+  },
+  {
+    title: '八、综合与小结',
+    items: [
+      { i: 32, t: '基本语句' },
+      { i: 33, t: '圆面积周长' },
+      { i: 34, t: '|1-x^3.6| 例题' },
+      { i: 35, t: '三角形面积' },
+      { i: 36, t: '结束页' }
+    ]
+  }
+];
+
+
+
+  tocGroups.forEach(function(group){
+    var g = document.createElement('div');
+    g.className = 'toc-group';
+    var h = document.createElement('div');
+    h.className = 'toc-group-title';
+    h.textContent = group.title;
+    g.appendChild(h);
+    group.items.forEach(function(item){
+      var a = document.createElement('a');
+      a.textContent = item.t;
+      a.onclick = function(){ go(item.i); closeToc(); };
+      g.appendChild(a);
+    });
+    tocList.appendChild(g);
+  });
+
+  function resize(){
+    var s = Math.min(window.innerWidth / 1600, window.innerHeight / 900);
+    stage.style.setProperty('--s', s);
+  }
+  window.addEventListener('resize', resize);
+
+  function go(i){
+    cur = Math.max(0, Math.min(total - 1, i));
+    slides.forEach(function(s, k){ s.classList.toggle('active', k === cur); });
+    curEl.textContent = cur + 1;
+    bar.style.width = ((cur + 1) / total * 100) + '%';
+    btnPrev.disabled = (cur === 0);
+    btnNext.disabled = (cur === total - 1);
+  }
+
+  btnPrev.onclick = function(){ go(cur - 1); this.blur(); hideHint(); };
+  btnNext.onclick = function(){ go(cur + 1); this.blur(); hideHint(); };
+
+  function openToc(){ toc.classList.add('show'); }
+  function closeToc(){ toc.classList.remove('show'); }
+  document.getElementById('btnToc').onclick = function(){
+    toc.classList.contains('show') ? closeToc() : openToc();
+    this.blur();
+  };
+  document.getElementById('btnTocClose').onclick = function(){
+    closeToc(); this.blur();
+  };
+
+  document.addEventListener('keydown', function(e){
+    var k = e.key;
+
+    if (toc.classList.contains('show')) {
+      if (k === 'Escape' || k === 'o' || k === 'O') { e.preventDefault(); closeToc(); }
+      return;
+    }
+
+    if (k === 'ArrowRight' || k === 'ArrowDown' || k === 'PageDown' ||
+        k === ' ' || k === 'Enter') {
+      e.preventDefault(); go(cur + 1); hideHint();
+    } else if (k === 'ArrowLeft' || k === 'ArrowUp' || k === 'PageUp' ||
+               k === 'Backspace') {
+      e.preventDefault(); go(cur - 1); hideHint();
+    } else if (k === 'Home') {
+      e.preventDefault(); go(0); hideHint();
+    } else if (k === 'End') {
+      e.preventDefault(); go(total - 1); hideHint();
+    } else if (k === 'o' || k === 'O') {
+      e.preventDefault(); openToc();
+    } else if (k === 'b' || k === 'B' || k === '.') {
+      e.preventDefault();
+      document.body.classList.toggle('blackout');
+    } else if (k >= '1' && k <= '8') {
+      var map = { '1': 4, '2': 5, '3': 8, '4': 10, '5': 14, '6': 18, '7': 26, '8': 32 };
+      e.preventDefault(); go(map[k]); hideHint();
+    }
+  });
+
+  var wheelLock = false;
+  document.addEventListener('wheel', function(e){
+    if (toc.classList.contains('show')) return;
+    if (wheelLock) return;
+    wheelLock = true;
+    setTimeout(function(){ wheelLock = false; }, 420);
+    if (e.deltaY > 0) go(cur + 1); else go(cur - 1);
+    hideHint();
+  }, { passive: true });
+
+  document.addEventListener('click', function(e){
+    if (toc.classList.contains('show')) return;
+    if (e.target.closest('.nav')) return;
+    if (e.target.closest('.toc')) return;
+    if (e.target.closest('a')) return;
+    if (e.clientX > window.innerWidth / 2) go(cur + 1);
+    else go(cur - 1);
+    hideHint();
+  });
+
+  var tx = 0, ty = 0;
+  document.addEventListener('touchstart', function(e){
+    tx = e.changedTouches[0].clientX;
+    ty = e.changedTouches[0].clientY;
+  }, { passive: true });
+  document.addEventListener('touchend', function(e){
+    var dx = e.changedTouches[0].clientX - tx;
+    var dy = e.changedTouches[0].clientY - ty;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) {
+      go(dx < 0 ? cur + 1 : cur - 1);
+      hideHint();
+    }
+  }, { passive: true });
+
+  var hintTimer = null;
+  function hideHint(){
+    if (keyhint.classList.contains('hide')) return;
+    clearTimeout(hintTimer);
+    hintTimer = setTimeout(function(){ keyhint.classList.add('hide'); }, 500);
+  }
+  hintTimer = setTimeout(function(){ keyhint.classList.add('hide'); }, 6000);
+
+  resize();
+  go(0);
+})();
+</script>
+
+</body>
+</html>
