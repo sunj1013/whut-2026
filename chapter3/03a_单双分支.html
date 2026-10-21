@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>C 程序设计基础 · 第 3 章 选择结构（上）</title>
+<style>
+  :root{
+    --fs-title: 48px; --fs-body: 32px; --fs-other: 30px; --fs-list: 29px;
+    --blue-900:#0a3d63; --blue-700:#124f83; --blue-600:#1a6fb5; --blue-400:#4a97d4; --blue-100:#e8f2fb;
+    --orange:#e8720c; --orange-soft:#fdf1e4;
+    --green:#2e8b57; --green-soft:#eaf7ef;
+    --purple:#8e44ad; --purple-soft:#f5ecfa;
+    --red:#c0392b; --red-soft:#fdeceb;
+    --ink:#1d2b36; --muted:#4d6376; --line:#d6e2ee;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;overflow:hidden;background:var(--blue-900);font-family:"Microsoft YaHei","PingFang SC","Hiragino Sans GB","Source Han Sans SC",sans-serif;-webkit-font-smoothing:antialiased;}
+  #stage{position:fixed;left:50%;top:50%;width:1600px;height:900px;transform:translate(-50%,-50%) scale(var(--s,1));transform-origin:center center;background:#fff;overflow:hidden;transition:opacity .22s ease;}
+  body.blackout #stage{opacity:0;}
+  .slide{position:absolute;inset:0;display:none;flex-direction:column;padding:30px 64px 60px;background:linear-gradient(180deg,#ffffff 0%,#f4faff 100%);}
+  .slide.active{display:flex;animation:fadeUp .26s ease;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+  @keyframes itemIn{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:none;}}
+  .slide.active .s-title{animation:itemIn .42s ease both;}
+  .slide.active .s-body > *{animation:itemIn .42s ease both;}
+  .slide.active .s-body > *:nth-child(1){animation-delay:.08s;}
+  .slide.active .s-body > *:nth-child(2){animation-delay:.16s;}
+  .slide.active .s-body > *:nth-child(3){animation-delay:.24s;}
+  .slide.active .s-body > *:nth-child(4){animation-delay:.32s;}
+  .slide.active .s-body > *:nth-child(5){animation-delay:.40s;}
+  .slide.active .s-body > *:nth-child(6){animation-delay:.48s;}
+  .slide.cover.active .s-title,.slide.cover.active .s-body > *,.slide.end.active .s-title,.slide.end.active .s-body > *{animation:none;}
+  .slide::after{content:"";position:absolute;right:-90px;bottom:-90px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(26,111,181,.10) 0%,rgba(26,111,181,0) 70%);pointer-events:none;}
+  .s-title{flex:0 0 auto;align-self:flex-start;background:linear-gradient(135deg,#1a6fb5 0%,#124f83 100%);color:#fff;font-size:48px;font-weight:700;letter-spacing:1.5px;line-height:1.15;padding:14px 30px 14px 24px;border-left:10px solid var(--orange);border-radius:0 12px 12px 0;margin-bottom:18px;box-shadow:0 6px 16px rgba(18,79,131,.18);}
+  .s-sub{font-size:var(--fs-body);font-weight:700;color:var(--blue-700);border-left:7px solid var(--orange);padding:2px 0 2px 14px;margin:14px 0 10px;}
+  .s-sub:first-child{margin-top:0;}
+  .s-sub.blue{border-left-color:var(--blue-600);}
+  .s-body{flex:1 1 auto;min-height:0;overflow:hidden;font-size:32px;line-height:1.5;color:var(--ink);}
+  .s-body p{margin:8px 0;}
+  .s-body p:first-child{margin-top:0;}
+  .s-body ul,.s-body ol{padding-left:1.5em;margin:8px 0;}
+  .s-body li{margin:4px 0;}
+  .s-body ul>li::marker{color:var(--blue-600);}
+  .s-body ol>li::marker{color:var(--orange);font-weight:800;}
+  b,strong{color:var(--blue-700);}
+  table.tb{width:100%;border-collapse:separate;border-spacing:0;font-size:var(--fs-other);line-height:1.45;margin:6px 0;border-radius:12px;overflow:hidden;box-shadow:0 4px 14px rgba(18,79,131,.08);}
+  table.tb thead th{background:linear-gradient(135deg,#1a6fb5,#124f83);color:#fff;font-weight:600;font-size:var(--fs-other);padding:12px 18px;text-align:left;}
+  table.tb td,table.tb tbody th{padding:11px 18px;background:#fff;border-bottom:1px solid var(--line);vertical-align:top;}
+  table.tb tbody tr:last-child td,table.tb tbody tr:last-child th{border-bottom:none;}
+  table.tb tbody th{background:#eaf3fb;color:var(--blue-700);font-weight:600;text-align:left;white-space:nowrap;}
+  table.tb tbody tr:nth-child(even) td{background:#f7fafd;}
+  .c-red{color:var(--red);font-weight:600;} .c-green{color:var(--green);font-weight:700;} .c-blue{color:var(--blue-600);font-weight:700;}
+  .box{border-left:7px solid var(--blue-600);background:var(--blue-100);border-radius:0 10px 10px 0;padding:16px 28px;margin:10px 0;font-size:30px;line-height:1.7;}
+  .box .label{display:inline-block;font-weight:800;color:var(--blue-700);margin-right:10px;}
+  .box.tip{border-left-color:var(--green);background:var(--green-soft);} .box.tip .label{color:var(--green);}
+  .box.warn{border-left-color:var(--orange);background:var(--orange-soft);} .box.warn .label{color:#b95a05;}
+  .box.key{border-left-color:var(--purple);background:var(--purple-soft);} .box.key .label{color:var(--purple);}
+  .box.red{border-left-color:var(--red);background:var(--red-soft);} .box.red .label{color:var(--red);}
+  pre.code{background:#0d2b45;color:#d8e9f5;border-left:6px solid var(--orange);border-radius:0 12px 12px 0;padding:14px 22px;margin:8px 0;font-family:Consolas,"Courier New",monospace;font-size:28px;line-height:1.55;white-space:pre;overflow:hidden;box-shadow:0 8px 22px rgba(13,43,69,.22);}
+  pre.code .kw{color:#6ec1ff;} pre.code .str{color:#ffc17a;} pre.code .cmt{color:#7fa5c0;font-style:italic;} pre.code .num{color:#ff9d6b;}
+  code.inline{font-family:Consolas,"Courier New",monospace;background:var(--blue-100);color:#c0392b;padding:2px 8px;font-size:28px;border-radius:5px;}
+  .out{background:#0d2b45;color:#bfe4ff;border-left:6px solid var(--blue-400);border-radius:0 12px 12px 0;padding:12px 22px;margin:8px 0;font-family:Consolas,"Courier New",monospace;font-size:28px;line-height:1.5;white-space:pre;}
+  .grid{display:grid;gap:14px;} .grid.c2{grid-template-columns:1fr 1fr;} .grid.c3{grid-template-columns:repeat(3,1fr);} .grid{ gap:26px 14px; }
+  .card{background:#fff;border:1px solid var(--line);border-top:7px solid var(--blue-600);border-radius:0 0 16px 16px;padding:22px 28px;box-shadow:0 6px 16px rgba(18,79,131,.08);} .card.orange{border-top-color:var(--orange);} .card.green{border-top-color:var(--green);} .card.purple{border-top-color:var(--purple);} .card.red{border-top-color:var(--red);} .card h4{font-size:30px;color:var(--blue-700);margin-bottom:8px;display:flex;align-items:center;gap:10px;line-height:1.2;} .card.orange h4{color:#b95a05;} .card.green h4{color:var(--green);} .card.purple h4{color:var(--purple);} .card.red h4{color:var(--red);} .card p{font-size:27px;color:var(--muted);line-height:1.7;margin:0;} .card .ico{font-size:30px;line-height:1;}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start;} .two.wide{grid-template-columns:1.15fr 1fr;}
+  .feat{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px;} .feat li{display:flex;align-items:center;gap:22px;background:#fff;border:1px solid var(--line);border-left:7px solid var(--blue-600);border-radius:0 12px 12px 0;padding:12px 24px;box-shadow:0 4px 10px rgba(18,79,131,.06);} .feat li:nth-child(even){border-left-color:var(--orange);} .feat .k{flex:0 0 auto;width:270px;font-size:30px;font-weight:700;color:var(--blue-700);line-height:1.25;} .feat .v{font-size:27px;color:var(--muted);line-height:1.5;}
+  
+  /* 流程图占位框样式 */
+  .flowchart-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    border: 3px dashed #9fbdd7;
+    background: #f4f9fd;
+    border-radius: 12px;
+    color: #6a8fb3;
+    font-size: 24px;
+    font-weight: bold;
+    text-align: center;
+    padding: 16px;
+    margin: 8px 0;
+  }
+  .flowchart-placeholder span {
+    font-size: 18px;
+    font-weight: normal;
+    margin-top: 8px;
+    color: #8ba8c2;
+  }
+
+  .slide.cover{background:linear-gradient(135deg,#1a6fb5 0%,#0d4a7a 58%,#0a3d63 100%);padding:0 110px 60px;justify-content:center;} .slide.cover::before{content:"";position:absolute;right:-100px;top:-100px;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(232,114,12,.18) 0%,rgba(232,114,12,0) 70%);} .slide.cover::after{content:"";position:absolute;left:-100px;bottom:-120px;width:440px;height:440px;border-radius:50%;background:radial-gradient(circle,rgba(74,151,212,.18) 0%,rgba(74,151,212,0) 70%);} .cover-inner{position:relative;z-index:2;} .cover-kicker{display:inline-block;font-size:var(--fs-other);letter-spacing:3px;color:#ffd9b3;border:1px solid rgba(255,217,179,.55);padding:8px 24px;margin-bottom:28px;border-radius:999px;} .cover h1{font-size:82px;font-weight:800;color:#fff;letter-spacing:5px;line-height:1.15;margin-bottom:16px;} .cover-bar{width:650px;height:8px;border-radius:4px;background:linear-gradient(90deg,#e8720c,#ffb26b);margin-bottom:22px;} .cover-sub{font-size:40px;color:#a9d8f5;letter-spacing:3px;margin-bottom:36px;} .cover-meta{font-size:var(--fs-other);color:#7fb2dd;letter-spacing:2px;}
+  .slide.end{background:linear-gradient(135deg,#1a6fb5 0%,#0d4a7a 58%,#0a3d63 100%);padding:0 110px 60px;justify-content:center;} .slide.end::before{content:"";position:absolute;right:-100px;bottom:-120px;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(232,114,12,.16) 0%,rgba(232,114,12,0) 70%);} .end-inner{position:relative;z-index:2;} .end h2{font-size:82px;font-weight:800;color:#fff;letter-spacing:10px;margin-bottom:22px;} .end p{font-size:var(--fs-body);color:#a9d8f5;letter-spacing:2px;}
+  .pageinfo{position:absolute;right:40px;top:22px;z-index:20;font-size:var(--fs-other);color:var(--blue-600);letter-spacing:1px;background:rgba(255,255,255,.95);border:1px solid var(--line);border-radius:999px;padding:5px 20px;box-shadow:0 4px 10px rgba(18,79,131,.08);} .pageinfo b{font-size:var(--fs-other);color:var(--orange);}
+  .nav{position:absolute;right:36px;bottom:14px;z-index:20;display:flex;align-items:center;gap:10px;} .nav button{height:50px;border:none;cursor:pointer;background:linear-gradient(135deg,#1a6fb5,#124f83);color:#fff;font-size:var(--fs-other);line-height:1;display:flex;align-items:center;justify-content:center;transition:all .18s;font-family:inherit;border-radius:12px;width:50px;box-shadow:0 5px 12px rgba(18,79,131,.28);} .nav button:hover{background:linear-gradient(135deg,#e8720c,#c55807);transform:translateY(-2px);} .nav button:disabled{background:#b9cfe4;cursor:not-allowed;box-shadow:none;transform:none;} .nav .tocbtn{width:auto;padding:0 22px;font-weight:700;letter-spacing:1px;}
+  .progress{position:absolute;left:0;bottom:0;height:6px;width:0;z-index:20;background:linear-gradient(90deg,#1a6fb5,#e8720c);transition:width .3s ease;}
+  .keyhint{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);z-index:20;font-size:20px;color:#7fa8c4;letter-spacing:1px;background:rgba(255,255,255,.85);border:1px solid var(--line);border-radius:999px;padding:4px 16px;transition:opacity .6s ease;} .keyhint.hide{opacity:0;}
+  .toc{position:absolute;inset:0;z-index:40;background:rgba(10,61,99,.96);display:none;padding:44px 60px 60px;overflow:hidden;} .toc.show{display:block;} .toc h3{font-size:40px;color:#fff;letter-spacing:4px;margin-bottom:6px;} .toc .toc-bar{width:110px;height:6px;border-radius:3px;background:linear-gradient(90deg,#e8720c,#ffb26b);margin-bottom:20px;} .toc-list{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;align-items:start;} .toc-group{background:rgba(255,255,255,.05);border-radius:14px;padding:14px 14px 16px;border-top:5px solid var(--blue-400);} .toc-group:nth-child(2){border-top-color:var(--orange);} .toc-group:nth-child(3){border-top-color:var(--green);} .toc-group:nth-child(4){border-top-color:var(--purple);} .toc-group-title{font-size:22px;color:#ffc17a;font-weight:800;letter-spacing:1px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px dashed rgba(255,255,255,.18);line-height:1.25;} .toc-group a{display:block;color:#cfe6f7;font-size:20px;padding:8px 12px;border-radius:8px;cursor:pointer;margin-bottom:4px;text-decoration:none;line-height:1.35;transition:all .16s;} .toc-group a:hover{background:linear-gradient(90deg,#e8720c,#c55807);color:#fff;} .toc-close{position:absolute;right:40px;top:22px;background:none;border:1px solid #7fb2dd;color:#cfe6f7;font-size:var(--fs-other);padding:7px 22px;cursor:pointer;font-family:inherit;border-radius:12px;} .toc-close:hover{background:#e8720c;border-color:#e8720c;color:#fff;}
+</style>
+<!-- 引入 MathJax 渲染 LaTeX 公式 -->
+<script>
+  MathJax = {
+    tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+    svg: { fontCache: 'global' }
+  };
+</script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+<div id="stage">
+
+  <!-- 0 封面 -->
+  <section class="slide cover active">
+    <div class="cover-inner">
+      <div class="cover-kicker">武汉理工大学 人工智能学院</div>
+      <h1>C 程序设计基础</h1>
+      <div class="cover-bar"></div>
+      <div class="cover-sub">第 3 章　选择结构（上）</div>
+      <div class="cover-meta">主讲：孙　骏</div>
+    </div>
+  </section>
+
+  <!-- 1 章节结构与目标 -->
+  <section class="slide">
+    <div class="s-title">本章结构与目标</div>
+    <div class="s-body">
+     
+      <div class="grid c3" style="margin-top:14px;">
+        <div class="card"><h4><span class="ico">①</span>if 单/双分支</h4><p>基本条件判断<br><b>（本次课）</b></p></div>
+        <div class="card orange"><h4><span class="ico">②</span>控制运算符</h4><p>关系、逻辑、条件运算符<br>构造判断条件</p></div>
+        <div class="card green"><h4><span class="ico">③</span>多分支语句</h4><p>if 嵌套、多分支 if、switch</p></div>
+      </div>
+      
+      <div class="s-sub blue" style="margin-top:24px;">本次课学习目标</div>
+      <ul class="feat">
+        <li><span class="k">① 控制结构</span><span class="v">理解顺序、选择、循环三种基本结构，能看懂流程图</span></li>
+        <li><span class="k">② 单分支 if</span><span class="v">掌握语法格式，理解“条件后只能跟一条语句”的限制</span></li>
+        <li><span class="k">③ 复合语句</span><span class="v">学会用 <code class="inline">{ }</code> 把多条语句变成一个整体</span></li>
+        <li><span class="k">④ 双分支 if</span><span class="v">掌握 <code class="inline">if…else</code> 语法，理解二选一的执行流程</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 2 案例引入：三角形面积 -->
+  <section class="slide">
+    <div class="s-title">案例引入：计算三角形面积</div>
+    <div class="s-body">
+      <div class="box" style="margin-top:0;">
+        <span class="label">问题</span>
+        输入三角形的三条边长 a, b, c，计算并输出三角形的面积。
+      </div>
+
+      <div class="two wide" style="margin-top:12px;">
+        <div>
+          <div class="s-sub blue" style="margin-top:0;">数学公式（海伦公式）</div>
+          <p>半周长：\(s = \frac{a + b + c}{2}\)</p>
+          <p>面积：\(area = \sqrt{s(s-a)(s-b)(s-c)}\)</p>
+          <pre class="code" style="font-size:24px;margin-top:14px;"><span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;math.h&gt;</span>
+<span class="kw">int</span> main() {
+    <span class="kw">float</span> a, b, c, s, area;
+    scanf(<span class="str">"%f,%f,%f"</span>, &amp;a, &amp;b, &amp;c);
+    s = (a + b + c) / <span class="num">2</span>;
+    area = sqrt(s * (s-a) * (s-b) * (s-c));
+    printf(<span class="str">"area=%f\n"</span>, area);
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre>
+        </div>
+        <div>
+          <div class="s-sub blue" style="margin-top:0;">运行测试</div>
+          <div class="out">输入：4,5,6
+输出：area=9.921567</div>
+          <div class="out" style="margin-top:10px; border-left-color:var(--red); color:#ffb3b3;">输入：1,2,4
+输出：area=-1.#IND00</div>
+          
+          <div class="box red" style="margin-top:20px;font-size:28px; padding:24px;">
+            <span class="label">发现问题</span>
+            当输入的三条边<b>不能构成三角形</b>时（如 1,2,4），程序依然会计算，导致根号下出现负数，结果异常！
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 分析问题：引出选择结构 -->
+  <section class="slide">
+    <div class="s-title">怎么解决这个问题？</div>
+    <div class="s-body">
+      <div class="box key" style="margin-top:0;font-size:32px;">
+        <span class="label">思路</span>
+        在执行计算之前，先<b>判断</b>一下：这三条边能不能构成三角形？
+      </div>
+
+      <div class="two" style="margin-top:24px;">
+        <div class="card green">
+          <h4><span class="ico">✅</span>如果能构成三角形</h4>
+          <p>满足条件：<code class="inline">a+b&gt;c && a+c&gt;b && b+c&gt;a</code><br>
+          则执行计算面积并输出的操作。</p>
+        </div>
+        <div class="card red">
+          <h4><span class="ico">❌</span>如果不能构成</h4>
+          <p>直接给出错误提示（如 <code class="inline">Data error!</code>），<br>不进行计算。</p>
+        </div>
+      </div>
+
+      <div class="box tip" style="margin-top:24px;font-size:30px;">
+        <span class="label">这就要用到“选择结构”</span>
+        程序不再是一味地从头执行到尾，而是根据<span class="c-red">条件是否成立</span>，决定走哪条路。
+      </div>
+
+      <div><img src="images/NS流程图-选择结构.png"  alt="NS流程图-选择结构" style="width:100%; max-width:200px; display:block; margin:0px auto;"></div>
+    </div>
+  </section>
+
+  <!-- 4 3.1 基本控制结构 (表格流程图列已修改) -->
+  <section class="slide">
+    <div class="s-title">3.1　基本控制结构</div>
+    <div class="s-body">
+      <table class="tb" style="font-size:26px;">
+        <thead><tr><th style="width:15%">结构名称</th><th style="width:45%">执行特点</th><th style="width:40%">流程图</th></tr></thead>
+        <tbody>
+          <tr>
+            <th>顺序结构</th>
+            <td>语句按书写顺序<b>逐条执行</b>，每条语句都执行一次。</td>
+            <td>
+              <div><img src="images/NS流程图-顺序结构.png"  alt="NS流程图-顺序结构" style="width:100%; max-width:250px; display:block; margin:0px auto ;">
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <th>选择结构</th>
+            <td>根据条件 P 的值，在两条（或多条）路径中<b>选择一条</b>执行。</td>
+            <td>
+              <div><img src="images/NS流程图-选择结构.png"  alt="NS流程图-选择结构" style="width:100%; max-width:200px; display:block; margin:0px auto;">
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <th>循环结构</th>
+            <td>条件 P 成立时<b>反复执行</b>语句 A，直到条件不成立。</td>
+            <td>
+              <div> <img src="images/NS流程图-循环结构.png"  alt="NS流程图-循环结构" style="width:100%; max-width:350px; display:block; margin:0px auto;">
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="box key" style="margin-top:14px;"><span class="label">要点</span>三种基本结构可以组合出任意复杂程度的程序；</div>
+    </div>
+  </section>
+
+  <!-- 5 程序中的选择结构 -->
+  <section class="slide">
+    <div class="s-title">3.2　程序中的选择结构</div>
+    <div class="s-body">
+      <div class="box" style="margin-top:0;"><span class="label">需求</span>某些情况下，语句的执行顺序<b>依赖于输入数据或中间运算结果</b>：<br>　　· <b>变量的值</b>　　　· <b>表达式的值</b></div>
+      <div class="two" style="margin-top:14px;">
+        <div class="card"><h4><span class="ico">🔀</span>选择结构</h4><p>又称<b>分支结构</b>：程序运行到判断点时，根据条件在两条路径中二选一。</p></div>
+        <div class="card orange"><h4><span class="ico">🧰</span>C 的两种实现</h4><p>· <b>if 语句</b>：单分支、双分支、嵌套、多分支<br>· <b>switch 语句</b>：等值多分支</p></div>
+      </div>
+      <div class="box tip" style="margin-top:14px;"><span class="label">判断框</span>条件 P 成立（非 0，真）走一条路，不成立（0，假）走另一条路；两条路最终汇合，继续执行后面的语句。</div>
+    <div><img src="images/NS流程图-选择结构.png"  alt="NS流程图-选择结构" style="width:100%; max-width:200px; display:block; margin:0px auto;">
+              </div>
+    </div>
+  </section>
+
+  <!-- 6 (第7页) if 形式1 单分支 (增加两个流程图占位) -->
+  <section class="slide">
+    <div class="s-title">3.3.1　if 语句（形式 1）：单分支</div>
+    <div class="s-body">
+      <div class="two" style="margin-top:0; grid-template-columns: 1.1fr 0.9fr;">
+        <div>
+          <div class="s-sub blue" style="margin-top:0;">语法格式（Single selection）</div>
+          <pre class="code"><span class="kw">if</span>( 表达式 )
+    内嵌语句;</pre>
+          
+          <div class="s-sub blue">执行流程与语法说明</div>
+          <ul style="font-size:28px;line-height:1.6;">
+            <li>计算<b>表达式</b>的值：<b>非 0（真）</b>执行内嵌语句，<b>0（假）</b>跳过</li>
+            <li><b>内嵌语句</b>：<b>只能是一条语句</b>，多条语句必须用 <code class="inline">{ }</code> 构成<b>复合语句</b></li>
+            <li>执行完后，接着执行 <b>if 的下一条语句</b></li>
+          </ul>
+          <div class="box warn" style="margin-top:10px;font-size:28px;"><span class="label">口诀</span>if 只管<b>紧跟着的那一条</b>语句。</div>
+        </div>
+        <div>
+          <div class="s-sub blue" style="margin-top:0;">流程图（请插入图片）</div>
+          <div class="two" style="gap:12px; margin-top:0;">
+            <div class="flowchart-placeholder" style="min-height: 240px;">
+              [传统流程图]
+              <span><img src="images/传统流程图-单分支语句.png"  alt="传统流程图-单分支语句" style="width:100%; max-width:200px; display:block; margin:0px auto;"></span>
+            </div>
+            <div class="flowchart-placeholder" style="min-height: 240px;">
+              [N-S 流程图]
+              <span><img src="images/N-S流程图-单分支语句.png"  alt="N-S流程图-单分支语句" style="width:100%; max: width 300px; display:block; margin:0px auto;"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 重点：条件后只能跟一条语句 -->
+  <section class="slide">
+    <div class="s-title">重点：条件后只能跟一条语句</div>
+    <div class="s-body">
+      <div class="box red" style="margin-top:0;font-size:32px;"><span class="label">核心规则</span><code class="inline">if(表达式)</code> 后面<b>只能跟一条语句</b>；<br>如果需要执行多条语句，必须用 <code class="inline">{ }</code> 把它们包成一条<b>复合语句</b>。</div>
+      <div class="two" style="margin-top:16px;">
+        <div><div class="s-sub blue" style="margin-top:0;">❌ 错误写法</div><pre class="code"><span class="kw">if</span>(a&gt;b)
+    t = a;
+    a = b;      <span class="cmt">// 不受 if 控制！</span>
+    b = t;      <span class="cmt">// 不受 if 控制！</span></pre></div>
+        <div><div class="s-sub blue" style="margin-top:0;">✅ 正确写法</div><pre class="code"><span class="kw">if</span>(a&gt;b){
+    t = a;
+    a = b;
+    b = t;
+}</pre></div>
+      </div>
+      <div class="box tip" style="margin-top:14px;"><span class="label">建议</span>即使只有一条语句，养成加 <code class="inline">{ }</code> 的习惯，能有效避免后续修改时出错。</div>
+    </div>
+  </section>
+
+  <!-- 8 (第9页) 例：单分支求分段函数 (用户说不动，保留原有占位) -->
+  <section class="slide">
+    <div class="s-title">例：用单分支实现分段取值</div>
+    <div class="s-body">
+      <div class="box" style="margin-top:0;"><span class="label">题目</span>从键盘输入一个数 x：若 x ≥ 0，则 y = 1；若 x &lt; 0，则 y = −1。</div>
+      <div class="two wide" style="margin-top:12px;">
+        <div>
+          <pre class="code"><span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="kw">int</span> main(){
+    <span class="kw">float</span> x;
+    <span class="kw">int</span> y;
+    printf(<span class="str">"x="</span>);
+    scanf(<span class="str">"%f"</span>, &amp;x);
+    <span class="kw">if</span> (x&gt;=<span class="num">0</span>)
+        y = <span class="num">1</span>;
+    <span class="kw">if</span> (x&lt;<span class="num">0</span>)
+        y = -<span class="num">1</span>;
+    printf(<span class="str">"%f,%d\n"</span>, x, y);
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre>
+          <div class="out" style="margin-top:8px;">x=-3.458
+-3.450000,-1</div>
+        </div>
+        <div>
+          <!-- 流程图占位 -->
+          <div class="flowchart-placeholder"><img src="images/单分支例题.png"  alt="单分支例题" style="width:100%; max-width:200px; display:block; margin:0px auto;"></div>
+          
+          <div class="box key" style="margin-top:10px;font-size:26px;line-height:1.5;"><span class="label">分析</span>两个 if 是<b>顺序关系</b>，互不干涉。条件互补，只有一个成立。</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9 习题1：c 的值 -->
+  <section class="slide">
+    <div class="s-title">习题 1：if 语句的执行结果</div>
+    <div class="s-body">
+      <div class="box" style="margin-top:0;"><span class="label">题目</span>当 <code class="inline">a=1, b=2, c=3</code> 时，执行语句 <code class="inline">if(a&gt;c) b=a; a=c; c=b;</code> 后，变量 <b>c</b> 中的值为 ______。</div>
+      <div class="s-sub blue" style="margin-top:14px;">逐步分析</div>
+      <table class="tb" style="font-size:29px;">
+        <thead><tr><th style="width:46%">语句</th><th style="width:22%">判断</th><th style="width:32%">执行后 (a,b,c)</th></tr></thead>
+        <tbody>
+          <tr><td>初始状态</td><td>—</td><td>(1, 2, 3)</td></tr>
+          <tr><td><code class="inline">if(a&gt;c) b=a;</code></td><td>1 &gt; 3 ？<b class="c-red">假</b></td><td>跳过，仍为 (1, 2, 3)</td></tr>
+          <tr><td><code class="inline">a=c;</code></td><td>无条件执行</td><td>(3, 2, 3)</td></tr>
+          <tr><td><code class="inline">c=b;</code></td><td>无条件执行</td><td>(3, 2, <b class="c-green">2</b>)</td></tr>
+        </tbody>
+      </table>
+      <div class="box tip" style="margin-top:14px;"><span class="label">答案</span><b>c = 2</b>　——　只有 <code class="inline">b=a;</code> 受 if 控制，后面的两条语句都会无条件执行。</div>
+    </div>
+  </section>
+
+  <!-- 10 习题2：升序输出 -->
+  <section class="slide">
+    <div class="s-title">习题 2：哪段代码能正确升序输出？</div>
+    <div class="s-body">
+      <div class="box" style="margin-top:0;"><span class="label">题目</span>运行后按升序输出 a、b 的值（a ≤ b）：<b>a &gt; b 时交换 a、b；a ≤ b 时不做操作</b>。</div>
+      <div class="two" style="margin-top:12px;">
+        <div><div class="s-sub blue" style="margin-top:0;">代码段 A</div><pre class="code"><span class="kw">if</span>(a&gt;b)
+    t = a;
+    a = b;
+    b = t;
+printf(<span class="str">"%d,%d"</span>, a, b);</pre><div class="box red" style="margin-top:8px;font-size:27px;"><span class="label">错</span>只有 <code class="inline">t=a;</code> 受 if 控制，后两条无条件执行，a、b 永远被改。</div></div>
+        <div><div class="s-sub blue" style="margin-top:0;">代码段 B</div><pre class="code"><span class="kw">if</span>(a&gt;b){
+    t = a;
+    a = b;
+    b = t;
+}
+printf(<span class="str">"%d,%d"</span>, a, b);</pre><div class="box tip" style="margin-top:8px;font-size:27px;"><span class="label">对</span>三条语句用 <code class="inline">{ }</code> 组成复合语句，整体受 if 控制。</div></div>
+      </div>
+      <div class="box key" style="margin-top:12px;"><span class="label">答案</span><b>B</b>　——　这是“条件后只能跟一条语句”最典型的应用。</div>
+    </div>
+  </section>
+
+  <!-- 11 习题3：多个 if 顺序执行 -->
+  <section class="slide">
+    <div class="s-title">习题 3：多个 if 顺序执行的输出</div>
+    <div class="s-body">
+      <div class="two wide" style="margin-top:0;">
+        <pre class="code"><span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="kw">int</span> main() {
+    <span class="kw">int</span> x;
+    scanf(<span class="str">"%d"</span>, &amp;x);
+    <span class="kw">if</span>(x&gt;<span class="num">10</span>)  x += <span class="num">5</span>;
+    <span class="kw">if</span>(x&gt;<span class="num">15</span>)  printf(<span class="str">"%d"</span>, x-<span class="num">5</span>);
+    <span class="kw">if</span>(x&gt;<span class="num">15</span>)  printf(<span class="str">"%d\n"</span>, x+<span class="num">5</span>);
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre>
+        <div>
+          <div class="s-sub blue" style="margin-top:0;">输入 12，输出结果？</div>
+          <table class="tb" style="font-size:27px;">
+            <thead><tr><th style="width:52%">语句</th><th style="width:48%">结果</th></tr></thead>
+            <tbody>
+              <tr><td><code class="inline">if(x&gt;10) x+=5;</code></td><td>12 &gt; 10 真 → x = <b>17</b></td></tr>
+              <tr><td><code class="inline">if(x&gt;15) printf("%d",x-5);</code></td><td>17 &gt; 15 真 → 输出 <b>12</b></td></tr>
+              <tr><td><code class="inline">if(x&gt;15) printf("%d\n",x+5);</code></td><td>17 &gt; 15 真 → 输出 <b>22</b></td></tr>
+            </tbody>
+          </table>
+          <div class="out" style="margin-top:10px;">1222</div>
+        </div>
+      </div>
+      <div class="box warn" style="margin-top:14px;"><span class="label">要点</span>三个 <code class="inline">if</code> 是<b>顺序关系</b>，不是多分支；前一个 if 改了 x，后一个 if 会看到新值。</div>
+    </div>
+  </section>
+
+  <!-- 12 (第13页) if 形式2 双分支 (增加两个流程图占位) -->
+  <section class="slide">
+    <div class="s-title">3.3.1　if 语句（形式 2）：双分支</div>
+    <div class="s-body">
+      <div class="two" style="margin-top:0; grid-template-columns: 1.1fr 0.9fr;">
+        <div>
+          <div class="s-sub blue" style="margin-top:0;">语法格式（Double selection）</div>
+          <pre class="code"><span class="kw">if</span>( 表达式 )
+    语句 1;
+<span class="kw">else</span>
+    语句 2;</pre>
+          
+          <div class="s-sub blue">执行流程与语法说明</div>
+          <ul style="font-size:28px;line-height:1.6;">
+            <li>表达式非 0（真）→ 执行<b>语句 1</b></li>
+            <li>表达式为 0（假）→ 执行<b>语句 2</b></li>
+            <li>两条语句<b>必执行其一</b>，执行完后接着执行下一条语句</li>
+          </ul>
+          <pre class="code" style="font-size:24px; margin-top:12px;"><span class="kw">if</span>(x&gt;y)
+    x += <span class="num">1</span>;
+<span class="kw">else</span>
+    y += <span class="num">1</span>;
+x += y;      <span class="cmt">// 与 if 无关，必定执行</span></pre>
+        </div>
+        <div>
+          <div class="s-sub blue" style="margin-top:0;">流程图（请插入图片）</div>
+          <div class="two" style="gap:12px; margin-top:0;">
+            <div class="flowchart-placeholder" style="min-height: 240px;">
+              [传统流程图]
+              <span><img src="images/传统流程图-双分支语句.png"  alt="传统流程图-双分支语句" style="width:100%; max-width:300px; display:block; margin:0px auto;"></span>
+            </div>
+            <div class="flowchart-placeholder" style="min-height: 240px;">
+              [N-S 流程图]
+              <span><img src="images/N-S流程图-双分支语句.png"  alt="N-S流程图-双分支语句" style="width:100%; max-width:300px; display:block; margin:0px auto;"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 13 (第14页) 例：双分支对比单分支 (增加了流程图) -->
+  <section class="slide">
+    <div class="s-title">例：双分支实现分段取值（对比单分支）</div>
+    <div class="s-body">
+      <div class="box" style="margin-top:0;"><span class="label">题目</span>从键盘输入一个数 x：若 x ≥ 0，则 y = 1；若 x &lt; 0，则 y = −1。</div>
+      <div class="two wide" style="margin-top:12px; grid-template-columns: 1.1fr 0.9fr;">
+        <div>
+          <pre class="code" style="font-size:25px;"><span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="kw">int</span> main(){
+    <span class="kw">float</span> x;
+    <span class="kw">int</span> y;
+    printf(<span class="str">"x="</span>);
+    scanf(<span class="str">"%f"</span>, &amp;x);
+    <span class="kw">if</span> (x&gt;=<span class="num">0</span>)
+        y = <span class="num">1</span>;
+    <span class="kw">else</span>
+        y = -<span class="num">1</span>;
+    printf(<span class="str">"%f,%d\n"</span>, x, y);
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre>
+          <div class="out" style="margin-top:8px;">x=-3.458
+-3.450000,-1</div>
+        </div>
+        <div>
+          <!-- 流程图占位 -->
+        
+            <span><img src="images/双分支例题.png"  alt="双分支例题" style="width:100%; max-width:300px; display:block; margin:0px auto;"></span>
+         
+          <div class="box key" style="margin-top:10px;font-size:26px;line-height:1.5;"><span class="label">对比</span>单分支写法需要判断两次，双分支写法只判断一次，<b>效率更高、语义更清晰</b>。</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 14 习题4：else 语法错误 -->
+  <section class="slide">
+    <div class="s-title">习题 4：判断程序段是否有误</div>
+    <div class="s-body">
+      <div class="two" style="margin-top:0; grid-template-columns: 1.1fr 1fr;">
+        <div>
+          <div class="s-sub blue" style="margin-top:0;">❌ 错误写法</div>
+          <pre class="code" style="font-size:26px;"><span class="kw">if</span>(x&gt;y)
+    x = y;
+    y = x;      <span class="cmt">// 独立语句</span>
+<span class="kw">else</span>
+    x += <span class="num">1</span>;
+    y += <span class="num">1</span>;</pre>
+          
+          <div class="s-sub blue" style="margin-top:20px;">✅ 改正后的写法</div>
+          <pre class="code" style="font-size:26px;"><span class="kw">if</span>(x&gt;y){
+    x = y;
+    y = x;
+}
+<span class="kw">else</span>{
+    x += <span class="num">1</span>;
+    y += <span class="num">1</span>;
+}</pre>
+        </div>
+        <div>
+          <div class="box red" style="margin-top:0; font-size:28px;">
+            <span class="label">问题</span>
+            <code class="inline">if(x&gt;y)</code> 只管 <code class="inline">x=y;</code> 这一条；<br>
+            <code class="inline">y=x;</code> 是一条<b>独立语句</b>，因此 <code class="inline">else</code> <b>找不到与之配对的 if</b>。
+          </div>
+          <div class="box tip" style="margin-top:16px; font-size:28px;">
+            <span class="label">结论</span>
+            原程序<b>语法错误</b>，编译器会直接报错。<br>
+            正确做法：用 <code class="inline">{ }</code> 把分支内的多条语句括起来，构成复合语句。
+          </div>
+          <div class="box warn" style="margin-top:16px; font-size:28px;">
+            <span class="label">提示</span>
+            如果分支内只有一条语句，<code class="inline">{ }</code> 可以省略；<br>
+            如果有多条语句，<code class="inline">{ }</code> <b>绝对不能省</b>。
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 15 (第16页) 综合案例：双分支解决三角形面积 (用户说不动，保留原有占位，引出下节) -->
+  <section class="slide">
+    <div class="s-title">综合案例：用双分支解决三角形面积问题</div>
+    <div class="s-body">
+      <div class="box" style="margin-top:0;font-size:28px;">
+        <span class="label">思路</span>
+        先判断输入的三条边能否构成三角形：<code class="inline">a+b&gt;c && a+c&gt;b && b+c&gt;a</code>
+      </div>
+
+      <div class="two wide" style="margin-top:8px;">
+        <div>
+          <pre class="code" style="font-size:23px;"><span class="kw">#include</span> <span class="str">&lt;stdio.h&gt;</span>
+<span class="kw">#include</span> <span class="str">&lt;math.h&gt;</span>
+<span class="kw">int</span> main(){
+    <span class="kw">float</span> a,b,c,s,area;
+    printf(<span class="str">"Side a="</span>); scanf(<span class="str">"%f"</span>,&amp;a);
+    printf(<span class="str">"Side b="</span>); scanf(<span class="str">"%f"</span>,&amp;b);
+    printf(<span class="str">"Side c="</span>); scanf(<span class="str">"%f"</span>,&amp;c);
+    <span class="kw">if</span>(a+b&gt;c &amp;&amp; a+c&gt;b &amp;&amp; b+c&gt;a){
+        s = <span class="num">0.5</span>*(a+b+c);
+        area = sqrt(s*(s-a)*(s-b)*(s-c));
+        printf(<span class="str">"area=%6.2f\n"</span>, area);
+    }
+    <span class="kw">else</span>
+        printf(<span class="str">"Data error, reentry!"</span>);
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre>
+        </div>
+        <div>
+          <!-- 流程图占位 -->
+          <div class="flowchart-placeholder" style="min-height: 220px;">
+            [双分支解决三角形面积]
+            <span><img src="images/三角形面积.png"  alt="三角形面积" style="width:100%; max-width:400px; display:block; margin:0px auto;"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="box warn" style="margin-top:12px;font-size:26px;">
+        <span class="label">回顾</span>
+        <code class="inline">a+b&gt;c && a+c&gt;b && b+c&gt;a</code> 这里的 <code class="inline">&gt;</code> 和 <code class="inline">&amp;&amp;</code> 构成了判断条件。<br>
+        这些符号是怎么运算的？如何正确写出复杂的条件？
+      </div>
+      <div class="box tip" style="margin-top:8px;font-size:28px; border-left-color:var(--purple); background:var(--purple-soft);">
+        <span class="label" style="color:var(--purple);">过渡</span>
+        下一部分我们将详细讲解<b>控制运算符</b> —— 关系运算符、逻辑运算符与条件运算符，让判断更加精准！
+      </div>
+    </div>
+  </section>
+
+  <!-- 16 本讲小结 -->
+  <section class="slide">
+    <div class="s-title">本讲小结（第一部分）</div>
+    <div class="s-body">
+      <div class="grid c2">
+        <div class="card"><h4><span class="ico">①</span>基本控制结构</h4><p>顺序、选择、循环。选择结构根据条件决定执行路径。</p></div>
+        <div class="card orange"><h4><span class="ico">②</span>单分支 if</h4><p><code class="inline">if(表达式) 语句;</code>　条件为真才执行。</p></div>
+        <div class="card green"><h4><span class="ico">③</span>复合语句</h4><p>条件后只能跟一条语句；多条语句必须用 <code class="inline">{ }</code> 包起来。</p></div>
+        <div class="card purple"><h4><span class="ico">④</span>双分支 if</h4><p><code class="inline">if…else</code>　二选一，必执行其中一条分支。</p></div>
+      </div>
+      <div class="box tip" style="margin-top:24px;font-size:30px;">
+        <span class="label">下节课预告</span>
+        条件里的 <code class="inline">&gt;=</code>、<code class="inline">&amp;&amp;</code>、<code class="inline">||</code> 到底是怎么运算的？<br>
+        第二部分：控制运算符 —— 关系、逻辑与条件运算符。
+      </div>
+    </div>
+  </section>
+
+  <!-- 17 结束页 -->
+  <section class="slide end">
+    <div class="end-inner">
+      <h2>谢　谢</h2>
+      <p>下一部分：控制运算符</p>
+    </div>
+  </section>
+
+  <!-- 导航 UI -->
+  <div class="pageinfo"><b id="cur">1</b> / <span id="total">18</span></div>
+  <div class="nav">
+    <button class="tocbtn" id="btnToc" title="目录（按 O 键）">目录</button>
+    <button id="btnPrev" title="上一页（←）">‹</button>
+    <button id="btnNext" title="下一页（→ / 空格）">›</button>
+  </div>
+  <div class="keyhint" id="keyhint">← → 翻页　·　空格下一页　·　B 黑屏　·　O 目录　·　Esc 关闭</div>
+  <div class="progress" id="progress"></div>
+  <div class="toc" id="toc">
+    <button class="toc-close" id="btnTocClose">关闭 ✕</button>
+    <h3>目录</h3>
+    <div class="toc-bar"></div>
+    <div class="toc-list" id="tocList"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var stage   = document.getElementById('stage');
+  var slides  = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var total   = slides.length;
+  var cur     = 0;
+  var curEl   = document.getElementById('cur');
+  var bar     = document.getElementById('progress');
+  var btnPrev = document.getElementById('btnPrev');
+  var btnNext = document.getElementById('btnNext');
+  var toc     = document.getElementById('toc');
+  var tocList = document.getElementById('tocList');
+  var keyhint = document.getElementById('keyhint');
+
+  document.getElementById('total').textContent = total;
+
+  var tocGroups = [
+    {
+      title: '开场与引入',
+      items: [
+        { i: 0,  t: '封面' },
+        { i: 1,  t: '章节结构与目标' },
+        { i: 2,  t: '案例引入：三角形面积' },
+        { i: 3,  t: '分析问题：引出选择结构' },
+        { i: 4,  t: '3.1 基本控制结构' },
+        { i: 5,  t: '3.2 程序中的选择结构' }
+      ]
+    },
+    {
+      title: 'if 单分支',
+      items: [
+        { i: 6,  t: 'if 形式1：单分支' },
+        { i: 7,  t: '条件后只能跟一条语句' },
+        { i: 8,  t: '例：单分支实现分段取值' },
+        { i: 9,  t: '习题1：c 的值' },
+        { i: 10, t: '习题2：升序输出' },
+        { i: 11, t: '习题3：多个 if 顺序执行' }
+      ]
+    },
+    {
+      title: 'if 双分支',
+      items: [
+        { i: 12, t: 'if 形式2：双分支' },
+        { i: 13, t: '例：双分支实现分段取值' },
+        { i: 14, t: '习题4：else 语法错误' }
+      ]
+    },
+    {
+      title: '综合案例与总结',
+      items: [
+        { i: 15, t: '综合：双分支解决三角形面积' },
+        { i: 16, t: '本讲小结（第一部分）' },
+        { i: 17, t: '结束页' }
+      ]
+    }
+  ];
+
+  tocGroups.forEach(function(group){
+    var g = document.createElement('div');
+    g.className = 'toc-group';
+    var h = document.createElement('div');
+    h.className = 'toc-group-title';
+    h.textContent = group.title;
+    g.appendChild(h);
+    group.items.forEach(function(item){
+      var a = document.createElement('a');
+      a.textContent = item.t;
+      a.onclick = function(){ go(item.i); closeToc(); };
+      g.appendChild(a);
+    });
+    tocList.appendChild(g);
+  });
+
+  function resize(){
+    var s = Math.min(window.innerWidth / 1600, window.innerHeight / 900);
+    stage.style.setProperty('--s', s);
+  }
+  window.addEventListener('resize', resize);
+
+  function go(i){
+    cur = Math.max(0, Math.min(total - 1, i));
+    slides.forEach(function(s, k){ s.classList.toggle('active', k === cur); });
+    curEl.textContent = cur + 1;
+    bar.style.width = ((cur + 1) / total * 100) + '%';
+    btnPrev.disabled = (cur === 0);
+    btnNext.disabled = (cur === total - 1);
+  }
+
+  btnPrev.onclick = function(){ go(cur - 1); this.blur(); hideHint(); };
+  btnNext.onclick = function(){ go(cur + 1); this.blur(); hideHint(); };
+
+  function openToc(){ toc.classList.add('show'); }
+  function closeToc(){ toc.classList.remove('show'); }
+  document.getElementById('btnToc').onclick = function(){
+    toc.classList.contains('show') ? closeToc() : openToc();
+    this.blur();
+  };
+  document.getElementById('btnTocClose').onclick = function(){
+    closeToc(); this.blur();
+  };
+
+  document.addEventListener('keydown', function(e){
+    var k = e.key;
+
+    if (toc.classList.contains('show')) {
+      if (k === 'Escape' || k === 'o' || k === 'O') { e.preventDefault(); closeToc(); }
+      return;
+    }
+
+    if (k === 'ArrowRight' || k === 'ArrowDown' || k === 'PageDown' ||
+        k === ' ' || k === 'Enter') {
+      e.preventDefault(); go(cur + 1); hideHint();
+    } else if (k === 'ArrowLeft' || k === 'ArrowUp' || k === 'PageUp' ||
+               k === 'Backspace') {
+      e.preventDefault(); go(cur - 1); hideHint();
+    } else if (k === 'Home') {
+      e.preventDefault(); go(0); hideHint();
+    } else if (k === 'End') {
+      e.preventDefault(); go(total - 1); hideHint();
+    } else if (k === 'o' || k === 'O') {
+      e.preventDefault(); openToc();
+    } else if (k === 'b' || k === 'B' || k === '.') {
+      e.preventDefault();
+      document.body.classList.toggle('blackout');
+    }
+  });
+
+  var wheelLock = false;
+  document.addEventListener('wheel', function(e){
+    if (toc.classList.contains('show')) return;
+    if (wheelLock) return;
+    wheelLock = true;
+    setTimeout(function(){ wheelLock = false; }, 420);
+    if (e.deltaY > 0) go(cur + 1); else go(cur - 1);
+    hideHint();
+  }, { passive: true });
+
+  document.addEventListener('click', function(e){
+    if (toc.classList.contains('show')) return;
+    if (e.target.closest('.nav')) return;
+    if (e.target.closest('.toc')) return;
+    if (e.target.closest('a')) return;
+    if (e.clientX > window.innerWidth / 2) go(cur + 1);
+    else go(cur - 1);
+    hideHint();
+  });
+
+  var tx = 0, ty = 0;
+  document.addEventListener('touchstart', function(e){
+    tx = e.changedTouches[0].clientX;
+    ty = e.changedTouches[0].clientY;
+  }, { passive: true });
+  document.addEventListener('touchend', function(e){
+    var dx = e.changedTouches[0].clientX - tx;
+    var dy = e.changedTouches[0].clientY - ty;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) {
+      go(dx < 0 ? cur + 1 : cur - 1);
+      hideHint();
+    }
+  }, { passive: true });
+
+  var hintTimer = null;
+  function hideHint(){
+    if (keyhint.classList.contains('hide')) return;
+    clearTimeout(hintTimer);
+    hintTimer = setTimeout(function(){ keyhint.classList.add('hide'); }, 500);
+  }
+  hintTimer = setTimeout(function(){ keyhint.classList.add('hide'); }, 6000);
+
+  resize();
+  go(0);
+})();
+</script>
+</body>
+</html>
