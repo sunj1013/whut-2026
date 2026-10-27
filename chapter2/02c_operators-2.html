@@ -614,10 +614,10 @@ printf(<span class="str">"n=%d\n"</span>, n);</pre>
       <div class="card red">
         <h4 style="font-size:30px;"><span class="ico">❌</span>不看返回值</h4>
         <pre class="code" style="font-size:28px; padding:10px 18px; line-height:1.4; margin-top:8px;"><span class="kw">int</span> x;
-scanf(<span class="str">"%d"</span>, &amp;x);
+scanf(<span class="str">"%f"</span>, &amp;x);
 printf(<span class="str">"x=%d\n"</span>, x);</pre>
         <p style="font-size:28px; line-height:1.55; margin-top:8px;">
-          输入 <code class="inline" style="font-size:28px;">abc</code> 时：<br>
+          输入 <code class="inline" style="font-size:28px;">123</code> 时：<br>
           · <code class="inline" style="font-size:28px;">x</code> 保持原值，通常是随机数<br>
           · 但程序<b>毫不知情</b>，继续往下执行<br>
           · 输出结果不可预知
@@ -628,13 +628,13 @@ printf(<span class="str">"x=%d\n"</span>, x);</pre>
       <div class="card green">
         <h4 style="font-size:30px;"><span class="ico">✅</span>看返回值</h4>
         <pre class="code" style="font-size:28px; padding:10px 18px; line-height:1.4; margin-top:8px;"><span class="kw">int</span> x;
-<span class="kw">if</span> (scanf(<span class="str">"%d"</span>, &amp;x) > <span class="num">0</span>) {
+<span class="kw">if</span> (scanf(<span class="str">"%f"</span>, &amp;x) > <span class="num">0</span>) {
     printf(<span class="str">"读入成功: %d\n"</span>, x);
 } <span class="kw">else</span> {
     printf(<span class="str">"输入无效\n"</span>);
 }</pre>
         <p style="font-size:28px; line-height:1.55; margin-top:8px;">
-          输入 <code class="inline" style="font-size:28px;">abc</code> 时：<br>
+          输入 <code class="inline" style="font-size:28px;">123</code> 时：<br>
           · 返回值是 0，不满足 <code class="inline" style="font-size:28px;"> > 0</code> 的条件<br>
           · 程序走 else 分支，提示"输入无效"<br>
           · <b>不会用错数据</b>
