@@ -1,0 +1,1062 @@
+<!DOCTYPE html>
+<!--
+  ============================================================================
+  C 语言课件 · 3.3.2 switch 语句（多分支结构）
+  ----------------------------------------------------------------------------
+  依照《课件模板_参考_20261028_0844.html》重建；内容依据 hour 9-2 switch语句.pptx。
+  · 页面结构、目录(tocGroups)、CSS/JS 引擎沿用模板，未改。
+  · 流程图全部按《流程图元件库》switch 两张卡的画法绘制（.fc-* 类 + #fcArrow）。
+  · 第 16 页的 Code::Blocks 编译报错截图以 base64 内嵌在 HTML 内，换电脑不丢图。
+  ============================================================================
+-->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>C 程序设计基础 · 3.3.2 switch 语句</title>
+<style>
+  :root{
+    --fs-title: 48px; --fs-body: 32px; --fs-other: 30px; --fs-list: 29px;
+    --blue-900:#0a3d63; --blue-700:#124f83; --blue-600:#1a6fb5; --blue-400:#4a97d4; --blue-100:#e8f2fb;
+    --orange:#e8720c; --orange-soft:#fdf1e4;
+    --green:#2e8b57; --green-soft:#eaf7ef;
+    --purple:#8e44ad; --purple-soft:#f5ecfa;
+    --red:#c0392b; --red-soft:#fdeceb;
+    --ink:#1d2b36; --muted:#4d6376; --line:#d6e2ee;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;overflow:hidden;background:var(--blue-900);font-family:"Microsoft YaHei","PingFang SC","Hiragino Sans GB","Source Han Sans SC",sans-serif;-webkit-font-smoothing:antialiased;}
+  #stage{position:fixed;left:50%;top:50%;width:1600px;height:900px;transform:translate(-50%,-50%) scale(var(--s,1));transform-origin:center center;background:#fff;overflow:hidden;transition:opacity .22s ease;}
+  body.blackout #stage{opacity:0;}
+  .slide{position:absolute;inset:0;display:none;flex-direction:column;padding:30px 64px 60px;background:linear-gradient(180deg,#ffffff 0%,#f4faff 100%);}
+  .slide.active{display:flex;animation:fadeUp .26s ease;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+  @keyframes itemIn{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:none;}}
+  .slide.active .s-title{animation:itemIn .42s ease both;}
+  .slide.active .fit > *:not(.reveal):not(.reveal-hint){animation:itemIn .42s ease both;}
+  .slide.active .fit > *:not(.reveal):not(.reveal-hint):nth-child(1){animation-delay:.08s;}
+  .slide.active .fit > *:not(.reveal):not(.reveal-hint):nth-child(2){animation-delay:.16s;}
+  .slide.active .fit > *:not(.reveal):not(.reveal-hint):nth-child(3){animation-delay:.24s;}
+  .slide.active .fit > *:not(.reveal):not(.reveal-hint):nth-child(4){animation-delay:.32s;}
+  .slide.active .fit > *:not(.reveal):not(.reveal-hint):nth-child(5){animation-delay:.40s;}
+  .slide.active .fit > *:not(.reveal):not(.reveal-hint):nth-child(6){animation-delay:.48s;}
+  .slide.cover.active .s-title,.slide.end.active .s-title{animation:none;}
+  .slide::after{content:"";position:absolute;right:-90px;bottom:-90px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(26,111,181,.10) 0%,rgba(26,111,181,0) 70%);pointer-events:none;}
+  .s-title{flex:0 0 auto;align-self:flex-start;background:linear-gradient(135deg,#1a6fb5 0%,#124f83 100%);color:#fff;font-size:48px;font-weight:700;letter-spacing:1.5px;line-height:1.15;padding:14px 30px 14px 24px;border-left:10px solid var(--orange);border-radius:0 12px 12px 0;margin-bottom:18px;box-shadow:0 6px 16px rgba(18,79,131,.18);}
+  .s-sub{font-size:var(--fs-body);font-weight:700;color:var(--blue-700);border-left:7px solid var(--orange);padding:2px 0 2px 14px;margin:14px 0 10px;}
+  .s-sub:first-child{margin-top:0;}
+  .s-sub.blue{border-left-color:var(--blue-600);}
+  .s-body{flex:1 1 auto;min-height:0;overflow:hidden;font-size:32px;line-height:1.5;color:var(--ink);}
+  .fit{overflow:hidden;}
+  /* 版心临时加宽（左右 22px）——需要贴边排版时给 .slide 加 .tightL */
+  .slide.tightL{padding-left:22px;padding-right:22px;} .slide.tightL .code{padding-left:18px;}
+  /* 可折叠块（先题后析 / 解析 / 运行结果）：默认收起，点标题展开 */
+  .coll{margin-top:12px;}
+  .coll-hd{display:inline-flex;align-items:center;gap:10px;background:linear-gradient(135deg,#e8720c,#c55807);color:#fff;font-size:24px;padding:9px 22px;border-radius:999px;cursor:pointer;box-shadow:0 5px 12px rgba(232,114,12,.3);user-select:none;transition:filter .2s,box-shadow .2s;}
+  .coll-hd:hover{filter:brightness(1.07);box-shadow:0 7px 16px rgba(232,114,12,.4);}
+  .coll-hd::after{content:"▾";font-size:19px;line-height:1;}
+  .coll.open .coll-hd{background:linear-gradient(135deg,#1a6fb5,#124f83);box-shadow:0 5px 12px rgba(18,79,131,.28);}
+  .coll.open .coll-hd::after{content:"▴";}
+  .coll-bd{max-height:0;opacity:0;overflow:hidden;transition:max-height .5s ease,opacity .4s ease;}
+  .coll.open .coll-bd{max-height:3200px;opacity:1;margin-top:12px;}
+  .coll-hint{border:3px dashed #c9d6e2;background:#fdfefe;color:#3b4a58;border-radius:14px;padding:18px 22px;font-size:30px;line-height:1.5;}
+  .coll-hint .k{display:block;margin-top:8px;font-size:24px;color:#8a98a6;}
+  .coll.open .coll-hint{display:none;}
+  /* 第5页：折叠时改为单列、放大代码，展开后回两列 */
+  .two.w5:has(> .coll:not(.open)){grid-template-columns:1fr !important;gap:16px !important;}
+  .two.w5:has(> .coll:not(.open)) .coll-hint .k{display:inline;margin:0 0 0 12px;}
+  .two.w5:has(> .coll:not(.open)) pre.code{font-size:40px !important;line-height:1.42 !important;}
+  .s-body p{margin:8px 0;}
+  .s-body p:first-child{margin-top:0;}
+  .s-body ul,.s-body ol{padding-left:1.5em;margin:8px 0;}
+  .s-body li{margin:4px 0;}
+  .s-body ul>li::marker{color:var(--blue-600);}
+  .s-body ol>li::marker{color:var(--orange);font-weight:800;}
+  b,strong{color:var(--blue-700);}
+  table.tb{width:100%;border-collapse:separate;border-spacing:0;font-size:var(--fs-other);line-height:1.45;margin:6px 0;border-radius:12px;overflow:hidden;box-shadow:0 4px 14px rgba(18,79,131,.08);}
+  table.tb thead th{background:linear-gradient(135deg,#1a6fb5,#124f83);color:#fff;font-weight:600;font-size:var(--fs-other);padding:12px 18px;text-align:left;}
+  table.tb td,table.tb tbody th{padding:11px 18px;background:#fff;border-bottom:1px solid var(--line);vertical-align:top;}
+  table.tb tbody tr:last-child td,table.tb tbody tr:last-child th{border-bottom:none;}
+  table.tb tbody th{background:#eaf3fb;color:var(--blue-700);font-weight:600;text-align:left;white-space:nowrap;}
+  table.tb tbody tr:nth-child(even) td{background:#f7fafd;}
+  .c-red{color:var(--red);font-weight:600;} .c-green{color:var(--green);font-weight:700;} .c-blue{color:var(--blue-600);font-weight:700;}
+  .box{border-left:7px solid var(--blue-600);background:var(--blue-100);border-radius:0 10px 10px 0;padding:16px 28px;margin:10px 0;font-size:30px;line-height:1.7;}
+  .box .label{display:inline-block;font-weight:800;color:var(--blue-700);margin-right:10px;}
+  .box.tip{border-left-color:var(--green);background:var(--green-soft);} .box.tip .label{color:var(--green);}
+  .box.warn{border-left-color:var(--orange);background:var(--orange-soft);} .box.warn .label{color:#b95a05;}
+  .box.key{border-left-color:var(--purple);background:var(--purple-soft);} .box.key .label{color:var(--purple);}
+  .box.red{border-left-color:var(--red);background:var(--red-soft);} .box.red .label{color:var(--red);}
+  pre.code{background:#0d2b45;color:#d8e9f5;border-left:6px solid var(--orange);border-radius:0 12px 12px 0;padding:14px 22px;margin:8px 0;font-family:Consolas,"Courier New",monospace;font-size:28px;line-height:1.55;white-space:pre;overflow:hidden;box-shadow:0 8px 22px rgba(13,43,69,.22);}
+  pre.code .kw{color:#6ec1ff;} pre.code .str{color:#ffc17a;} pre.code .cmt{color:#7fa5c0;font-style:italic;} pre.code .num{color:#ff9d6b;}
+  code.inline{font-family:Consolas,"Courier New",monospace;background:var(--blue-100);color:#c0392b;padding:2px 8px;font-size:28px;border-radius:5px;}
+  .out{background:#0d2b45;color:#bfe4ff;border-left:6px solid var(--blue-400);border-radius:0 12px 12px 0;padding:12px 22px;margin:8px 0;font-family:Consolas,"Courier New",monospace;font-size:28px;line-height:1.5;white-space:pre;}
+  .grid{display:grid;gap:14px;} .grid.c2{grid-template-columns:1fr 1fr;} .grid.c3{grid-template-columns:repeat(3,1fr);} .grid.c4{grid-template-columns:repeat(4,1fr);} .grid{ gap:26px 14px; }
+  .card{background:#fff;border:1px solid var(--line);border-top:7px solid var(--blue-600);border-radius:0 0 16px 16px;padding:22px 28px;box-shadow:0 6px 16px rgba(18,79,131,.08);} .card.orange{border-top-color:var(--orange);} .card.green{border-top-color:var(--green);} .card.purple{border-top-color:var(--purple);} .card.red{border-top-color:var(--red);} .card h4{font-size:30px;color:var(--blue-700);margin-bottom:8px;display:flex;align-items:center;gap:10px;line-height:1.2;} .card.orange h4{color:#b95a05;} .card.green h4{color:var(--green);} .card.purple h4{color:var(--purple);} .card.red h4{color:var(--red);} .card p{font-size:27px;color:var(--muted);line-height:1.7;margin:0;} .card .ico{font-size:30px;line-height:1;}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start;} .two.wide{grid-template-columns:1.15fr 1fr;}
+  .feat{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px;} .feat li{display:flex;align-items:center;gap:22px;background:#fff;border:1px solid var(--line);border-left:7px solid var(--blue-600);border-radius:0 12px 12px 0;padding:12px 24px;box-shadow:0 4px 10px rgba(18,79,131,.06);} .feat li:nth-child(even){border-left-color:var(--orange);} .feat .k{flex:0 0 auto;width:270px;font-size:30px;font-weight:700;color:var(--blue-700);line-height:1.25;} .feat .v{font-size:27px;color:var(--muted);line-height:1.5;}
+  .slide.cover{background:linear-gradient(135deg,#1a6fb5 0%,#0d4a7a 58%,#0a3d63 100%);padding:0 110px 60px;justify-content:center;} .slide.cover::before{content:"";position:absolute;right:-100px;top:-100px;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(232,114,12,.18) 0%,rgba(232,114,12,0) 70%);} .slide.cover::after{content:"";position:absolute;left:-100px;bottom:-120px;width:440px;height:440px;border-radius:50%;background:radial-gradient(circle,rgba(74,151,212,.18) 0%,rgba(74,151,212,0) 70%);} .cover-inner{position:relative;z-index:2;} .cover-kicker{display:inline-block;font-size:var(--fs-other);letter-spacing:3px;color:#ffd9b3;border:1px solid rgba(255,217,179,.55);padding:8px 24px;margin-bottom:28px;border-radius:999px;} .cover h1{font-size:82px;font-weight:800;color:#fff;letter-spacing:5px;line-height:1.15;margin-bottom:16px;} .cover-bar{width:650px;height:8px;border-radius:4px;background:linear-gradient(90deg,#e8720c,#ffb26b);margin-bottom:22px;} .cover-sub{font-size:40px;color:#a9d8f5;letter-spacing:3px;margin-bottom:36px;} .cover-meta{font-size:var(--fs-other);color:#7fb2dd;letter-spacing:2px;}
+  .slide.end{background:linear-gradient(135deg,#1a6fb5 0%,#0d4a7a 58%,#0a3d63 100%);padding:0 110px 60px;justify-content:center;} .slide.end::before{content:"";position:absolute;right:-100px;bottom:-120px;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(232,114,12,.16) 0%,rgba(232,114,12,0) 70%);} .end-inner{position:relative;z-index:2;} .end h2{font-size:82px;font-weight:800;color:#fff;letter-spacing:10px;margin-bottom:22px;} .end p{font-size:var(--fs-body);color:#a9d8f5;letter-spacing:2px;}
+  .pageinfo{position:absolute;right:40px;top:22px;z-index:20;font-size:var(--fs-other);color:var(--blue-600);letter-spacing:1px;background:rgba(255,255,255,.95);border:1px solid var(--line);border-radius:999px;padding:5px 20px;box-shadow:0 4px 10px rgba(18,79,131,.08);} .pageinfo b{font-size:var(--fs-other);color:var(--orange);}
+  .nav{position:absolute;right:36px;bottom:14px;z-index:20;display:flex;align-items:center;gap:10px;} .nav button{height:50px;border:none;cursor:pointer;background:linear-gradient(135deg,#1a6fb5,#124f83);color:#fff;font-size:var(--fs-other);line-height:1;display:flex;align-items:center;justify-content:center;transition:all .18s;font-family:inherit;border-radius:12px;width:50px;box-shadow:0 5px 12px rgba(18,79,131,.28);} .nav button:hover{background:linear-gradient(135deg,#e8720c,#c55807);transform:translateY(-2px);} .nav button:disabled{background:#b9cfe4;cursor:not-allowed;box-shadow:none;transform:none;} .nav .tocbtn{width:auto;padding:0 22px;font-weight:700;letter-spacing:1px;}
+  .progress{position:absolute;left:0;bottom:0;height:6px;width:0;z-index:20;background:linear-gradient(90deg,#1a6fb5,#e8720c);transition:width .3s ease;}
+  .keyhint{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);z-index:20;font-size:20px;color:#7fa8c4;letter-spacing:1px;background:rgba(255,255,255,.85);border:1px solid var(--line);border-radius:999px;padding:4px 16px;transition:opacity .6s ease;} .keyhint.hide{opacity:0;}
+  .toc{position:absolute;inset:0;z-index:40;background:rgba(10,61,99,.96);display:none;padding:44px 60px 60px;overflow:auto;} .toc.show{display:block;} .toc h3{font-size:40px;color:#fff;letter-spacing:4px;margin-bottom:6px;} .toc .toc-bar{width:110px;height:6px;border-radius:3px;background:linear-gradient(90deg,#e8720c,#ffb26b);margin-bottom:20px;} .toc-list{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;align-items:start;} .toc-group{background:rgba(255,255,255,.05);border-radius:14px;padding:14px 14px 16px;border-top:5px solid var(--blue-400);} .toc-group:nth-child(2){border-top-color:var(--orange);} .toc-group:nth-child(3){border-top-color:var(--green);} .toc-group:nth-child(4){border-top-color:var(--purple);} .toc-group:nth-child(5){border-top-color:var(--red);} .toc-group-title{font-size:22px;color:#ffc17a;font-weight:800;letter-spacing:1px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px dashed rgba(255,255,255,.18);line-height:1.25;} .toc-group a{display:block;color:#cfe6f7;font-size:20px;padding:8px 12px;border-radius:8px;cursor:pointer;margin-bottom:4px;text-decoration:none;line-height:1.35;transition:all .16s;} .toc-group a:hover{background:linear-gradient(90deg,#e8720c,#c55807);color:#fff;} .toc-close{position:absolute;right:40px;top:22px;background:none;border:1px solid #7fb2dd;color:#cfe6f7;font-size:var(--fs-other);padding:7px 22px;cursor:pointer;font-family:inherit;border-radius:12px;} .toc-close:hover{background:#e8720c;border-color:#e8720c;color:#fff;}
+  /* 习题解析：先隐藏，点击后动画揭示，避免答案与题目同时出现 */
+  .reveal{max-height:0;opacity:0;overflow:hidden;margin-top:0!important;transition:max-height .55s ease, opacity .45s ease;}
+  .reveal.shown{max-height:3000px;opacity:1;margin-top:14px!important;}
+  .reveal.shown .box{box-shadow:0 0 0 2px rgba(232,114,12,.35), 0 6px 16px rgba(18,79,131,.08);}
+  .reveal-hint{display:inline-flex;align-items:center;gap:8px;margin-top:14px;background:linear-gradient(135deg,#e8720c,#c55807);color:#fff;font-size:24px;padding:8px 18px;border-radius:999px;cursor:pointer;box-shadow:0 5px 12px rgba(232,114,12,.3);animation:pulse 1.5s ease-in-out infinite;user-select:none;}
+  .reveal-hint.gone{display:none;}
+  @keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.05);}}
+
+  /* 流程图组件：N-S 图（盒图）与传统流程图通用 */
+  .flow{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;width:100%;gap:6px;}
+  .flow svg{display:block;width:100%;height:auto;}
+  .flow .cap{font-size:23px;font-weight:800;color:var(--blue-700);letter-spacing:1px;text-align:center;line-height:1.3;}
+  .flow svg text{font-family:"Microsoft YaHei","PingFang SC","Hiragino Sans GB","Source Han Sans SC",sans-serif;}
+  .fc-term{fill:var(--blue-700);} .fc-term-t{fill:#fff;font-weight:700;}
+  .fc-proc{fill:#fff;stroke:var(--blue-600);stroke-width:2.5;} .fc-proc-t{fill:var(--ink);}
+  .fc-io{fill:#fff;stroke:var(--purple);stroke-width:2.5;} .fc-io-t{fill:var(--purple);font-weight:700;}
+  .fc-dec{fill:var(--orange-soft);stroke:var(--orange);stroke-width:2.5;} .fc-dec-t{fill:#9a4a00;font-weight:700;}
+  .fc-line{stroke:#5a7a93;stroke-width:2.5;fill:none;stroke-linecap:round;stroke-linejoin:round;}
+  .fc-yes{fill:var(--green);font-weight:800;} .fc-no{fill:var(--red);font-weight:800;}
+  .fc-ns{fill:#fff;stroke:var(--blue-600);stroke-width:2.5;} .fc-ns-line{stroke:var(--blue-600);stroke-width:2.5;}
+  .fc-ns-cond{fill:var(--blue-100);stroke:var(--blue-600);stroke-width:2.5;} .fc-ns-t{fill:var(--ink);}
+  /* 本课件追加：截图容器 */
+  .sc{background:#fff;border:1px solid var(--line);border-radius:10px;padding:6px;box-shadow:0 6px 16px rgba(18,79,131,.10);}
+  .sc img{display:block;width:100%;height:auto;border-radius:6px;}
+  .sc .cap{font-size:20px;color:var(--muted);text-align:center;padding:6px 0 2px;letter-spacing:.5px;}
+</style>
+</head>
+<body>
+  <div id="stage">
+
+  <!-- 全局流程图箭头定义（供各页 SVG 引用，只需一处） -->
+  <svg width="0" height="0" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true"><defs>
+    <marker id="fcArrow" markerWidth="11" markerHeight="11" refX="8" refY="5.5" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M1,1 L10,5.5 L1,10 Z" fill="#5a7a93"/>
+    </marker>
+  </defs></svg>
+
+<!-- 0 封面 -->
+  <section class="slide cover active">
+    <div class="cover-inner">
+      <div class="cover-kicker">武汉理工大学 人工智能学院</div>
+      <h1>C 程序设计基础</h1>
+      <div class="cover-bar"></div>
+      <div class="cover-sub">第 3 章　选择结构：switch 语句</div>
+      <div class="cover-meta">主讲：孙　骏</div>
+    </div>
+  </section>
+
+  <!-- 1 回顾：多分支 if 与"等值判断" -->
+  <section class="slide">
+    <div class="s-title">回顾：多分支 if 的判断全是"等于某个值"</div>
+    <div class="s-body">
+      <div class="two" style="grid-template-columns:1.06fr 1fr;gap:36px;margin-top:0;">
+        <div>
+          <div class="s-sub blue" style="margin-top:0;">例：由等级查分数段</div>
+          <pre class="code" style="font-size:30px;line-height:1.5;"><span class="kw">char</span> grade;
+scanf(<span class="str">"%c"</span>, &amp;grade);
+
+<span class="kw">if</span>(grade==<span class="str">'A'</span>) printf(<span class="str">"85~100\n"</span>);
+<span class="kw">else if</span>(grade==<span class="str">'B'</span>) printf(<span class="str">"70~84\n"</span>);
+<span class="kw">else if</span>(grade==<span class="str">'C'</span>) printf(<span class="str">"60~69\n"</span>);
+<span class="kw">else if</span>(grade==<span class="str">'D'</span>) printf(<span class="str">"&lt;60\n"</span>);
+<span class="kw">else</span> printf(<span class="str">"Error\n"</span>);</pre>
+        </div>
+        <div>
+          <div class="box" style="margin-top:0;font-size:30px;line-height:1.55;">
+            <span class="label">观察</span>
+            5 个分支里有 4 个都是 <code class="inline">grade == '某字符'</code>——判断的是<b>“变量等于哪个具体的值”</b>，这叫<b>等值判断</b>。
+          </div>
+          <div class="box warn" style="font-size:30px;line-height:1.55;">
+            <span class="label">问题</span>
+            区间判断离不开 <code class="inline">if</code>（如 <code class="inline">s&gt;=60&amp;&amp;s&lt;70</code>）；可“等于某个值”的多分支，这样一长串 <code class="inline">else if</code> 又长又容易写错。
+          </div>
+          <div class="box tip" style="font-size:30px;line-height:1.55;">
+            <span class="label">C 的办法</span>
+            C 语言为此专门提供了 <b>switch 语句</b>（开关语句 / 多分支结构），把“逐个比较某个值”写得更短、更像查表。
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 switch 语法格式 -->
+  <section class="slide">
+    <div class="s-title">3.3.2　switch 语句：语法格式</div>
+    <div class="s-body">
+      <div class="two" style="grid-template-columns:1.02fr 1fr;gap:36px;margin-top:0;">
+        <div>
+          <div class="s-sub blue" style="margin-top:0;">语法格式</div>
+          <pre class="code" style="font-size:29px;line-height:1.5;"><span class="kw">switch</span> (表达式)
+{
+    <span class="kw">case</span> 常量表达式1: 语句组1
+    <span class="kw">case</span> 常量表达式2: 语句组2
+        ⋮
+    <span class="kw">case</span> 常量表达式n: 语句组n
+    <span class="kw">default</span>: 语句组n+1
+}</pre>
+          <div class="box key" style="font-size:28px;line-height:1.5;margin-top:14px;">
+            <span class="label">注意</span>
+            语句组<b>不是一条语句</b>：可以写多条，<b>不必加 <code class="inline">{ }</code></b>，也无须加分号。
+          </div>
+        </div>
+        <div>
+          <div class="box" style="margin-top:0;font-size:28px;line-height:1.5;">
+            <span class="label">switch(表达式)</span>
+            由它算出“待比较的值”，必须是<b>整型或字符型</b>（char / int / 枚举），<b>不能是 float、double</b>。
+          </div>
+          <div class="box warn" style="font-size:28px;line-height:1.5;">
+            <span class="label">case 常量表达式k</span>
+            “入口标号”，值必须是与表达式同类型的<b>常量</b>（如 <code class="inline">'A'</code>、<code class="inline">1</code>、<code class="inline">2+1</code>），<b>各 case 的值互不相同</b>。
+          </div>
+          <div class="box key" style="font-size:28px;line-height:1.5;">
+            <span class="label">default</span>
+            所有 case 都不匹配时走这里，处理“其他（非法）”情况；<b>可以省略</b>，位置也可前可后。
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 执行流程（图 A：无 break） -->
+  <section class="slide">
+    <div class="s-title">执行流程：命中哪个 case，就从哪里往下执行</div>
+    <div class="s-body">
+      <div style="display:grid;grid-template-columns:616px minmax(0,1fr);gap:34px;margin-top:0;align-items:start;">
+        <div class="flow">
+          <div class="cap">switch 的执行流程</div>
+          <svg viewBox="0 0 470 500" style="max-width:600px;">
+            <rect class="fc-term" x="30" y="12" width="180" height="44" rx="22"/>
+            <text class="fc-term-t" x="120" y="41" font-size="19" text-anchor="middle">switch开始</text>
+            <line class="fc-line" x1="120" y1="56" x2="120" y2="86"/>
+            <polygon class="fc-dec" points="120,86 202,126 120,166 38,126"/>
+            <text class="fc-dec-t" x="120" y="132" font-size="17" text-anchor="middle">case 常量1</text>
+            <text class="fc-yes" x="232" y="117" font-size="15" text-anchor="middle">匹配</text>
+            <path class="fc-line" d="M202,126 L270,126" marker-end="url(#fcArrow)"/>
+            <rect class="fc-proc" x="272" y="102" width="176" height="48" rx="4"/>
+            <text class="fc-proc-t" x="360" y="133" font-size="18" text-anchor="middle">语句组 1</text>
+            <line class="fc-line" x1="120" y1="166" x2="120" y2="206" marker-end="url(#fcArrow)"/>
+            <polygon class="fc-dec" points="120,206 202,246 120,286 38,246"/>
+            <text class="fc-dec-t" x="120" y="252" font-size="17" text-anchor="middle">case 常量2</text>
+            <text class="fc-yes" x="232" y="237" font-size="15" text-anchor="middle">匹配</text>
+            <path class="fc-line" d="M202,246 L270,246" marker-end="url(#fcArrow)"/>
+            <rect class="fc-proc" x="272" y="222" width="176" height="48" rx="4"/>
+            <text class="fc-proc-t" x="360" y="253" font-size="18" text-anchor="middle">语句组 2</text>
+            <path class="fc-line" d="M120,286 L120,330" stroke-dasharray="6,5"/>
+            <text class="fc-ns-t" x="100" y="315" font-size="18" text-anchor="middle">⋮</text>
+            <polygon class="fc-dec" points="120,330 202,370 120,410 38,370"/>
+            <text class="fc-dec-t" x="120" y="376" font-size="17" text-anchor="middle">default</text>
+            <path class="fc-line" d="M202,370 L270,370" marker-end="url(#fcArrow)"/>
+            <rect class="fc-proc" x="272" y="346" width="176" height="48" rx="4"/>
+            <text class="fc-proc-t" x="360" y="377" font-size="18" text-anchor="middle">语句组 n+1</text>
+            <path class="fc-line" d="M360,150 L360,222" marker-end="url(#fcArrow)"/>
+            <path class="fc-line" d="M360,270 L360,346" stroke-dasharray="6,5"/>
+            <text class="fc-ns-t" x="378" y="315" font-size="18" text-anchor="start">⋮</text>
+            <path class="fc-line" d="M360,394 L360,442" marker-end="url(#fcArrow)"/>
+            <rect class="fc-term" x="270" y="442" width="180" height="44" rx="22"/>
+            <text class="fc-term-t" x="360" y="471" font-size="19" text-anchor="middle">switch结束</text>
+          </svg>
+        </div>
+        <div>
+          <div class="box" style="margin-top:0;font-size:25px;line-height:1.5;">
+            <span class="label">① 算值</span>
+            先算出 <code class="inline">switch(表达式)</code> 的值（整型 / 字符型）。
+          </div>
+          <div class="box" style="margin-top:10px;font-size:25px;line-height:1.5;">
+            <span class="label">② 比对</span>
+            自上而下与各 <code class="inline">case</code> 后的常量逐个比较，<b>找到相等的那一个就进去</b>。
+          </div>
+          <div class="box warn" style="margin-top:10px;font-size:25px;line-height:1.5;">
+            <span class="label">③ 顺流而下</span>
+            进去之后<b>不再做判断</b>，把后面的语句一条条执行下去，直到遇到 <code class="inline">break</code> 或 <code class="inline">switch</code> 结构结束（图中右侧的竖线）。
+          </div>
+          <div class="box tip" style="margin-top:10px;font-size:25px;line-height:1.5;">
+            <span class="label">④ 都不匹配</span>
+            全部 case 都不等时，才走 <code class="inline">default</code> 分支。
+          </div>
+          <div class="box key" style="margin-top:10px;font-size:25px;line-height:1.5;">
+            <span class="label">⑤ 与 if 不同</span>
+            <code class="inline">if</code> 每进一个分支都要重新算条件；<code class="inline">switch</code> 只在<b>找入口时判断一次</b>，进去以后一路直下——所以又快又像查表。
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 无 break 的穿透 -->
+  <section class="slide">
+    <div class="s-title">直接把 if 改成 switch：出了什么问题？</div>
+    <div class="s-body">
+      <div class="two w5" style="grid-template-columns:1.02fr 1fr;gap:36px;margin-top:0;align-items:start;">
+        <div>
+          <div class="s-sub" style="margin-top:0;color:#b95a05;border-left-color:var(--orange);">照原样改写（没有 break）</div>
+          <pre class="code" style="font-size:30px;line-height:1.45;"><span class="kw">switch</span>(grade){
+    <span class="kw">case</span> <span class="str">'A'</span>: printf(<span class="str">"85~100\n"</span>);
+    <span class="kw">case</span> <span class="str">'B'</span>: printf(<span class="str">"70~84\n"</span>);
+    <span class="kw">case</span> <span class="str">'C'</span>: printf(<span class="str">"60~69\n"</span>);
+    <span class="kw">case</span> <span class="str">'D'</span>: printf(<span class="str">"&lt;60\n"</span>);
+    <span class="kw">default</span>:  printf(<span class="str">"Error\n"</span>);
+}</pre>
+        </div>
+        <div class="coll" style="margin-top:0;">
+          <div class="coll-hint">先请学生口答：输入 <b>B</b>，屏幕上会依次打印出哪几行？<span class="k">想好了再点下面的按钮</span></div>
+          <div class="coll-hd" style="font-size:30px;padding:9px 26px;">点击显示：实际输出与原因</div>
+          <div class="coll-bd">
+            <div class="s-sub blue" style="margin-top:0;">输入 B 的实际输出</div>
+            <div class="out" style="font-size:30px;line-height:1.44;border-left-color:var(--red);color:#ffc9c9;">70~84
+60~69
+&lt;60
+Error</div>
+            <div class="box red" style="font-size:30px;line-height:1.5;margin-top:12px;">
+              <span class="label">原因</span>
+              <code class="inline">case</code> 只是<b>入口标号</b>，本身没有“跳出”功能：匹配到 <code class="inline">'B'</code> 后往下走，<b>C、D、default 的语句全被执行</b>——这叫<b>穿透（fall through）</b>。
+            </div>
+            <div class="box tip" style="font-size:30px;line-height:1.5;margin-top:6px;">
+              <span class="label">别急</span>
+              穿透并不全是坏处——下一页会看到，<b>故意省掉 break</b> 正好能让多个 case 共用一段语句。
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 break 语句 -->
+  <section class="slide">
+    <div class="s-title">break 语句（中断语句）</div>
+    <div class="s-body">
+      <div class="box red" style="margin-top:0;font-size:43px;line-height:1.6;">
+        <span class="label">语句形式</span>
+        <code class="inline" style="font-size:46px;">break;</code>
+      </div>
+      <div class="two" style="grid-template-columns:1fr 1fr;gap:28px;margin-top:16px;">
+        <div class="card red" style="padding:20px 26px;">
+          <h4 style="font-size:44px;">功能：中止本结构</h4>
+          <p style="font-size:38px;line-height:1.6;">中止 <b>switch 结构</b>（或循环结构）的执行，转去执行该结构的<b>下一条语句</b>——也就是跳出 <code class="inline">{ }</code>，接着往下走。</p>
+        </div>
+        <div class="card orange" style="padding:20px 26px;">
+          <h4 style="font-size:44px;">使用范围：只在这两种结构里</h4>
+          <p style="font-size:38px;line-height:1.6;"><code class="inline">break</code> 只能用在 <b>switch 结构</b>或<b>循环结构</b>之中，不能单独写在普通语句里。</p>
+        </div>
+      </div>
+      <div class="box tip" style="font-size:40px;line-height:1.55;margin-top:18px;">
+        <span class="label">一句话</span>
+        switch 里 <code class="inline">break</code> 的作用是<b>“执行完本分支就收工”</b>：不加它会一路穿透，加了它才真正实现“多选一”。
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 改进后的 switch（有 break） -->
+  <section class="slide">
+    <div class="s-title">改进：每个分支末尾加上 break</div>
+    <div class="s-body">
+      <div class="two" style="grid-template-columns:1.06fr 1fr;gap:34px;margin-top:0;">
+        <div>
+          <div class="s-sub blue" style="margin-top:0;">改进后的 switch 语句</div>
+          <pre class="code" style="font-size:33px;line-height:1.45;"><span class="kw">switch</span>(grade){
+    <span class="kw">case</span> <span class="str">'A'</span>: printf(<span class="str">"85~100\n"</span>); <span class="kw">break</span>;
+    <span class="kw">case</span> <span class="str">'B'</span>: printf(<span class="str">"70~84\n"</span>);  <span class="kw">break</span>;
+    <span class="kw">case</span> <span class="str">'C'</span>: printf(<span class="str">"60~69\n"</span>);  <span class="kw">break</span>;
+    <span class="kw">case</span> <span class="str">'D'</span>: printf(<span class="str">"&lt;60\n"</span>);    <span class="kw">break</span>;
+    <span class="kw">default</span>:  printf(<span class="str">"Error\n"</span>);
+}</pre>
+        </div>
+        <div>
+          <div class="s-sub blue" style="margin-top:0;">若 grade = 'C'，则输出</div>
+          <div class="out" style="font-size:36px;line-height:1.5;">60~69</div>
+          <div class="box tip" style="font-size:33px;line-height:1.55;margin-top:14px;">
+            <span class="label">效果</span>
+            匹配到 <code class="inline">'C'</code> → 打印 60~69 → 遇到 <code class="inline">break</code> → <b>立即跳出</b> switch，只输出一行。
+          </div>
+          <div class="box" style="font-size:33px;line-height:1.55;">
+            <span class="label">细节</span>
+            最后一个分支（通常是 <code class="inline">default</code>）后面<b>可以省略 break</b>，因为它后面已没有语句，马上就结束了。
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 执行流程（图 B：有 break） -->
+  <section class="slide">
+    <div class="s-title">有 break 的执行流程：各分支直接汇入出口</div>
+    <div class="s-body">
+      <div style="display:grid;grid-template-columns:716px minmax(0,1fr);gap:30px;margin-top:0;align-items:start;">
+        <div class="flow">
+          <div class="cap">加了 break 之后</div>
+          <svg viewBox="0 0 610 500" style="max-width:700px;">
+            <rect class="fc-term" x="30" y="12" width="180" height="44" rx="22"/>
+            <text class="fc-term-t" x="120" y="41" font-size="19" text-anchor="middle">switch开始</text>
+            <line class="fc-line" x1="120" y1="56" x2="120" y2="86"/>
+            <polygon class="fc-dec" points="120,86 202,126 120,166 38,126"/>
+            <text class="fc-dec-t" x="120" y="132" font-size="17" text-anchor="middle">case 常量1</text>
+            <text class="fc-yes" x="232" y="117" font-size="15" text-anchor="middle">匹配</text>
+            <path class="fc-line" d="M202,126 L270,126" marker-end="url(#fcArrow)"/>
+            <rect class="fc-proc" x="272" y="102" width="176" height="48" rx="4"/>
+            <text class="fc-proc-t" x="360" y="133" font-size="18" text-anchor="middle">语句组 1</text>
+            <line class="fc-line" x1="120" y1="166" x2="120" y2="206" marker-end="url(#fcArrow)"/>
+            <polygon class="fc-dec" points="120,206 202,246 120,286 38,246"/>
+            <text class="fc-dec-t" x="120" y="252" font-size="17" text-anchor="middle">case 常量2</text>
+            <text class="fc-yes" x="232" y="237" font-size="15" text-anchor="middle">匹配</text>
+            <path class="fc-line" d="M202,246 L270,246" marker-end="url(#fcArrow)"/>
+            <rect class="fc-proc" x="272" y="222" width="176" height="48" rx="4"/>
+            <text class="fc-proc-t" x="360" y="253" font-size="18" text-anchor="middle">语句组 2</text>
+            <path class="fc-line" d="M120,286 L120,330" stroke-dasharray="6,5"/>
+            <text class="fc-ns-t" x="100" y="315" font-size="18" text-anchor="middle">⋮</text>
+            <polygon class="fc-dec" points="120,330 202,370 120,410 38,370"/>
+            <text class="fc-dec-t" x="120" y="376" font-size="17" text-anchor="middle">default</text>
+            <path class="fc-line" d="M202,370 L270,370" marker-end="url(#fcArrow)"/>
+            <rect class="fc-proc" x="272" y="346" width="176" height="48" rx="4"/>
+            <text class="fc-proc-t" x="360" y="377" font-size="18" text-anchor="middle">语句组 n+1</text>
+            <path class="fc-line" d="M448,126 L500,126"/>
+            <text x="474" y="117" font-size="15" fill="#5b6b7a" text-anchor="middle">break</text>
+            <path class="fc-line" d="M448,246 L500,246"/>
+            <text x="474" y="237" font-size="15" fill="#5b6b7a" text-anchor="middle">break</text>
+            <path class="fc-line" d="M448,370 L500,370"/>
+            <text x="474" y="361" font-size="15" fill="#5b6b7a" text-anchor="middle">break</text>
+            <path class="fc-line" d="M500,126 L500,442" marker-end="url(#fcArrow)"/>
+            <rect class="fc-term" x="410" y="442" width="180" height="44" rx="22"/>
+            <text class="fc-term-t" x="500" y="471" font-size="19" text-anchor="middle">switch结束</text>
+          </svg>
+        </div>
+        <div>
+          <div class="box tip" style="margin-top:0;font-size:24px;line-height:1.5;">
+            <span class="label">① 每条分支都收口</span>
+            语句组 1、2、n+1 执行完都<b>向右汇入同一条竖线</b>（图中标注 break），直达 <b>switch结束</b>——这就是“多选一”。
+          </div>
+          <div class="box" style="margin-top:10px;font-size:24px;line-height:1.5;">
+            <span class="label">② 与左图对比</span>
+            上一页那张图里，语句组之间是<b>上下相连</b>的（会穿透）；这张图里语句组之间<b>不再相连</b>，只剩右侧出口。
+          </div>
+          <div class="box warn" style="margin-top:10px;font-size:24px;line-height:1.5;">
+            <span class="label">③ 记住</span>
+            判断只在“找入口”时做一次；进去以后要么 break 出去，要么顺序执行到底。
+          </div>
+          <div class="box key" style="margin-top:10px;font-size:24px;line-height:1.5;">
+            <span class="label">④ break 只管一层</span>
+            它只跳出<b>最近的 switch（或循环）</b>。若 switch 写在循环里，break 跳出的是 switch，<b>不会</b>结束循环。
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8 巧妙利用形式一：多个 case 共用 -->
+  <section class="slide">
+    <div class="s-title">巧用“形式一”：多个 case 共用一组语句</div>
+    <div class="s-body">
+      <div class="two" style="grid-template-columns:1.06fr 1fr;gap:34px;margin-top:0;">
+        <div>
+          <div class="s-sub blue" style="margin-top:0;">switch 语句形式一（无 break）的作用</div>
+          <pre class="code" style="font-size:33px;line-height:1.45;"><span class="kw">switch</span>(grade){
+    <span class="kw">case</span> <span class="str">'A'</span>:
+    <span class="kw">case</span> <span class="str">'B'</span>:
+    <span class="kw">case</span> <span class="str">'C'</span>: printf(<span class="str">"60~100 合格\n"</span>); <span class="kw">break</span>;
+    <span class="kw">case</span> <span class="str">'D'</span>: printf(<span class="str">"&lt;60 不合格\n"</span>);    <span class="kw">break</span>;
+    <span class="kw">default</span>:  printf(<span class="str">"Error\n"</span>);
+}</pre>
+        </div>
+        <div>
+          <div class="box tip" style="margin-top:0;font-size:33px;line-height:1.55;">
+            <span class="label">原理</span>
+            <code class="inline">'A'</code>、<code class="inline">'B'</code> 后面<b>故意不写语句、也不写 break</b>，于是“滑落”到 <code class="inline">'C'</code>，三个入口共用同一段打印语句。
+          </div>
+          <div class="box" style="font-size:33px;line-height:1.55;">
+            <span class="label">规矩</span>
+            共用语句写在<b>最后一个 case 之后</b>，然后再写 <code class="inline">break</code>；输入 A / B / C 结果都一样。
+          </div>
+          <div class="box warn" style="font-size:33px;line-height:1.5;">
+            <span class="label">提醒</span>
+            <b>只有确实要共用时才省 break</b>，否则就是上一页那个“穿透”错误。
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9 【例3-5】题目 -->
+  <section class="slide">
+    <div class="s-title">【例 3-5】输出月份对应的季节</div>
+    <div class="s-body">
+      <div class="box" style="margin-top:0;font-size:35px;line-height:1.55;">
+        <span class="label">题目要求</span>
+        输入一个月份，输出对应的季节。
+      </div>
+      <div class="grid c4" style="margin-top:16px;gap:16px;">
+        <div class="card green" style="padding:14px 20px;"><h4 style="font-size:39px;">春</h4><p style="font-size:31px;color:var(--ink);">3、4、5 月</p></div>
+        <div class="card orange" style="padding:14px 20px;"><h4 style="font-size:39px;">夏</h4><p style="font-size:31px;color:var(--ink);">6、7、8 月</p></div>
+        <div class="card" style="padding:14px 20px;"><h4 style="font-size:39px;">秋</h4><p style="font-size:31px;color:var(--ink);">9、10、11 月</p></div>
+        <div class="card purple" style="padding:14px 20px;"><h4 style="font-size:39px;">冬</h4><p style="font-size:31px;color:var(--ink);">12、1、2 月</p></div>
+      </div>
+      <div class="two" style="grid-template-columns:1fr 1fr;gap:26px;margin-top:18px;">
+        <div class="box" style="margin:0;font-size:34px;line-height:1.6;">
+          <span class="label">输入 / 输出格式</span>
+          输入：一个代表月份的整数。<br>
+          输出：根据输入值输出当月是什么季节。
+        </div>
+        <div class="out" style="margin:0;font-size:34px;line-height:1.6;">请输入月份: 10
+10月是秋季。</div>
+      </div>
+      <div class="box key" style="margin-top:16px;font-size:32px;line-height:1.5;">
+        <span class="label">想一想</span>
+        12 个“等于几”的判断，用 switch 写比 <code class="inline">if</code> 短得多——而且同一季节的 3 个月正好可以<b>共用一个出口</b>。
+      </div>
+    </div>
+  </section>
+
+  <!-- 10 【例3-5】参考代码 -->
+  <section class="slide">
+    <div class="s-title">【例 3-5】参考代码</div>
+    <div class="s-body">
+      <div style="display:grid;grid-template-columns:836px minmax(0,1fr);gap:32px;margin-top:0;">
+        <div>
+<pre class="code" style="font-size:24px;line-height:1.44;margin-top:0;">#<span class="kw">include</span>&lt;stdio.h&gt;
+<span class="kw">int</span> main()
+{
+    <span class="kw">int</span> month;
+    printf(<span class="str">"请输入月份:"</span>);
+    scanf(<span class="str">"%d"</span>, &amp;month);
+    printf(<span class="str">"%d月是"</span>, month);
+    <span class="kw">switch</span>(month)
+    {
+        <span class="kw">case</span> <span class="num">12</span>: <span class="kw">case</span> <span class="num">1</span>: <span class="kw">case</span> <span class="num">2</span>: printf(<span class="str">"冬季\n"</span>); <span class="kw">break</span>;
+        <span class="kw">case</span> <span class="num">3</span>:  <span class="kw">case</span> <span class="num">4</span>: <span class="kw">case</span> <span class="num">5</span>: printf(<span class="str">"春季\n"</span>); <span class="kw">break</span>;
+        <span class="kw">case</span> <span class="num">6</span>:  <span class="kw">case</span> <span class="num">7</span>: <span class="kw">case</span> <span class="num">8</span>: printf(<span class="str">"夏季\n"</span>); <span class="kw">break</span>;
+        <span class="kw">case</span> <span class="num">9</span>:  <span class="kw">case</span> <span class="num">10</span>: <span class="kw">case</span> <span class="num">11</span>: printf(<span class="str">"秋季\n"</span>); <span class="kw">break</span>;
+        <span class="kw">default</span>: printf(<span class="str">"输入错误\n"</span>);
+    }
+    <span class="kw">return</span> <span class="num">0</span>;
+}</pre>
+        </div>
+        <div>
+          <div class="box tip" style="margin-top:0;font-size:24px;line-height:1.5;">
+            <span class="label">① 共用入口</span>
+            同一季节的 3 个月写成一串 <code class="inline">case</code>，只在最后一个后面跟语句和 <code class="inline">break</code>。
+          </div>
+          <div class="box" style="font-size:24px;line-height:1.5;">
+            <span class="label">② 每组都收口</span>
+            每组末尾都要 <code class="inline">break</code>，否则会把下一个季节也打印出来（下一页细看）。
+          </div>
+          <div class="box warn" style="font-size:24px;line-height:1.5;">
+            <span class="label">③ default 兜底</span>
+            输入 13、0、-1 等非法月份时，走 <code class="inline">default</code> 提示“输入错误”，不让程序“没反应”。
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 11 【例3-5】检查：漏一个 break 会怎样 -->
+  <section class="slide">
+    <div class="s-title">检查：这一组漏了 break 会怎样？</div>
+    <div class="s-body">
+      <div class="two" style="grid-template-columns:1fr 1fr;gap:32px;margin-top:0;">
+        <div>
+          <div class="s-sub" style="margin-top:0;color:#b95a05;border-left-color:var(--orange);">漏写 break 的写法</div>
+          <pre class="code" style="font-size:27px;line-height:1.48;"><span class="kw">switch</span>(month)
+{
+    <span class="kw">case</span> <span class="num">12</span>: <span class="kw">case</span> <span class="num">1</span>: <span class="kw">case</span> <span class="num">2</span>: printf(<span class="str">"冬季\n"</span>);
+    <span class="kw">case</span> <span class="num">3</span>:  <span class="kw">case</span> <span class="num">4</span>: <span class="kw">case</span> <span class="num">5</span>: printf(<span class="str">"春季\n"</span>); <span class="kw">break</span>;
+    <span class="kw">case</span> <span class="num">6</span>:  <span class="kw">case</span> <span class="num">7</span>: <span class="kw">case</span> <span class="num">8</span>: printf(<span class="str">"夏季\n"</span>); <span class="kw">break</span>;
+    <span class="kw">case</span> <span class="num">9</span>:  <span class="kw">case</span> <span class="num">10</span>: <span class="kw">case</span> <span class="num">11</span>: printf(<span class="str">"秋季\n"</span>); <span class="kw">break</span>;
+    <span class="kw">default</span>: printf(<span class="str">"输入错误\n"</span>);
+}</pre>
+          <div class="box red" style="font-size:26px;line-height:1.5;margin-top:12px;">
+            <span class="label">错在哪</span>
+            “冬季”这一组末尾少了 <code class="inline">break;</code>
+          </div>
+        </div>
+        <div>
+          <div class="s-sub blue" style="margin-top:0;">输入 12 的实际输出</div>
+          <div class="out" style="font-size:27px;line-height:1.55;border-left-color:var(--red);color:#ffc9c9;">12月是冬季
+春季
+夏季
+秋季</div>
+          <div class="box" style="font-size:26px;line-height:1.5;margin-top:12px;">
+            <span class="label">走一遍</span>
+            命中的是 <code class="inline">case 2</code> 那一格 → 打印“冬季” → 没有 break，继续往下 → 春季、夏季、秋季依次打印 → 直到“秋季”末尾的 <code class="inline">break</code> 才停。
+          </div>
+          <div class="box tip" style="font-size:26px;line-height:1.5;">
+            <span class="label">自检</span>
+            写 switch 时<b>每组末尾先敲一个 <code class="inline">break;</code></b>，再填语句——比写完回头补更不容易漏。
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 12 说明（使用规则） -->
+  <section class="slide">
+    <div class="s-title">说明：switch 的六条规矩</div>
+    <div class="s-body">
+      <table class="tb" style="font-size:32px;line-height:1.45;margin-top:0;">
+        <thead><tr><th style="width:24%">要点</th><th style="width:76%">说明</th></tr></thead>
+        <tbody>
+          <tr><th>switch(表达式)</th><td>值须为<b>整型</b>（或字符型）——<b>不能是浮点型</b>。</td></tr>
+          <tr><th>case 后 E1, E2, … En</th><td>必须是<b>整型常量</b>或<b>整型常量算术表达式</b>（如 <code class="inline">2*3</code>），且各值<b>必须互不相同</b>。</td></tr>
+          <tr><th>case En</th><td>只是<b>语句标号</b>，本身无跳出功能；没有 <code class="inline">break</code>，程序<b>顺序往下执行</b>。</td></tr>
+          <tr><th>case 后可执行语句</th><td>可以有多条，<b>不必加 <code class="inline">{ }</code></b>。</td></tr>
+          <tr><th>多个 case</th><td>可以<b>共用一组</b>执行语句（形式一，省 break）。</td></tr>
+          <tr><th>switch 语句</th><td>可以<b>嵌套</b>：一个 switch 的语句组里还能再写 switch。</td></tr>
+        </tbody>
+      </table>
+      <div class="box tip" style="margin-top:18px;font-size:32px;line-height:1.55;">
+        <span class="label">最易错两条</span>
+        ① <code class="inline">switch</code> 括号里的值<b>不能是浮点型</b>；② <code class="inline">case</code> 后必须是<b>整型常量</b>——<code class="inline">case 2,4:</code> 与 <code class="inline">case 变量:</code> 都不行。
+      </div>
+    </div>
+  </section>
+
+  <!-- 13 习题：哪个 switch 正确 -->
+  <section class="slide">
+    <div class="s-title">练一练：哪个 switch 语句是正确的？</div>
+    <div class="s-body">
+      <div class="box" style="margin-top:0;font-size:26px;line-height:1.5;">
+        <span class="label">题 7</span>
+        若有定义 <code class="inline">float x=1.5;</code> <code class="inline">int a=1,b=3,c=2;</code>，则正确的 switch 语句是 <b>＿＿＿＿</b>。
+      </div>
+      <div class="grid c2" style="margin-top:14px;gap:16px 22px;">
+        <div class="card" style="padding:12px 20px 14px;">
+          <h4 style="font-size:25px;"><span class="ico">A</span></h4>
+          <pre class="code" style="font-size:22px;line-height:1.42;margin:6px 0 0;padding:10px 16px;">switch(x)
+{ case 1.0: printf("*\n");
+  case 2.0: printf("**\n");
+}</pre>
+        </div>
+        <div class="card green" style="padding:12px 20px 14px;">
+          <h4 style="font-size:25px;"><span class="ico">B</span></h4>
+          <pre class="code" style="font-size:22px;line-height:1.42;margin:6px 0 0;padding:10px 16px;">switch((int)x)
+{ case 1: printf("*\n");
+  case 2: printf("**\n");
+}</pre>
+        </div>
+        <div class="card" style="padding:12px 20px 14px;">
+          <h4 style="font-size:25px;"><span class="ico">C</span></h4>
+          <pre class="code" style="font-size:22px;line-height:1.42;margin:6px 0 0;padding:10px 16px;">switch(a+b)
+{ case 1: printf("*\n");
+  case 2,4: printf("**\n");
+}</pre>
+        </div>
+        <div class="card" style="padding:12px 20px 14px;">
+          <h4 style="font-size:25px;"><span class="ico">D</span></h4>
+          <pre class="code" style="font-size:22px;line-height:1.42;margin:6px 0 0;padding:10px 16px;">switch(a+b)
+{ case 1: printf("*\n");
+  case c: printf("**\n");
+}</pre>
+        </div>
+      </div>
+      <div class="coll">
+        <div class="coll-hd">点击显示解析</div>
+        <div class="coll-bd">
+          <div class="box tip" style="margin-top:0;font-size:25px;line-height:1.55;">
+            <span class="label">答案 B</span>
+            <code class="inline">(int)x</code> 把 1.5 强制转成整型 1，<code class="inline">switch</code> 得到整型值，<code class="inline">case 1</code> / <code class="inline">case 2</code> 也是整型常量 —— 全部合法。
+          </div>
+          <div class="box red" style="font-size:24px;line-height:1.5;">
+            <span class="label">A / C / D 为什么错</span>
+            A：<code class="inline">switch(x)</code> 的 x 是 float；C：<code class="inline">case 2,4:</code> 是逗号表达式；D：<code class="inline">case c:</code> 的 c 是变量。三条都是“case / 表达式不是整型常量”的错。
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 14 解析：逐项排除 -->
+  <section class="slide">
+    <div class="s-title">解析：编译器替我们排除了三个</div>
+    <div class="s-body">
+      <div class="box red" style="margin-top:0;font-size:30px;line-height:1.5;">
+        <span class="label">核心</span>
+        <code class="inline">switch</code> 括号里的值、<code class="inline">case</code> 后面跟的值——<b>都必须是整型（或字符型）的常量</b>。违背这条，编译直接失败。
+      </div>
+      <div class="grid c2" style="margin-top:14px;gap:14px 22px;">
+        <div class="card red" style="padding:14px 22px;">
+          <h4 style="font-size:30px;">A　switch(x)　x 是 float</h4>
+          <p style="font-size:27px;line-height:1.5;color:var(--ink);">表达式不是整型。编译器报：<br><code class="inline" style="font-size:25px;">error: switch quantity not an integer</code></p>
+        </div>
+        <div class="card green" style="padding:14px 22px;">
+          <h4 style="font-size:30px;">B　switch((int)x)　✔</h4>
+          <p style="font-size:27px;line-height:1.5;color:var(--ink);">先强制转换再比较，<code class="inline">case 1</code>、<code class="inline">case 2</code> 是整型常量，完全合法。</p>
+        </div>
+        <div class="card red" style="padding:14px 22px;">
+          <h4 style="font-size:30px;">C　case 2,4:　逗号表达式</h4>
+          <p style="font-size:27px;line-height:1.5;color:var(--ink);">一个 case 只能跟一个常量。编译器报：<br><code class="inline" style="font-size:25px;">error: expected ':' before ',' token</code></p>
+        </div>
+        <div class="card red" style="padding:14px 22px;">
+          <h4 style="font-size:30px;">D　case c:　c 是变量</h4>
+          <p style="font-size:27px;line-height:1.5;color:var(--ink);">case 后必须是常量。编译器报：<br><code class="inline" style="font-size:25px;">error: case label does not reduce to an integer constant</code></p>
+        </div>
+      </div>
+      <div class="box tip" style="margin-top:14px;font-size:31px;line-height:1.5;">
+        <span class="label">记住</span>
+        想“多个值走同一段”，只能像例 3-5 那样写成<b>一串 case 叠起来</b>，不能写 <code class="inline">case 2,4:</code>，也不能写 <code class="inline">case 变量:</code>。
+      </div>
+    </div>
+  </section>
+
+  <!-- 15 实机验证：编译器不留情 -->
+  <section class="slide">
+    <div class="s-title">实机验证：三种写法都被编译器拦下</div>
+    <div class="s-body">
+      <div style="display:grid;grid-template-columns:958px minmax(0,1fr);gap:32px;margin-top:0;align-items:start;">
+        <div class="sc">
+          <img alt="Code::Blocks 编译 float 作 switch 表达式的报错" src="data:image/png;base64,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">
+          <div class="cap">A 选项：switch(x) 而 x 是 float —— 编译失败</div>
+        </div>
+        <div>
+          <div class="out" style="margin-top:0;font-size:22px;line-height:1.5;white-space:pre-wrap;border-left-color:var(--red);color:#ffc9c9;">C 选项  case 2,4:
+error: expected ':'
+       before ',' token
+
+D 选项  case c:
+error: case label does not
+       reduce to an
+       integer constant</div>
+          <div class="box warn" style="font-size:26px;line-height:1.5;margin-top:12px;">
+            <span class="label">结论</span>
+            三种错误都<b>过不了编译</b>——不需要死记，敲一遍、看一眼报错就记住了。
+          </div>
+        </div>
+      </div>
+      <div class="box" style="margin-top:16px;font-size:27px;line-height:1.5;">
+        <span class="label">还要分清两种错</span>
+        <b>语法错</b>（这三张图）：编译器直接拦下，程序根本跑不起来；<b>逻辑错</b>（上一页漏 break）：编译通过、运行结果却是错的——后者更隐蔽，写完一定要拿几个输入试一遍。
+      </div>
+    </div>
+  </section>
+
+  <!-- 16 对比：if-else if 与 switch -->
+  <section class="slide">
+    <div class="s-title">总结：if-else if 与 switch 怎么选</div>
+    <div class="s-body">
+      <table class="tb" style="font-size:35px;line-height:1.45;margin-top:0;">
+        <thead><tr><th style="width:18%">比较项</th><th style="width:41%">多分支 if – else if</th><th style="width:41%">switch 语句</th></tr></thead>
+        <tbody>
+          <tr><th>擅长</th><td><b>区间 / 复合条件</b>（<code class="inline">s&gt;=60&amp;&amp;s&lt;70</code>）</td><td><b>等值判断</b>（<code class="inline">grade=='A'</code>、<code class="inline">month==1</code>）</td></tr>
+          <tr><th>条件类型</th><td>任意表达式，非 0 即真</td><td>只能是<b>整型 / 字符型</b>表达式</td></tr>
+          <tr><th>可读性</th><td>分支多时层层缩进，易乱</td><td>像查表，一目了然</td></tr>
+          <tr><th>跳出</th><td>执行完自动结束，无需 break</td><td>必须写 <b>break</b>，否则穿透</td></tr>
+        </tbody>
+      </table>
+      <div class="grid c2" style="margin-top:18px;gap:20px;">
+        <div class="box tip" style="margin:0;font-size:35px;line-height:1.5;">
+          <span class="label">用 if</span>
+          判<b>范围</b>、判<b>大小</b>、判<b>组合条件</b>——只能用它。
+        </div>
+        <div class="box key" style="margin:0;font-size:35px;line-height:1.5;">
+          <span class="label">用 switch</span>
+          判“<b>等于哪个固定值</b>”：菜单选择、等级分类、月份季节。
+        </div>
+      </div>
+      <div class="box warn" style="margin-top:16px;font-size:35px;line-height:1.5;">
+        <span class="label">考试常考</span>
+        “下列 switch 语句哪个正确”——先看括号里<b>是不是整型/字符型</b>，再看 <code class="inline">case</code> 后<b>是不是常量</b>，两条就能排掉大多数错项。
+      </div>
+    </div>
+  </section>
+
+  <!-- 17 本节小结 -->
+  <section class="slide">
+    <div class="s-title">本节小结</div>
+    <div class="s-body">
+      <div class="grid c2" style="gap:16px 20px;">
+        <div class="card" style="padding:18px 26px;"><h4 style="font-size:36px;"><span class="ico">①</span>switch 格式</h4><p style="font-size:32px;line-height:1.5;">表达式取<b>整型/字符型</b>，与各 <code class="inline">case</code> 常量比对，都不中则走 <code class="inline">default</code>。</p></div>
+        <div class="card orange" style="padding:18px 26px;"><h4 style="font-size:36px;"><span class="ico">②</span>case 只是入口</h4><p style="font-size:32px;line-height:1.5;">它没有跳出功能；不写 <code class="inline">break</code> 会<b>穿透</b>，把后面各组的语句一起执行。</p></div>
+        <div class="card green" style="padding:18px 26px;"><h4 style="font-size:36px;"><span class="ico">③</span>多 case 共用</h4><p style="font-size:32px;line-height:1.5;">故意省 break，让多个入口落到同一段语句——例 3-5 的四季就是这么写的。</p></div>
+        <div class="card purple" style="padding:18px 26px;"><h4 style="font-size:36px;"><span class="ico">④</span>怎么选</h4><p style="font-size:32px;line-height:1.5;">范围/复合条件用 <code class="inline">if</code>；等值多分支用 <code class="inline">switch</code>。</p></div>
+      </div>
+      <div class="box tip" style="margin-top:16px;font-size:34px;line-height:1.55;">
+        <span class="label">下一步</span>
+        选择结构解决“走哪条路”。若要“重复做同一件事”呢？—— 下一节：<b>循环结构</b>。
+      </div>
+      <div class="box red" style="margin-top:14px;font-size:33px;line-height:1.5;">
+        <span class="label">易错清单</span>
+        漏 <code class="inline">break</code>（穿透）｜<code class="inline">case</code> 后写变量或逗号表达式｜<code class="inline">switch</code> 里用 float｜忘了 <code class="inline">default</code> 处理非法输入。
+      </div>
+    </div>
+  </section>
+
+  <!-- 18 结束页 -->
+  <section class="slide end">
+    <div class="end-inner">
+      <h2>谢　谢</h2>
+      <p>下一节：循环结构</p>
+    </div>
+  </section>
+
+  <!-- 导航 UI（无需改动） -->
+  <div class="pageinfo"><b id="cur">1</b> / <span id="total">25</span></div>
+  <div class="nav">
+    <button class="tocbtn" id="btnToc" title="目录（按 O 键）">目录</button>
+    <button id="btnPrev" title="上一页（←）">‹</button>
+    <button id="btnNext" title="下一页（→ / 空格）">›</button>
+  </div>
+  <div class="keyhint" id="keyhint">← → 翻页　·　空格下一页　·　B 黑屏　·　O 目录　·　Esc 关闭</div>
+  <div class="progress" id="progress"></div>
+  <div class="toc" id="toc">
+    <button class="toc-close" id="btnTocClose">关闭 ✕</button>
+    <h3>目录</h3>
+    <div class="toc-bar"></div>
+    <div class="toc-list" id="tocList"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var stage   = document.getElementById('stage');
+  var slides  = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var total   = slides.length;
+  var cur     = 0;
+  var curEl   = document.getElementById('cur');
+  var pageinfo = document.querySelector('.pageinfo');
+  var bar     = document.getElementById('progress');
+  var btnPrev = document.getElementById('btnPrev');
+  var btnNext = document.getElementById('btnNext');
+  var toc     = document.getElementById('toc');
+  var tocList = document.getElementById('tocList');
+  var keyhint = document.getElementById('keyhint');
+
+  document.getElementById('total').textContent = total;
+
+  // 将每页正文内容包裹进 .fit，便于按高度自动等比缩放，彻底杜绝溢出被裁切
+  slides.forEach(function(slide){
+    var body = slide.querySelector('.s-body');
+    if(!body) return;
+    var fit = document.createElement('div');
+    fit.className = 'fit';
+    while(body.firstChild){ fit.appendChild(body.firstChild); }
+    body.appendChild(fit);
+  });
+
+  // 若正文高度超出可视区，则整体等比缩放至恰好放得下（仅在当前页测量）
+  // 若正文高度超出可视区，则整体等比缩放至恰好放得下（仅在当前页测量）
+  // 补丁（2026-10-27）：缩放时把 .fit 宽度按 1/s 加宽再整体缩回（origin 左上），
+  // 使缩小后仍占满整行宽，避免“内容挤在中间、左右两侧大片留白”。
+  function fitSlide(slide){
+    if(!slide) return;
+    var body = slide.querySelector('.s-body');
+    var fit  = slide.querySelector('.fit');
+    if(!body || !fit) return;
+    fit.style.transform = 'none';
+    fit.style.width = '';
+    var avail = body.clientHeight;
+    var s = 1;
+    for(var i = 0; i < 3; i++){
+      var natural = fit.scrollHeight;
+      if(natural <= avail + 1) break;
+      var s2 = Math.min(1, avail / natural);
+      if(Math.abs(s2 - s) < 0.004) break;
+      s = s2;
+      fit.style.width = (100 / s) + '%';
+    }
+    if(s < 1){
+      fit.style.transform = 'scale(' + s + ')';
+      fit.style.transformOrigin = 'top left';
+    } else {
+      fit.style.width = '';
+    }
+  }
+
+  // 习题揭示：先看题目，点击/→/空格后解析才滑出
+  function hasPendingReveal(){
+    var s = slides[cur];
+    return !!(s && s.querySelector('.reveal:not(.shown)'));
+  }
+  function revealAnswers(){
+    var s = slides[cur];
+    if(!s) return false;
+    var pending = s.querySelectorAll('.reveal:not(.shown)');
+    if(!pending.length) return false;
+    pending.forEach(function(el){ el.classList.add('shown'); });
+    var hint = s.querySelector('.reveal-hint');
+    if(hint) hint.classList.add('gone');
+    fitSlide(s);
+    setTimeout(function(){ fitSlide(s); }, 560);
+    return true;
+  }
+
+  // 目录：按“页面索引 i : 目录文字 t”维护，分组数量任意（CSS 默认 5 列）
+  var tocGroups = [
+    {
+      title: '引入与语法',
+      items: [
+        { i: 0,  t: '封面' },
+        { i: 1,  t: '回顾：等值判断' },
+        { i: 2,  t: 'switch 语法格式' },
+        { i: 3,  t: '执行流程' }
+      ]
+    },
+    {
+      title: 'break 与流程',
+      items: [
+        { i: 4,  t: '没有 break 会穿透' },
+        { i: 5,  t: 'break 语句' },
+        { i: 6,  t: '改进后的 switch' },
+        { i: 7,  t: '有 break 的流程' },
+        { i: 8,  t: '多 case 共用' }
+      ]
+    },
+    {
+      title: '实例与规矩',
+      items: [
+        { i: 9,  t: '例3-5 题目' },
+        { i: 10, t: '例3-5 代码' },
+        { i: 11, t: '漏 break 的后果' },
+        { i: 12, t: '六条规矩' }
+      ]
+    },
+    {
+      title: '练习与总结',
+      items: [
+        { i: 13, t: '习题' },
+        { i: 14, t: '解析' },
+        { i: 15, t: '实机验证' },
+        { i: 16, t: 'if 与 switch 对比' },
+        { i: 17, t: '本节小结' },
+        { i: 18, t: '结束页' }
+      ]
+    }
+  ];
+
+  tocGroups.forEach(function(group){
+    var g = document.createElement('div');
+    g.className = 'toc-group';
+    var h = document.createElement('div');
+    h.className = 'toc-group-title';
+    h.textContent = group.title;
+    g.appendChild(h);
+    group.items.forEach(function(item){
+      var a = document.createElement('a');
+      a.textContent = item.t;
+      a.onclick = function(){ go(item.i); closeToc(); };
+      g.appendChild(a);
+    });
+    tocList.appendChild(g);
+  });
+
+  function resize(){
+    var s = Math.min(window.innerWidth / 1600, window.innerHeight / 900);
+    stage.style.setProperty('--s', s);
+    fitSlide(slides[cur]);
+  }
+  window.addEventListener('resize', resize);
+
+  function go(i){
+    cur = Math.max(0, Math.min(total - 1, i));
+    slides.forEach(function(s, k){ s.classList.toggle('active', k === cur); });
+    curEl.textContent = cur + 1;
+    // 封面与结束页不显示页码徽标
+    var isCover = slides[cur].classList.contains('cover') || slides[cur].classList.contains('end');
+    pageinfo.style.visibility = isCover ? 'hidden' : 'visible';
+    bar.style.width = ((cur + 1) / total * 100) + '%';
+    btnPrev.disabled = (cur === 0);
+    btnNext.disabled = (cur === total - 1);
+    fitSlide(slides[cur]);
+  }
+
+  btnPrev.onclick = function(){ go(cur - 1); this.blur(); hideHint(); };
+  btnNext.onclick = function(){ if(hasPendingReveal()){ revealAnswers(); this.blur(); hideHint(); return; } go(cur + 1); this.blur(); hideHint(); };
+
+  function openToc(){ toc.classList.add('show'); }
+  function closeToc(){ toc.classList.remove('show'); }
+  document.getElementById('btnToc').onclick = function(){
+    toc.classList.contains('show') ? closeToc() : openToc();
+    this.blur();
+  };
+  document.getElementById('btnTocClose').onclick = function(){
+    closeToc(); this.blur();
+  };
+
+  document.addEventListener('keydown', function(e){
+    var k = e.key;
+
+    if (toc.classList.contains('show')) {
+      if (k === 'Escape' || k === 'o' || k === 'O') { e.preventDefault(); closeToc(); }
+      return;
+    }
+
+    if (k === 'ArrowRight' || k === 'ArrowDown' || k === 'PageDown' ||
+        k === ' ' || k === 'Enter') {
+      e.preventDefault();
+      if (hasPendingReveal()) { revealAnswers(); hideHint(); return; }
+      go(cur + 1); hideHint();
+    } else if (k === 'ArrowLeft' || k === 'ArrowUp' || k === 'PageUp' ||
+               k === 'Backspace') {
+      e.preventDefault(); go(cur - 1); hideHint();
+    } else if (k === 'Home') {
+      e.preventDefault(); go(0); hideHint();
+    } else if (k === 'End') {
+      e.preventDefault(); go(total - 1); hideHint();
+    } else if (k === 'o' || k === 'O') {
+      e.preventDefault(); openToc();
+    } else if (k === 'b' || k === 'B' || k === '.') {
+      e.preventDefault();
+      document.body.classList.toggle('blackout');
+    }
+  });
+
+  var wheelLock = false;
+  document.addEventListener('wheel', function(e){
+    if (toc.classList.contains('show')) return;
+    if (wheelLock) return;
+    wheelLock = true;
+    setTimeout(function(){ wheelLock = false; }, 420);
+    if (e.deltaY > 0) go(cur + 1); else go(cur - 1);
+    hideHint();
+  }, { passive: true });
+
+  document.addEventListener('click', function(e){
+    // 可折叠区块：点击标题开合，不触发翻页
+    var hd = e.target.closest('.coll-hd');
+    if (hd) {
+      var box = hd.parentElement;
+      box.classList.toggle('open');
+      fitSlide(slides[cur]);
+      setTimeout(function(){ fitSlide(slides[cur]); }, 520);
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+    if (toc.classList.contains('show')) return;
+    if (e.target.closest('.nav')) return;
+    if (e.target.closest('.toc')) return;
+    if (e.target.closest('a')) return;
+    if (e.target.closest('.code, .out, pre, table, .reveal, .coll')) return;
+    if (hasPendingReveal()) { revealAnswers(); hideHint(); return; }
+    if (e.clientX > window.innerWidth / 2) go(cur + 1);
+    else go(cur - 1);
+    hideHint();
+  });
+
+  var tx = 0, ty = 0;
+  document.addEventListener('touchstart', function(e){
+    tx = e.changedTouches[0].clientX;
+    ty = e.changedTouches[0].clientY;
+  }, { passive: true });
+  document.addEventListener('touchend', function(e){
+    var dx = e.changedTouches[0].clientX - tx;
+    var dy = e.changedTouches[0].clientY - ty;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) {
+      if (hasPendingReveal()) { revealAnswers(); hideHint(); return; }
+      go(dx < 0 ? cur + 1 : cur - 1);
+      hideHint();
+    }
+  }, { passive: true });
+
+  var hintTimer = null;
+  function hideHint(){
+    if (keyhint.classList.contains('hide')) return;
+    clearTimeout(hintTimer);
+    hintTimer = setTimeout(function(){ keyhint.classList.add('hide'); }, 500);
+  }
+  hintTimer = setTimeout(function(){ keyhint.classList.add('hide'); }, 6000);
+
+  resize();
+  go(0);
+})();
+</script>
+</body>
+</html>
