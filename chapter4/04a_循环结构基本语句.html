@@ -1,0 +1,2033 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>循环结构（while / do-while / for）</title>
+<style>
+  :root{
+    --fs-title: 48px; --fs-body: 32px; --fs-other: 30px; --fs-list: 29px;
+    --blue-900:#0a3d63; --blue-700:#124f83; --blue-600:#1a6fb5; --blue-400:#4a97d4; --blue-100:#e8f2fb;
+    --orange:#e8720c; --orange-soft:#fdf1e4;
+    --green:#2e8b57; --green-soft:#eaf7ef;
+    --purple:#8e44ad; --purple-soft:#f5ecfa;
+    --red:#c0392b; --red-soft:#fdeceb;
+    --ink:#1d2b36; --muted:#4d6376; --line:#d6e2ee;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;overflow:hidden;background:var(--blue-900);font-family:"Microsoft YaHei","PingFang SC","Hiragino Sans GB","Source Han Sans SC",sans-serif;-webkit-font-smoothing:antialiased;}
+  #stage{position:fixed;left:50%;top:50%;width:1600px;height:900px;transform:translate(-50%,-50%) scale(var(--s,1));transform-origin:center center;background:#fff;overflow:hidden;transition:opacity .22s ease;}
+  body.blackout #stage{opacity:0;}
+  .slide{position:absolute;inset:0;display:none;flex-direction:column;padding:30px 64px 60px;background:linear-gradient(180deg,#ffffff 0%,#f4faff 100%);}
+  .slide.active{display:flex;animation:fadeUp .26s ease;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+  @keyframes itemIn{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:none;}}
+  .slide.active .s-title{animation:itemIn .42s ease both;}
+  .slide.active .fit > *:not(.reveal):not(.reveal-hint){animation:itemIn .42s ease both;}
+  .slide.active .fit > *:not(.reveal):not(.reveal-hint):nth-child(1){animation-delay:.08s;}
+  .slide.active .fit > *:not(.reveal):not(.reveal-hint):nth-child(2){animation-delay:.16s;}
+  .slide.active .fit > *:not(.reveal):not(.reveal-hint):nth-child(3){animation-delay:.24s;}
+  .slide.active .fit > *:not(.reveal):not(.reveal-hint):nth-child(4){animation-delay:.32s;}
+  .slide.active .fit > *:not(.reveal):not(.reveal-hint):nth-child(5){animation-delay:.40s;}
+  .slide.active .fit > *:not(.reveal):not(.reveal-hint):nth-child(6){animation-delay:.48s;}
+  .slide.cover.active .s-title,.slide.end.active .s-title{animation:none;}
+  .slide::after{content:"";position:absolute;right:-90px;bottom:-90px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(26,111,181,.10) 0%,rgba(26,111,181,0) 70%);pointer-events:none;}
+  .s-title{flex:0 0 auto;align-self:flex-start;background:linear-gradient(135deg,#1a6fb5 0%,#124f83 100%);color:#fff;font-size:48px;font-weight:700;letter-spacing:1.5px;line-height:1.15;padding:14px 30px 14px 24px;border-left:10px solid var(--orange);border-radius:0 12px 12px 0;margin-bottom:18px;box-shadow:0 6px 16px rgba(18,79,131,.18);}
+  .s-sub{font-size:var(--fs-body);font-weight:700;color:var(--blue-700);border-left:7px solid var(--orange);padding:2px 0 2px 14px;margin:14px 0 10px;}
+  .s-sub:first-child{margin-top:0;}
+  .s-sub.blue{border-left-color:var(--blue-600);}
+  .s-body{flex:1 1 auto;min-height:0;overflow:hidden;font-size:32px;line-height:1.5;color:var(--ink);}
+  .fit{overflow:hidden;}
+  .slide.tightL{padding-left:22px;padding-right:22px;} .slide.tightL .code{padding-left:18px;}
+  .coll{margin-top:12px;}
+  .coll-hd{display:inline-flex;align-items:center;gap:10px;background:linear-gradient(135deg,#e8720c,#c55807);color:#fff;font-size:24px;padding:9px 22px;border-radius:999px;cursor:pointer;box-shadow:0 5px 12px rgba(232,114,12,.3);user-select:none;transition:filter .2s,box-shadow .2s;}
+  .coll-hd:hover{filter:brightness(1.07);box-shadow:0 7px 16px rgba(232,114,12,.4);}
+  .coll-hd::after{content:"▾";font-size:19px;line-height:1;}
+  .coll.open .coll-hd{background:linear-gradient(135deg,#1a6fb5,#124f83);box-shadow:0 5px 12px rgba(18,79,131,.28);}
+  .coll.open .coll-hd::after{content:"▴";}
+  .coll-bd{max-height:0;opacity:0;overflow:hidden;transition:max-height .5s ease,opacity .4s ease;}
+  .coll.open .coll-bd{max-height:3200px;opacity:1;margin-top:12px;}
+  .s-body p{margin:8px 0;}
+  .s-body p:first-child{margin-top:0;}
+  .s-body ul,.s-body ol{padding-left:1.5em;margin:8px 0;}
+  .s-body li{margin:4px 0;}
+  .s-body ul>li::marker{color:var(--blue-600);}
+  .s-body ol>li::marker{color:var(--orange);font-weight:800;}
+  b,strong{color:var(--blue-700);}
+  table.tb{width:100%;border-collapse:separate;border-spacing:0;font-size:var(--fs-other);line-height:1.45;margin:6px 0;border-radius:12px;overflow:hidden;box-shadow:0 4px 14px rgba(18,79,131,.08);}
+  table.tb thead th{background:linear-gradient(135deg,#1a6fb5,#124f83);color:#fff;font-weight:600;font-size:var(--fs-other);padding:12px 18px;text-align:left;}
+  table.tb td,table.tb tbody th{padding:11px 18px;background:#fff;border-bottom:1px solid var(--line);vertical-align:top;}
+  table.tb tbody tr:last-child td,table.tb tbody tr:last-child th{border-bottom:none;}
+  table.tb tbody th{background:#eaf3fb;color:var(--blue-700);font-weight:600;text-align:left;white-space:nowrap;}
+  table.tb tbody tr:nth-child(even) td{background:#f7fafd;}
+  .c-red{color:var(--red);font-weight:600;} .c-green{color:var(--green);font-weight:700;} .c-blue{color:var(--blue-600);font-weight:700;}
+  .box{border-left:7px solid var(--blue-600);background:var(--blue-100);border-radius:0 10px 10px 0;padding:16px 28px;margin:10px 0;font-size:30px;line-height:1.7;}
+  .box .label{display:inline-block;font-weight:800;color:var(--blue-700);margin-right:10px;}
+  .box.tip{border-left-color:var(--green);background:var(--green-soft);} .box.tip .label{color:var(--green);}
+  .box.warn{border-left-color:var(--orange);background:var(--orange-soft);} .box.warn .label{color:#b95a05;}
+  .box.key{border-left-color:var(--purple);background:var(--purple-soft);} .box.key .label{color:var(--purple);}
+  .box.red{border-left-color:var(--red);background:var(--red-soft);} .box.red .label{color:var(--red);}
+  pre.code{background:#0d2b45;color:#d8e9f5;border-left:6px solid var(--orange);border-radius:0 12px 12px 0;padding:14px 22px;margin:8px 0;font-family:Consolas,"Courier New",monospace;font-size:28px;line-height:1.55;white-space:pre;overflow:hidden;box-shadow:0 8px 22px rgba(13,43,69,.22);}
+  pre.code .kw{color:#6ec1ff;} pre.code .str{color:#ffc17a;} pre.code .cmt{color:#7fa5c0;font-style:italic;} pre.code .num{color:#ff9d6b;}
+  code.inline{font-family:Consolas,"Courier New",monospace;background:var(--blue-100);color:#c0392b;padding:2px 8px;font-size:28px;border-radius:5px;}
+  .out{background:#0d2b45;color:#bfe4ff;border-left:6px solid var(--blue-400);border-radius:0 12px 12px 0;padding:12px 22px;margin:8px 0;font-family:Consolas,"Courier New",monospace;font-size:28px;line-height:1.5;white-space:pre;}
+  .grid{display:grid;gap:14px;} .grid.c2{grid-template-columns:1fr 1fr;} .grid.c3{grid-template-columns:repeat(3,1fr);} .grid.c4{grid-template-columns:repeat(4,1fr);} .grid{ gap:26px 14px; }
+  /* 导览 2 行 2 列 */
+  .nav2x2{grid-template-columns:1fr 1fr;gap:26px 28px;}
+  .nav2x2 .card{padding:32px 36px 30px;}
+  .nav2x2 .card h4{font-size:36px;margin-bottom:12px;}
+  .nav2x2 .card p{font-size:29px;line-height:1.5;color:#4b5b6b;}
+  .nav2x2 .card p.sub{font-size:26px;line-height:1.5;color:#8a97a5;margin-top:11px;}
+  .nav2x2 .card .ico{font-size:36px;}
+  .card{background:#fff;border:1px solid var(--line);border-top:7px solid var(--blue-600);border-radius:0 0 16px 16px;padding:22px 28px;box-shadow:0 6px 16px rgba(18,79,131,.08);} .card.orange{border-top-color:var(--orange);} .card.green{border-top-color:var(--green);} .card.purple{border-top-color:var(--purple);} .card.red{border-top-color:var(--red);} .card h4{font-size:30px;color:var(--blue-700);margin-bottom:8px;display:flex;align-items:center;gap:10px;line-height:1.2;} .card.orange h4{color:#b95a05;} .card.green h4{color:var(--green);} .card.purple h4{color:var(--purple);} .card.red h4{color:var(--red);} .card p{font-size:27px;color:var(--muted);line-height:1.7;margin:0;} .card .ico{font-size:30px;line-height:1;}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start;} .two.wide{grid-template-columns:1.15fr 1fr;}
+  .feat{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px;} .feat li{display:flex;align-items:center;gap:22px;background:#fff;border:1px solid var(--line);border-left:7px solid var(--blue-600);border-radius:0 12px 12px 0;padding:12px 24px;box-shadow:0 4px 10px rgba(18,79,131,.06);} .feat li:nth-child(even){border-left-color:var(--orange);} .feat .k{flex:0 0 auto;width:270px;font-size:30px;font-weight:700;color:var(--blue-700);line-height:1.25;} .feat .v{font-size:28px;color:var(--muted);line-height:1.5;}
+  .slide.cover{background:linear-gradient(135deg,#1a6fb5 0%,#0d4a7a 58%,#0a3d63 100%);padding:0 110px 60px;justify-content:center;} .slide.cover::before{content:"";position:absolute;right:-100px;top:-100px;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(232,114,12,.18) 0%,rgba(232,114,12,0) 70%);} .slide.cover::after{content:"";position:absolute;left:-100px;bottom:-120px;width:440px;height:440px;border-radius:50%;background:radial-gradient(circle,rgba(74,151,212,.18) 0%,rgba(74,151,212,0) 70%);} .cover-inner{position:relative;z-index:2;} .cover-kicker{display:inline-block;font-size:var(--fs-other);letter-spacing:3px;color:#ffd9b3;border:1px solid rgba(255,217,179,.55);padding:8px 24px;margin-bottom:28px;border-radius:999px;} .cover h1{font-size:82px;font-weight:800;color:#fff;letter-spacing:5px;line-height:1.15;margin-bottom:16px;} .cover-bar{width:650px;height:8px;border-radius:4px;background:linear-gradient(90deg,#e8720c,#ffb26b);margin-bottom:22px;} .cover-sub{font-size:40px;color:#a9d8f5;letter-spacing:3px;margin-bottom:36px;} .cover-meta{font-size:var(--fs-other);color:#7fb2dd;letter-spacing:2px;}
+  .slide.end{background:linear-gradient(135deg,#1a6fb5 0%,#0d4a7a 58%,#0a3d63 100%);padding:0 110px 60px;justify-content:center;} .slide.end::before{content:"";position:absolute;right:-100px;bottom:-120px;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(232,114,12,.16) 0%,rgba(232,114,12,0) 70%);} .end-inner{position:relative;z-index:2;} .end h2{font-size:82px;font-weight:800;color:#fff;letter-spacing:10px;margin-bottom:22px;} .end p{font-size:var(--fs-body);color:#a9d8f5;letter-spacing:2px;}
+  .pageinfo{position:absolute;right:40px;top:22px;z-index:20;font-size:var(--fs-other);color:var(--blue-600);letter-spacing:1px;background:rgba(255,255,255,.95);border:1px solid var(--line);border-radius:999px;padding:5px 20px;box-shadow:0 4px 10px rgba(18,79,131,.08);} .pageinfo b{font-size:var(--fs-other);color:var(--orange);}
+  .nav{position:absolute;right:36px;bottom:14px;z-index:20;display:flex;align-items:center;gap:10px;} .nav button{height:50px;border:none;cursor:pointer;background:linear-gradient(135deg,#1a6fb5,#124f83);color:#fff;font-size:var(--fs-other);line-height:1;display:flex;align-items:center;justify-content:center;transition:all .18s;font-family:inherit;border-radius:12px;width:50px;box-shadow:0 5px 12px rgba(18,79,131,.28);} .nav button:hover{background:linear-gradient(135deg,#e8720c,#c55807);transform:translateY(-2px);} .nav button:disabled{background:#b9cfe4;cursor:not-allowed;box-shadow:none;transform:none;} .nav .tocbtn{width:auto;padding:0 22px;font-weight:700;letter-spacing:1px;}
+  .progress{position:absolute;left:0;bottom:0;height:6px;width:0;z-index:20;background:linear-gradient(90deg,#1a6fb5,#e8720c);transition:width .3s ease;}
+  .keyhint{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);z-index:20;font-size:20px;color:#7fa8c4;letter-spacing:1px;background:rgba(255,255,255,.85);border:1px solid var(--line);border-radius:999px;padding:4px 16px;transition:opacity .6s ease;} .keyhint.hide{opacity:0;}
+  .toc{position:absolute;inset:0;z-index:40;background:rgba(10,61,99,.96);display:none;padding:44px 60px 60px;overflow:auto;} .toc.show{display:block;} .toc h3{font-size:40px;color:#fff;letter-spacing:4px;margin-bottom:6px;} .toc .toc-bar{width:110px;height:6px;border-radius:3px;background:linear-gradient(90deg,#e8720c,#ffb26b);margin-bottom:20px;} .toc-list{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;align-items:start;} .toc-group{background:rgba(255,255,255,.05);border-radius:14px;padding:14px 14px 16px;border-top:5px solid var(--blue-400);} .toc-group:nth-child(2){border-top-color:var(--orange);} .toc-group:nth-child(3){border-top-color:var(--green);} .toc-group:nth-child(4){border-top-color:var(--purple);} .toc-group:nth-child(5){border-top-color:var(--red);} .toc-group:nth-child(6){border-top-color:#c9a227;} .toc-group-title{font-size:22px;color:#ffc17a;font-weight:800;letter-spacing:1px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px dashed rgba(255,255,255,.18);line-height:1.25;} .toc-group a{display:block;color:#cfe6f7;font-size:20px;padding:8px 12px;border-radius:8px;cursor:pointer;margin-bottom:4px;text-decoration:none;line-height:1.35;transition:all .16s;} .toc-group a:hover{background:linear-gradient(90deg,#e8720c,#c55807);color:#fff;} .toc-close{position:absolute;right:40px;top:22px;background:none;border:1px solid #7fb2dd;color:#cfe6f7;font-size:var(--fs-other);padding:7px 22px;cursor:pointer;font-family:inherit;border-radius:12px;} .toc-close:hover{background:#e8720c;border-color:#e8720c;color:#fff;}
+  .reveal{max-height:0;opacity:0;overflow:hidden;margin-top:0!important;transition:max-height .55s ease, opacity .45s ease;}
+  .reveal.shown{max-height:3000px;opacity:1;margin-top:14px!important;}
+  .reveal.shown .box{box-shadow:0 0 0 2px rgba(232,114,12,.35), 0 6px 16px rgba(18,79,131,.08);}
+  /* 逐条揭示：每次只放一条（.step 仅作标记） */
+  .reveal.step{will-change:max-height,opacity;}
+  /* 整列揭示：列内容不因揭示而整体下移，与左列保持齐平 */
+  .reveal.col,.reveal.col.shown{margin-top:0!important;}
+  .reveal-hint{display:inline-flex;align-items:center;gap:8px;margin-top:14px;background:linear-gradient(135deg,#e8720c,#c55807);color:#fff;font-size:24px;padding:8px 18px;border-radius:999px;cursor:pointer;box-shadow:0 5px 12px rgba(232,114,12,.3);animation:pulse 1.5s ease-in-out infinite;user-select:none;}
+  .reveal-hint.gone{display:none;}
+  @keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.05);}}
+
+  /* 流程图组件：N-S 图（盒图）与传统流程图通用 */
+  .flow{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;width:100%;gap:6px;}
+  .flow svg{display:block;width:100%;height:auto;}
+  .flow .cap{font-size:23px;font-weight:800;color:var(--blue-700);letter-spacing:1px;text-align:center;line-height:1.3;}
+  .flow svg text{font-family:"Microsoft YaHei","PingFang SC","Hiragino Sans GB","Source Han Sans SC",sans-serif;}
+  .fc-term{fill:url(#fcTermGrad);} .fc-term-t{fill:#fff;font-weight:700;}
+  .fc-proc{fill:#fff;stroke:var(--blue-600);stroke-width:3;} .fc-proc-t{fill:var(--ink);}
+  .fc-io{fill:#fff;stroke:var(--purple);stroke-width:3;} .fc-io-t{fill:var(--purple);font-weight:700;}
+  .fc-dec{fill:var(--orange-soft);stroke:var(--orange);stroke-width:3;} .fc-dec-t{fill:#9a4a00;font-weight:700;}
+  .fc-line{stroke:#4a6b85;stroke-width:3;fill:none;stroke-linecap:round;stroke-linejoin:round;}
+  .fc-yes{fill:var(--green);font-weight:800;} .fc-no{fill:var(--red);font-weight:800;}
+  .fc-ns{fill:#fff;stroke:var(--blue-600);stroke-width:3;} .fc-ns-line{stroke:var(--blue-600);stroke-width:3;}
+  .fc-ns-cond{fill:var(--blue-100);stroke:var(--blue-600);stroke-width:3;} .fc-ns-t{fill:var(--ink);}
+  /* 传统流程图图元轻微投影：大屏/投影时更有层次；N-S 图保持平铺不加投影（避免多余视觉线） */
+  .fc-term,.fc-proc,.fc-io,.fc-dec{filter:drop-shadow(0 2px 2.5px rgba(13,43,69,.15));}
+
+  /* ===== 页面放大镜 loupe 工具 ===== */
+  #btnLoupe{position:fixed;right:18px;bottom:84px;z-index:60;width:54px;height:54px;border:none;border-radius:50%;
+    background:linear-gradient(135deg,#1a6fb5,#0e4f86);color:#fff;font-size:24px;cursor:pointer;
+    box-shadow:0 6px 16px rgba(26,111,181,.4);display:flex;align-items:center;justify-content:center;user-select:none;}
+  #btnLoupe.on{background:linear-gradient(135deg,#e8720c,#c55807);box-shadow:0 6px 16px rgba(232,114,12,.45);}
+  #loupe{position:fixed;width:320px;height:320px;border-radius:14px;background:#fff;
+    overflow:hidden;box-shadow:0 0 0 3px #1a6fb5,0 12px 34px rgba(0,0,0,.35);z-index:70;pointer-events:none;display:none;}
+  #loupe .lens-stage{position:absolute;left:0;top:0;transform-origin:0 0;}
+  #loupe .lens-stage *{animation:none !important;transition:none !important;}
+  #loupe::before,#loupe::after{content:'';position:absolute;z-index:3;pointer-events:none;background:rgba(232,114,12,.8);}
+  #loupe::before{left:50%;top:50%;width:1px;height:20px;margin:-10px 0 0 -0.5px;}
+  #loupe::after{left:50%;top:50%;width:20px;height:1px;margin:-0.5px 0 0 -10px;}
+  #loupe.lock{box-shadow:0 0 0 3px #e8720c,0 12px 34px rgba(0,0,0,.35);}
+  #loupeTip{position:fixed;left:50%;top:14px;transform:translateX(-50%);background:rgba(14,79,134,.92);color:#fff;
+    font-size:18px;padding:8px 18px;border-radius:999px;z-index:70;display:none;pointer-events:none;white-space:nowrap;
+    box-shadow:0 6px 16px rgba(0,0,0,.3);}
+  #loupePanel{position:fixed;left:18px;bottom:18px;z-index:75;background:rgba(20,28,38,.92);color:#e8eef5;
+    border-radius:12px;padding:12px 16px;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,.4);display:none;width:236px;}
+  #loupePanel .ttl{font-size:13px;color:#7fd0ff;margin-bottom:6px;display:flex;align-items:center;gap:6px;}
+  #loupePanel .row{display:flex;align-items:center;gap:10px;margin:7px 0;}
+  #loupePanel label{width:40px;color:#9fb4c8;flex:none;}
+  #loupePanel input[type=range]{flex:1;accent-color:#1a6fb5;cursor:pointer;}
+  #loupePanel .val{width:48px;text-align:right;color:#fff;font-variant-numeric:tabular-nums;}
+  body.loupe-on{cursor:crosshair;}
+
+  /* ===== 正文可选中复制：选中 / 拖选 / 长按都不翻页 ===== */
+  #stage .slide{-webkit-user-select:text;user-select:text;}
+  #stage .slide ::selection{background:rgba(232,114,12,.28);}
+  #stage .nav,#stage .nav *,#stage .keyhint,#stage .pageinfo,#stage .progress,
+  #stage .toc,#stage .toc *,#stage .coll-hd,#stage .reveal-hint,
+  #btnLoupe,#loupePanel{-webkit-user-select:none;user-select:none;}
+  #copyTip{position:fixed;left:50%;bottom:96px;z-index:80;display:flex;align-items:center;gap:8px;
+    padding:8px 10px 8px 18px;border-radius:999px;background:rgba(14,79,134,.95);color:#fff;
+    font-size:17px;line-height:1.2;white-space:nowrap;box-shadow:0 10px 26px rgba(0,0,0,.3);
+    opacity:0;pointer-events:none;transform:translateX(-50%) translateY(10px);
+    transition:opacity .18s ease,transform .18s ease;}
+  #copyTip.on{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0);}
+  #copyTip b{color:#ffd08a;font-weight:700;font-variant-numeric:tabular-nums;}
+  #copyTip .kbd{font-size:14px;color:#bcd8ee;border:1px solid rgba(188,216,238,.45);border-radius:6px;padding:1px 7px;}
+  #copyTip button{border:none;cursor:pointer;font-family:inherit;font-size:16px;font-weight:700;
+    padding:6px 15px;border-radius:999px;background:linear-gradient(135deg,#e8720c,#c55807);color:#fff;}
+  #copyTip button:hover{filter:brightness(1.08);}
+  @media (max-width:720px){
+    #copyTip{font-size:15px;padding:6px 8px 6px 14px;gap:6px;}
+    #copyTip .kbd{display:none;}          /* 手机上不显示 Ctrl C，长按有系统菜单 */
+    #copyTip button{font-size:15px;padding:5px 12px;}
+  }
+</style>
+</head>
+<body>
+  <div id="stage">
+
+  <!-- 全局流程图箭头定义（供各页 SVG 引用，只需一处） -->
+  <svg aria-hidden="true" height="0" width="0" style="position:absolute; width:0; height:0; overflow:hidden"><defs>
+    <!-- 起止框渐变：上浅下深，投影时更有层次 -->
+    <linearGradient id="fcTermGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2a7fc4"/>
+      <stop offset="1" stop-color="#124f83"/>
+    </linearGradient>
+    <marker id="fcArrow" markerHeight="12" markerUnits="userSpaceOnUse" markerWidth="12" orient="auto" refX="9" refY="6">
+      <path d="M1,1 L11,6 L1,11 Z" fill="#4a6b85"/>
+    </marker>
+  </defs></svg>
+
+  <!-- 0 封面 -->
+  <section class="slide cover active">
+    <div class="cover-inner">
+      <div class="cover-kicker">武汉理工大学 人工智能学院</div>
+      <h1>循环结构</h1>
+      <div class="cover-bar"></div>
+      <div class="cover-sub">第 4 章　循环结构（基本语句：while / do-while / for）</div>
+      <div class="cover-meta">主讲：孙骏</div>
+    </div>
+  </section>
+
+  <!-- 1 本节内容导览 -->
+  <section class="slide">
+    <div class="s-title">本节内容导览</div>
+    <div class="s-body">
+      <div class="grid nav2x2" style="margin-top:0">
+        <div class="card"><h4><span class="ico">①</span>为什么需要循环</h4><p>重复劳动的痛点，引出"循环"这一基本结构。</p><p class="sub">先看清没有循环时，代码会冗长到什么程度。</p></div>
+        <div class="card orange"><h4><span class="ico">②</span>while 循环</h4><p>当型 / 前测试：先判断后执行，最少 0 次。</p><p class="sub">次数说不清时最常用，条件不成立就一句话都不做。</p></div>
+        <div class="card green"><h4><span class="ico">③</span>do-while 循环</h4><p>直到型 / 后测试：先执行后判断，至少 1 次。</p><p class="sub">适合"先做一次，再问要不要接着做"的场合。</p></div>
+        <div class="card purple"><h4><span class="ico">④</span>for 循环</h4><p>计数循环：结构最紧凑，次数明确时首选。</p><p class="sub">初值、条件、收尾三件事，写在同一行里。</p></div>
+      </div>
+      <div class="box key" style="margin-top:20px">
+        <span class="label">贯穿主线</span>
+        三种循环都围绕同一件事：<b>让一段代码重复执行</b>。学习时牢牢抓住"初值 → 变化 → 继续 / 终止条件 → 最终结果"这四个要点。
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 模块0 为什么需要循环 -->
+  <section class="slide">
+    <div class="s-title">为什么需要循环？</div>
+    <div class="s-body">
+      <div class="s-sub" style="margin-top:0">生活与程序里满是"重复"：同一件事要做很多遍</div>
+      <div class="two wide" style="margin-top:6px">
+        <div>
+          <div class="card"><h4><span class="ico">🔁</span>重复的场景</h4><p>· 打印 100 行欢迎语<br>· 求 1 + 2 + … + 100<br>· 录入 50 名学生成绩</p></div>
+          <div class="box warn" style="margin-top:16px; font-size:27px">
+            <span class="label">没有循环的代价</span>
+            代码冗长、大量重复；易抄错、难维护；次数一变就要重写。
+          </div>
+        </div>
+        <div>
+<pre class="code" style="font-size:32px"><span class="cmt">// 朴素写法：同一动作重复 100 行</span>
+<span class="kw">printf</span>(<span class="str">"Hello\n"</span>);  <span class="cmt">/* 第 1 行 */</span>
+<span class="kw">printf</span>(<span class="str">"Hello\n"</span>);  <span class="cmt">/* 第 2 行 */</span>
+<span class="cmt">/* …… 一直写到第 100 行 */</span></pre>
+<pre class="code" style="font-size:32px"><span class="cmt">// 循环写法：一段搞定</span>
+<span class="kw">int</span> i;
+<span class="kw">for</span>(i=<span class="num">1</span>; i&lt;=<span class="num">100</span>; i++)
+  <span class="kw">printf</span>(<span class="str">"Hello\n"</span>);</pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 模块0 例·计算多个整数的和（顺序 vs 循环） -->
+  <section class="slide">
+    <div class="s-title">例：计算多个整数的和（顺序结构 vs 循环结构）</div>
+    <div class="s-body">
+      <div class="two" style="margin-top:0">
+        <div>
+          <div class="s-sub blue" style="margin-top:0">顺序结构：个数必须事先确定</div>
+<pre class="code" style="font-size:32px"><span class="cmt">/* 只有"恰好 5 个"才能这么写 */</span>
+<span class="kw">int</span> a1=<span class="num">1</span>,a2=<span class="num">2</span>,a3=<span class="num">3</span>,a4=<span class="num">4</span>,a5=<span class="num">5</span>;
+<span class="kw">int</span> sum = a1+a2+a3+a4+a5;</pre>
+          <div class="box red" style="margin-top:12px;font-size:24px">
+            <span class="label">局限</span>
+            一旦要加的整数个数 <b>n 不确定</b>，顺序结构根本写不出。
+          </div>
+        </div>
+        <div>
+          <div class="s-sub orange">循环结构：与个数无关</div>
+<pre class="code" style="font-size:32px"><span class="kw">int</span> i, n, x, sum=<span class="num">0</span>;
+<span class="kw">scanf</span>(<span class="str">"%d"</span>, &amp;n);            <span class="cmt">/* 先读入个数 n */</span>
+<span class="kw">for</span>(i=<span class="num">1</span>; i&lt;=n; i++){
+  <span class="kw">scanf</span>(<span class="str">"%d"</span>, &amp;x);
+  sum = sum + x;
+}</pre>
+          <div class="box tip" style="margin-top:12px;font-size:24px">
+            <span class="label">优势</span>
+            n 是 5、500 还是运行时才确定，写法几乎不变。
+          </div>
+        </div>
+      </div>
+      <div class="coll" style="margin-top:14px">
+        <div class="coll-hd">体会（先说一说）</div>
+        <div class="coll-bd">
+          <div class="box key" style="margin-top:0;font-size:26px;line-height:1.6;padding:14px 28px">
+            <span class="label">体会</span>
+            顺序结构要求"个数事先确定"——一旦累加的数据个数不确定，顺序写法就<b>无能为力</b>。循环把"重复次数"交给循环变量，<b>无论数据有多少个都能处理</b>。两者的差别是：<b>不确定个数时，顺序结构连写都写不出来</b>。
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 模块0 三种循环语句一览 -->
+  <section class="slide">
+    <div class="s-title">三种循环语句一览</div>
+    <div class="s-body">
+      <table class="tb" style="font-size:28px">
+        <thead><tr><th style="width:22%">语句</th><th style="width:26%">测试时机</th><th style="width:22%">最少执行次数</th><th style="width:30%">典型用途</th></tr></thead>
+        <tbody>
+          <tr><td><code class="inline">while</code></td><td>先判断（前测试）</td><td class="c-green">0 次</td><td>循环次数不确定</td></tr>
+          <tr><td><code class="inline">do-while</code></td><td>后判断（后测试）</td><td class="c-red">1 次</td><td>至少要做一次</td></tr>
+          <tr><td><code class="inline">for</code></td><td>先判断（前测试）</td><td class="c-green">0 次</td><td>次数明确、计数循环</td></tr>
+        </tbody>
+      </table>
+      <div class="box tip" style="margin-top:18px">
+        <span class="label">记忆</span>
+        前测试（while / for）可能一次都不执行；后测试（do-while）保证至少执行一次。下面逐一拆解。
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 模块1 while 语法 -->
+  <section class="slide">
+    <div class="s-title">while 循环：语法与执行流程</div>
+    <div class="s-body">
+      <div class="two wide" style="margin-top:0; align-items:start; grid-template-columns:1.4fr 2fr; gap:23px">
+        <div>
+          <div class="flow">
+            <div class="cap">传统流程图（前测试）</div>
+              <svg viewBox="0 0 300 380" style="max-width:445px">
+              <rect class="fc-term" height="34" rx="17" width="96" x="62" y="10"/>
+              <text class="fc-term-t" font-size="19" text-anchor="middle" x="110" y="32">开始</text>
+              <line class="fc-line" x1="110" x2="110" y1="44" y2="68" marker-end="url(#fcArrow)"/>
+              <polygon class="fc-dec" points="110,68 164,106 110,144 56,106"/>
+              <text class="fc-dec-t" font-size="18" text-anchor="middle" x="110" y="112">条件 P</text>
+              <text class="fc-yes" font-size="18" text-anchor="start" x="124" y="164">非0</text>
+              <text class="fc-no" font-size="18" text-anchor="middle" x="204" y="98">0</text>
+              <line class="fc-line" x1="110" x2="110" y1="144" y2="168" marker-end="url(#fcArrow)"/>
+              <rect class="fc-proc" height="46" rx="4" width="140" x="40" y="168"/>
+              <text class="fc-proc-t" font-size="17" text-anchor="middle" x="110" y="195">循环体</text>
+              <path class="fc-line" d="M40,191 L20,191 L20,56 L107,56" marker-end="url(#fcArrow)"/>
+              <path class="fc-line" d="M164,106 L236,106 L236,236 L110,236 L110,260" marker-end="url(#fcArrow)"/>
+              <rect class="fc-proc" height="42" rx="4" width="150" x="35" y="260"/>
+              <text class="fc-proc-t" font-size="17" text-anchor="middle" x="110" y="286">后续语句</text>
+              <line class="fc-line" x1="110" x2="110" y1="302" y2="326" marker-end="url(#fcArrow)"/>
+              <rect class="fc-term" height="34" rx="17" width="96" x="62" y="326"/>
+              <text class="fc-term-t" font-size="19" text-anchor="middle" x="110" y="348">结束</text>
+            </svg>
+          </div>
+        </div>
+        <div>
+          <div class="s-sub blue" style="margin-top:0">语法形式</div>
+<pre class="code" style="font-size:32px"><span class="kw">while</span>(表达式){
+    循环体
+}</pre>
+          <div class="flow" style="margin-top:14px; place-self: center; align-items:flex-center">
+            <div class="cap">N-S 图（盒图 · 当型）</div>
+            <svg viewBox="0 0 180 183" style="max-width:250px">
+              <rect class="fc-ns" height="156" rx="8" width="169" x="5" y="12"/>
+              <path class="fc-ns-cond" d="M5,20 a8,8 0 0 1 8,-8 h153 a8,8 0 0 1 8,8 v31 h-122 v117 h-39 a8,8 0 0 1 -8,-8 v-140 z"/>
+              <text class="fc-ns-t" font-size="17" font-weight="700" text-anchor="middle" x="90" y="39">当 P 成立</text>
+              <text class="fc-ns-t" font-size="16" text-anchor="middle" x="113" y="116">循环体</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <div class="box" style="margin-top:16px; font-size:28px">
+        <span class="label">规则</span>
+        先求表达式：<b>非0 就执行循环体，再回头判断；0 就跳过</b>，执行后续语句。
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 模块1 while 五点关键说明 -->
+  <section class="slide">
+    <div class="s-title">while 循环的五个关键说明</div>
+    <div class="s-body">
+      <ul class="feat" style="margin-top:0">
+        <li><span class="k">循环体</span><span class="v">单条语句可省略  <code class="inline">{ }</code> ；多条语句必须用 <code class="inline">{ }</code> 构成复合语句。</span></li>
+        <li><span class="k">表达式</span><span class="v">须含有在循环体内被改变的变量，否则条件永真 → 死循环。</span></li>
+        <li><span class="k">常量表达式</span><span class="v">while(1) 是死循环，通常要配合 break 退出。</span></li>
+        <li><span class="k">退出方式</span><span class="v">条件变为 0 / 遇到 break / 遇到 return，三者皆可。</span></li>
+        <li><span class="k">本质</span><span class="v">"当型"循环：当条件成立时反复做，不成立就停。</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 7 模块1 while vs if -->
+  <section class="slide">
+    <div class="s-title">while 与 if 的区别</div>
+    <div class="s-body">
+      <div class="two" style="margin-top:0">
+        <div>
+          <div class="s-sub blue" style="margin-top:0">if：只做一次判断</div>
+<pre class="code" style="font-size:32px"><span class="kw">if</span>(i &lt;= <span class="num">100</span>){
+    sum = sum + i;   <span class="cmt">// 最多执行一次</span>
+}</pre>
+        </div>
+        <div>
+          <div class="s-sub orange">while：反复做直到条件不成立</div>
+<pre class="code" style="font-size:32px"><span class="kw">while</span>(i &lt;= <span class="num">100</span>){
+    sum = sum + i;   <span class="cmt">// 反复执行</span>
+    i++;
+}</pre>
+        </div>
+      </div>
+      <div class="box key" style="margin-top:10px;font-size:26px;line-height:1.6;padding:13px 26px">
+        <span class="label">看结果</span>
+        同样从 i=1、sum=0 出发：if 只加一次 → <b>sum = 1</b>；while 反复加 → <b>sum = 5050</b>。
+      </div>
+      <div class="reveal step">
+        <div class="box warn" style="margin-top:0;font-size:24px;line-height:1.5;padding:11px 26px">
+          <span class="label">易错①</span>
+          <b>把 while 写成 if</b> —— 只判断一次，该反复累加的地方只算了一遍。
+        </div>
+      </div>
+      <div class="reveal step">
+        <div class="box warn" style="margin-top:0;font-size:24px;line-height:1.5;padding:11px 26px">
+          <span class="label">易错②</span>
+          <b>表达式后面误加分号</b> —— <code class="inline" style="font-size:23px">while(i &lt;= 100);</code> 的分号成了"空循环体"，i 又不变 → 死循环，后面那段代码永远轮不到。
+        </div>
+      </div>
+      <div class="reveal step">
+        <div class="box warn" style="margin-top:0;font-size:24px;line-height:1.5;padding:11px 26px">
+          <span class="label">易错③</span>
+          <b>循环体里没有 i++</b> —— 条件里的 i 始终不变，恒为真，程序卡死；循环体必须能改变条件。
+        </div>
+      </div>
+      <div class="reveal-hint" data-label="点这里，看一看">点这里，看一看</div>
+    </div>
+  </section>
+
+  <!-- 8 模块1 例·求1+2+…+100 -->
+  <section class="slide">
+    <div class="s-title">例：求 1 + 2 + … + 100（while）</div>
+    <div class="s-body">
+      <div class="two wide" style="margin-top:0; align-items:center; grid-template-columns:1.4fr 2fr; gap:20px">
+        <div>
+          <div class="flow">
+            <div class="cap">算法流程图</div>
+              <svg viewBox="0 0 300 520" style="max-width:375px">
+              <rect class="fc-term" height="34" rx="17" width="96" x="62" y="10"/>
+              <text class="fc-term-t" font-size="19" text-anchor="middle" x="110" y="32">开始</text>
+              <line class="fc-line" x1="110" x2="110" y1="44" y2="68" marker-end="url(#fcArrow)"/>
+              <rect class="fc-proc" height="46" rx="4" width="140" x="40" y="68"/>
+              <text class="fc-proc-t" font-size="18" text-anchor="middle" x="110" y="95">sum=0; i=1</text>
+              <line class="fc-line" x1="110" x2="110" y1="114" y2="138" marker-end="url(#fcArrow)"/>
+              <polygon class="fc-dec" points="110,138 164,176 110,214 56,176"/>
+              <text class="fc-dec-t" font-size="18" text-anchor="middle" x="110" y="182">i &lt;= 100</text>
+              <text class="fc-yes" font-size="17" text-anchor="start" x="124" y="232">非0</text>
+              <text class="fc-no" font-size="18" text-anchor="middle" x="204" y="168">0</text>
+              <line class="fc-line" x1="110" x2="110" y1="214" y2="238" marker-end="url(#fcArrow)"/>
+              <rect class="fc-proc" height="46" rx="4" width="140" x="40" y="238"/>
+              <text class="fc-proc-t" font-size="18" text-anchor="middle" x="110" y="265">sum = sum + i</text>
+              <line class="fc-line" x1="110" x2="110" y1="284" y2="308" marker-end="url(#fcArrow)"/>
+              <rect class="fc-proc" height="46" rx="4" width="140" x="40" y="308"/>
+              <text class="fc-proc-t" font-size="18" text-anchor="middle" x="110" y="335">i = i + 1</text>
+              <path class="fc-line" d="M40,331 L20,331 L20,126 L107,126" marker-end="url(#fcArrow)"/>
+              <path class="fc-line" d="M164,176 L236,176 L236,378 L110,378 L110,402" marker-end="url(#fcArrow)"/>
+              <polygon class="fc-io" points="31,402 171,402 189,446 49,446"/>
+              <text class="fc-io-t" font-size="18" text-anchor="middle" x="110" y="429">输出 sum</text>
+              <line class="fc-line" x1="110" x2="110" y1="446" y2="470" marker-end="url(#fcArrow)"/>
+              <rect class="fc-term" height="34" rx="17" width="96" x="62" y="470"/>
+              <text class="fc-term-t" font-size="19" text-anchor="middle" x="110" y="492">结束</text>
+            </svg>
+          </div>
+        </div>
+        <div>
+          <div class="s-sub blue" style="margin-top:0">代码</div>
+<pre class="code" style="font-size:32px"><span class="kw">int</span> i=<span class="num">1</span>, sum=<span class="num">0</span>;
+<span class="kw">while</span>(i &lt;= <span class="num">100</span>){
+    sum = sum + i;
+    i++;
+}
+<span class="kw">printf</span>(<span class="str">"%d"</span>, sum);</pre>
+          <div class="box key" style="margin-top:12px; font-size:26px">
+            <span class="label">分析</span>
+            初值 sum=0、i=1；每轮 i 自增 1；i&gt;100 时退出；退出后 sum 即答案。
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9 模块1 例·求阶乘（累乘 + 死循环警示） -->
+  <section class="slide">
+    <div class="s-title">例：求 1 × 2 × … × 20（累乘）</div>
+    <div class="s-body">
+      <div class="two wide" style="margin-top:0; align-items:center; grid-template-columns:1.35fr 2fr; gap:17px">
+        <div>
+          <div class="flow">
+            <div class="cap">算法流程图</div>
+            <svg viewBox="0 0 300 520" style="max-width:375px">
+              <rect class="fc-term" height="34" rx="17" width="96" x="62" y="10"/>
+              <text class="fc-term-t" font-size="19" text-anchor="middle" x="110" y="32">开始</text>
+              <line class="fc-line" x1="110" x2="110" y1="44" y2="68" marker-end="url(#fcArrow)"/>
+              <rect class="fc-proc" height="46" rx="4" width="140" x="40" y="68"/>
+              <text class="fc-proc-t" font-size="18" text-anchor="middle" x="110" y="95">i=1; f=1</text>
+              <line class="fc-line" x1="110" x2="110" y1="114" y2="138" marker-end="url(#fcArrow)"/>
+              <polygon class="fc-dec" points="110,138 164,176 110,214 56,176"/>
+              <text class="fc-dec-t" font-size="18" text-anchor="middle" x="110" y="182">i &lt;= 20</text>
+              <text class="fc-yes" font-size="17" text-anchor="start" x="124" y="232">非0</text>
+              <text class="fc-no" font-size="18" text-anchor="middle" x="204" y="168">0</text>
+              <line class="fc-line" x1="110" x2="110" y1="214" y2="238" marker-end="url(#fcArrow)"/>
+              <rect class="fc-proc" height="46" rx="4" width="140" x="40" y="238"/>
+              <text class="fc-proc-t" font-size="18" text-anchor="middle" x="110" y="265">f = f * i</text>
+              <line class="fc-line" x1="110" x2="110" y1="284" y2="308" marker-end="url(#fcArrow)"/>
+              <rect class="fc-proc" height="46" rx="4" width="140" x="40" y="308"/>
+              <text class="fc-proc-t" font-size="18" text-anchor="middle" x="110" y="335">i = i + 1</text>
+              <path class="fc-line" d="M40,331 L20,331 L20,126 L107,126" marker-end="url(#fcArrow)"/>
+              <path class="fc-line" d="M164,176 L236,176 L236,378 L110,378 L110,402" marker-end="url(#fcArrow)"/>
+              <polygon class="fc-io" points="31,402 171,402 189,446 49,446"/>
+              <text class="fc-io-t" font-size="18" text-anchor="middle" x="110" y="429">输出 f</text>
+              <line class="fc-line" x1="110" x2="110" y1="446" y2="470" marker-end="url(#fcArrow)"/>
+              <rect class="fc-term" height="34" rx="17" width="96" x="62" y="470"/>
+              <text class="fc-term-t" font-size="19" text-anchor="middle" x="110" y="492">结束</text>
+            </svg>
+          </div>
+        </div>
+        <div>
+          <div class="s-sub blue" style="margin-top:0">代码</div>
+<pre class="code" style="font-size:32px"><span class="kw">int</span> i=<span class="num">1</span>;
+<span class="kw">long long</span> f=<span class="num">1</span>;
+<span class="kw">while</span>(i &lt;= <span class="num">20</span>){
+    f = f * i;
+    i++;          <span class="cmt">// 漏写 → 死循环</span>
+}
+<span class="kw">printf</span>(<span class="str">"%lld"</span>, f);</pre>
+          <div class="box warn" style="margin-top:12px; font-size:25px">
+            <span class="label">死循环警示</span>
+            若循环体内<b>漏写 i++</b>，i 永远 ≤ 20，循环永不结束。20! 已接近 <code class="inline">long long</code> 上限，21! 就溢出。
+          </div>
+          <div class="box tip" style="margin-top:12px; font-size:25px">
+            <span class="label">对照</span>
+            求和用 <code class="inline">+</code>、初值 0；求积用 <code class="inline">*</code>、初值 1。初值是"单位元"，不能错。
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10 模块1 例·各位数字之和 -->
+  <section class="slide">
+    <div class="s-title">例：求任意正整数各位数字之和</div>
+    <div class="s-body">
+      <div class="two wide" style="margin-top:0; align-items:center; grid-template-columns:1.35fr 2fr; gap:16px">
+        <div>
+          <div class="flow">
+            <div class="cap">算法流程图</div>
+            <svg viewBox="0 0 300 588" style="max-width:340px">
+              <rect class="fc-term" height="34" rx="17" width="96" x="62" y="10"/>
+              <text class="fc-term-t" font-size="19" text-anchor="middle" x="110" y="32">开始</text>
+              <line class="fc-line" x1="110" x2="110" y1="44" y2="68" marker-end="url(#fcArrow)"/>
+              <polygon class="fc-io" points="22,68 162,68 180,112 40,112"/>
+              <text class="fc-io-t" font-size="18" text-anchor="middle" x="101" y="95">输入 n</text>
+              <line class="fc-line" x1="110" x2="110" y1="112" y2="136" marker-end="url(#fcArrow)"/>
+              <rect class="fc-proc" height="46" rx="4" width="140" x="40" y="136"/>
+              <text class="fc-proc-t" font-size="18" text-anchor="middle" x="110" y="163">sum = 0</text>
+              <line class="fc-line" x1="110" x2="110" y1="182" y2="206" marker-end="url(#fcArrow)"/>
+              <polygon class="fc-dec" points="110,206 164,244 110,282 56,244"/>
+              <text class="fc-dec-t" font-size="18" text-anchor="middle" x="110" y="250">n != 0</text>
+              <text class="fc-yes" font-size="17" text-anchor="start" x="124" y="300">非0</text>
+              <text class="fc-no" font-size="18" text-anchor="middle" x="204" y="236">0</text>
+              <line class="fc-line" x1="110" x2="110" y1="282" y2="306" marker-end="url(#fcArrow)"/>
+              <rect class="fc-proc" height="46" rx="4" width="140" x="40" y="306"/>
+              <text class="fc-proc-t" font-size="17" text-anchor="middle" x="110" y="333">sum += n % 10</text>
+              <line class="fc-line" x1="110" x2="110" y1="352" y2="376" marker-end="url(#fcArrow)"/>
+              <rect class="fc-proc" height="46" rx="4" width="140" x="40" y="376"/>
+              <text class="fc-proc-t" font-size="18" text-anchor="middle" x="110" y="403">n = n / 10</text>
+              <path class="fc-line" d="M40,399 L20,399 L20,194 L107,194" marker-end="url(#fcArrow)"/>
+              <path class="fc-line" d="M164,244 L236,244 L236,446 L110,446 L110,470" marker-end="url(#fcArrow)"/>
+              <polygon class="fc-io" points="31,470 171,470 189,514 49,514"/>
+              <text class="fc-io-t" font-size="18" text-anchor="middle" x="110" y="497">输出 sum</text>
+              <line class="fc-line" x1="110" x2="110" y1="514" y2="538" marker-end="url(#fcArrow)"/>
+              <rect class="fc-term" height="34" rx="17" width="96" x="62" y="538"/>
+              <text class="fc-term-t" font-size="19" text-anchor="middle" x="110" y="560">结束</text>
+            </svg>
+          </div>
+        </div>
+        <div>
+          <div class="s-sub blue" style="margin-top:0">代码</div>
+<pre class="code" style="font-size:32px"><span class="kw">int</span> n, sum=<span class="num">0</span>;
+<span class="kw">scanf</span>(<span class="str">"%d"</span>, &amp;n);
+<span class="kw">while</span>(n != <span class="num">0</span>){
+    sum = sum + n % <span class="num">10</span>;  <span class="cmt">// 取末位</span>
+    n = n / <span class="num">10</span>;           <span class="cmt">// 去掉末位</span>
+}
+<span class="kw">printf</span>(<span class="str">"%d"</span>, sum);</pre>
+          <div class="box key" style="margin-top:12px; font-size:25px">
+            <span class="label">思路</span>
+            <b>n % 10</b> 得到末位；<b>n / 10</b> 删掉末位；每轮剥一位，直到 n 变成 0。这是"边剥边加"的经典套路。
+          </div>
+          <div class="box" style="margin-top:12px; font-size:25px">
+            <span class="label">例如</span>
+            n=123 → 3（剩12）→ 2（剩1）→ 1（剩0），sum=6。
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 11 模块1 小练手·while -->
+  <section class="slide">
+    <div class="s-title">小练手 · while（课堂 5 分钟）</div>
+    <div class="s-body">
+      <div class="box key" style="margin-top:0;font-size:26px">
+        <span class="label">动笔前</span>
+        每题先写三行：<b>初值是什么 → 什么时候继续 → 每轮改什么</b>。这三行写对了，代码只是翻译。
+      </div>
+      <div class="grid c3" style="margin-top:16px">
+        <div class="card">
+          <h4><span class="ico">①</span>偶数求和</h4>
+          <p>求 1 ~ 100 之间所有<b>偶数</b>之和。</p>
+          <p style="margin-top:10px;font-size:24px;color:var(--blue-600)">提示：<code class="inline" style="font-size:23px">i += 2</code>，或判断 <code class="inline" style="font-size:23px">i % 2 == 0</code></p>
+        </div>
+        <div class="card orange">
+          <h4><span class="ico">②</span>数 3 的倍数</h4>
+          <p>输入 n，统计 1 ~ n 中有多少个数能被 3 整除。</p>
+          <p style="margin-top:10px;font-size:24px;color:#b95a05">提示：计数器该从几开始？不加 1 会怎样？</p>
+        </div>
+        <div class="card green">
+          <h4><span class="ico">③</span>求 n!</h4>
+          <p>输入 n（n ≤ 12），输出 n 的阶乘。</p>
+          <p style="margin-top:10px;font-size:24px;color:var(--green)">提示：累乘初值是 1 还是 0？用 <code class="inline" style="font-size:23px">long</code></p>
+        </div>
+      </div>
+      <div class="coll">
+        <div class="coll-hd">参考解答（先自己写，再参考）</div>
+        <div class="coll-bd">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0 14px">
+<pre class="code" style="font-size:20px;margin:0"><span class="cmt">// ① 偶数求和</span>
+<span class="kw">int</span> i=<span class="num">2</span>, sum=<span class="num">0</span>;
+<span class="kw">while</span>(i&lt;=<span class="num">100</span>){
+  sum += i;  i += <span class="num">2</span>;
+}</pre>
+<pre class="code" style="font-size:20px;margin:0"><span class="cmt">// ② 数 3 的倍数</span>
+<span class="kw">int</span> i=<span class="num">1</span>, n, c=<span class="num">0</span>;
+<span class="kw">scanf</span>(<span class="str">"%d"</span>, &amp;n);
+<span class="kw">while</span>(i&lt;=n){
+  <span class="kw">if</span>(i%<span class="num">3</span>==<span class="num">0</span>) c++;
+  i++;
+}</pre>
+<pre class="code" style="font-size:20px;margin:0"><span class="cmt">// ③ 求 n!</span>
+<span class="kw">long</span> f=<span class="num">1</span>; <span class="kw">int</span> i=<span class="num">1</span>, n;
+<span class="kw">scanf</span>(<span class="str">"%d"</span>, &amp;n);
+<span class="kw">while</span>(i&lt;=n){
+  f *= i;  i++;
+}
+<span class="kw">printf</span>(<span class="str">"%ld"</span>, f);</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 12 模块2 do-while 语法与特点 -->
+  <section class="slide">
+    <div class="s-title">do-while 循环：先执行后判断</div>
+    <div class="s-body">
+      <div class="two wide" style="margin-top:0; align-items:start; grid-template-columns:1.4fr 2fr; gap:15px">
+        <div>
+          <div class="flow">
+            <div class="cap">传统流程图（后测试）</div>
+              <svg viewBox="0 0 300 360" style="max-width:435px">
+              <rect class="fc-term" height="34" rx="17" width="96" x="62" y="10"/>
+              <text class="fc-term-t" font-size="19" text-anchor="middle" x="110" y="32">开始</text>
+              <line class="fc-line" x1="110" x2="110" y1="44" y2="68" marker-end="url(#fcArrow)"/>
+              <rect class="fc-proc" height="46" rx="4" width="140" x="40" y="68"/>
+              <text class="fc-proc-t" font-size="17" text-anchor="middle" x="110" y="95">循环体</text>
+              <line class="fc-line" x1="110" x2="110" y1="114" y2="138" marker-end="url(#fcArrow)"/>
+              <polygon class="fc-dec" points="110,138 164,176 110,214 56,176"/>
+              <text class="fc-dec-t" font-size="18" text-anchor="middle" x="110" y="182">条件 P</text>
+              <text class="fc-yes" font-size="18" text-anchor="middle" x="38" y="168">非0</text>
+              <text class="fc-no" font-size="18" text-anchor="middle" x="126" y="232">0</text>
+              <path class="fc-line" d="M56,176 L20,176 L20,56 L107,56" marker-end="url(#fcArrow)"/>
+              <line class="fc-line" x1="110" x2="110" y1="214" y2="238" marker-end="url(#fcArrow)"/>
+              <rect class="fc-proc" height="42" rx="4" width="150" x="35" y="238"/>
+              <text class="fc-proc-t" font-size="17" text-anchor="middle" x="110" y="264">后续语句</text>
+              <line class="fc-line" x1="110" x2="110" y1="280" y2="304" marker-end="url(#fcArrow)"/>
+              <rect class="fc-term" height="34" rx="17" width="96" x="62" y="304"/>
+              <text class="fc-term-t" font-size="19" text-anchor="middle" x="110" y="326">结束</text>
+            </svg>
+          </div>
+        </div>
+        <div>
+          <div class="s-sub blue" style="margin-top:0">语法形式</div>
+<pre class="code" style="font-size:32px"><span class="kw">do</span>{
+    循环体
+}<span class="kw">while</span>(表达式);   <span class="cmt">// 末尾分号不能省</span></pre>
+          <div class="flow" style="margin-top:14px; align-items:center">
+            <div class="cap">N-S 图（盒图 · 直到型）</div>
+            <svg viewBox="0 0 192 195" style="max-width:250px">
+              <rect class="fc-ns" height="168" rx="8" width="180" x="6" y="13"/>
+              <path class="fc-ns-cond" d="M14,13 h42 v127 h130 v33 a8,8 0 0 1 -8,8 h-164 a8,8 0 0 1 -8,-8 v-152 a8,8 0 0 1 8,-8 z"/>
+              <text class="fc-ns-t" font-size="16" text-anchor="middle" x="121" y="84">循环体</text>
+              <text class="fc-ns-t" font-size="17" font-weight="700" text-anchor="middle" x="96" y="166">直到 P 成立</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <div class="box warn" style="margin-top:16px; font-size:28px">
+        <span class="label">特点</span>
+        <b>先执行一次循环体，再判断</b>；条件非0 就回去再做，0 才退出。<b>至少执行 1 次</b>，末尾分号别漏。
+      </div>
+    </div>
+  </section>
+
+  <!-- 13 模块2 while vs do-while -->
+  <section class="slide">
+    <div class="s-title">while 与 do-while 的对比</div>
+    <div class="s-body">
+      <table class="tb" style="font-size:28px">
+        <thead><tr><th style="width:30%">对比项</th><th style="width:35%">while</th><th style="width:35%">do-while</th></tr></thead>
+        <tbody>
+          <tr><td>测试时机</td><td>先判断后执行</td><td>先执行后判断</td></tr>
+          <tr><td>最少执行次数</td><td class="c-green">0 次</td><td class="c-red">1 次</td></tr>
+          <tr><td>适用场景</td><td>可能一次都不做</td><td>至少要做一次（如输入确认）</td></tr>
+          <tr><td>典型代码</td><td><code class="inline">while(条件){…}</code></td><td><code class="inline">do{…}while(条件);</code></td></tr>
+        </tbody>
+      </table>
+      <div class="box tip" style="margin-top:16px">
+        <span class="label">一句话</span>
+        如果"至少问一次"更自然，就用 do-while；否则用 while。
+      </div>
+    </div>
+  </section>
+
+  <!-- 14 模块2 例·求1+2+…+100（do-while） -->
+  <section class="slide">
+    <div class="s-title">例：求 1 + 2 + … + 100（do-while）</div>
+    <div class="s-body">
+      <div class="two wide" style="margin-top:0; align-items:center; grid-template-columns:1fr 2fr; gap:20px">
+        <div>
+          <div class="flow">
+            <div class="cap">算法流程图（后测试循环）</div>
+            <svg viewBox="0 0 300 510" style="max-width:385px">
+              <rect class="fc-term" height="34" rx="17" width="96" x="62" y="10"/>
+              <text class="fc-term-t" font-size="19" text-anchor="middle" x="110" y="32">开始</text>
+              <line class="fc-line" x1="110" x2="110" y1="44" y2="68" marker-end="url(#fcArrow)"/>
+              <rect class="fc-proc" height="46" rx="4" width="140" x="40" y="68"/>
+              <text class="fc-proc-t" font-size="18" text-anchor="middle" x="110" y="95">sum=0; i=1</text>
+              <line class="fc-line" x1="110" x2="110" y1="114" y2="138" marker-end="url(#fcArrow)"/>
+              <rect class="fc-proc" height="46" rx="4" width="140" x="40" y="138"/>
+              <text class="fc-proc-t" font-size="18" text-anchor="middle" x="110" y="165">sum = sum + i</text>
+              <line class="fc-line" x1="110" x2="110" y1="184" y2="208" marker-end="url(#fcArrow)"/>
+              <rect class="fc-proc" height="46" rx="4" width="140" x="40" y="208"/>
+              <text class="fc-proc-t" font-size="18" text-anchor="middle" x="110" y="235">i = i + 1</text>
+              <line class="fc-line" x1="110" x2="110" y1="254" y2="278" marker-end="url(#fcArrow)"/>
+              <polygon class="fc-dec" points="110,278 164,316 110,354 56,316"/>
+              <text class="fc-dec-t" font-size="18" text-anchor="middle" x="110" y="322">i &lt;= 100</text>
+              <text class="fc-yes" font-size="18" text-anchor="middle" x="38" y="308">非0</text>
+              <text class="fc-no" font-size="18" text-anchor="middle" x="126" y="372">0</text>
+              <path class="fc-line" d="M56,316 L20,316 L20,126 L107,126" marker-end="url(#fcArrow)"/>
+              <path class="fc-line" d="M110,354 L110,378" marker-end="url(#fcArrow)"/>
+              <polygon class="fc-io" points="31,378 171,378 189,422 49,422"/>
+              <text class="fc-io-t" font-size="18" text-anchor="middle" x="110" y="405">输出 sum</text>
+              <line class="fc-line" x1="110" x2="110" y1="422" y2="446" marker-end="url(#fcArrow)"/>
+              <rect class="fc-term" height="34" rx="17" width="96" x="62" y="446"/>
+              <text class="fc-term-t" font-size="19" text-anchor="middle" x="110" y="468">结束</text>
+            </svg>
+          </div>
+        </div>
+        <div>
+          <div class="s-sub blue" style="margin-top:0">代码</div>
+<pre class="code" style="font-size:32px"><span class="kw">int</span> i=<span class="num">1</span>, sum=<span class="num">0</span>;
+<span class="kw">do</span>{
+    sum += i;
+    i++;
+}<span class="kw">while</span>(i &lt;= <span class="num">100</span>);
+<span class="kw">printf</span>(<span class="str">"%d"</span>, sum);</pre>
+          <div class="box key" style="margin-top:12px; font-size:26px">
+            <span class="label">对照 while</span>
+            与 while 例唯一区别：<b>先做后判，至少执行一次</b>。本题 100≥1，结果同样是 5050；若上限为 0，do-while 仍会先加一次。
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 15 模块2 例·字符输入确认 -->
+  <section class="slide">
+    <div class="s-title">例：字符输入确认（至少问一次）</div>
+    <div class="s-body">
+      <div class="two wide" style="margin-top:0; align-items:center; grid-template-columns:1.2fr 2fr; gap:18px">
+        <div>
+          <div class="flow">
+            <div class="cap">算法流程图（后测试循环）</div>
+            <svg viewBox="0 0 300 356" style="max-width:400px">
+              <rect class="fc-term" height="34" rx="17" width="96" x="62" y="10"/>
+              <text class="fc-term-t" font-size="19" text-anchor="middle" x="110" y="32">开始</text>
+              <line class="fc-line" x1="110" x2="110" y1="44" y2="68" marker-end="url(#fcArrow)"/>
+              <polygon class="fc-io" points="58,68 202,68 180,112 40,112"/>
+              <text class="fc-io-t" font-size="18" text-anchor="middle" x="121" y="95">输入 Y / N</text>
+              <line class="fc-line" x1="110" x2="110" y1="112" y2="136" marker-end="url(#fcArrow)"/>
+              <rect class="fc-proc" height="46" rx="4" width="140" x="40" y="136"/>
+              <text class="fc-proc-t" font-size="18" text-anchor="middle" x="110" y="163">ch = getchar()</text>
+              <line class="fc-line" x1="110" x2="110" y1="182" y2="206" marker-end="url(#fcArrow)"/>
+              <polygon class="fc-dec" points="110,206 164,244 110,282 56,244"/>
+              <text class="fc-dec-t" font-size="17" text-anchor="middle" x="110" y="250">非 Y/N ?</text>
+              <text class="fc-yes" font-size="17" text-anchor="middle" x="40" y="234">非0</text>
+              <text class="fc-no" font-size="18" text-anchor="middle" x="126" y="300">0</text>
+              <path class="fc-line" d="M56,244 L20,244 L20,56 L107,56" marker-end="url(#fcArrow)"/>
+              <line class="fc-line" x1="110" x2="110" y1="282" y2="306" marker-end="url(#fcArrow)"/>
+              <rect class="fc-term" height="34" rx="17" width="96" x="62" y="306"/>
+              <text class="fc-term-t" font-size="19" text-anchor="middle" x="110" y="328">结束</text>
+            </svg>
+          </div>
+        </div>
+        <div>
+          <div class="s-sub blue" style="margin-top:0">代码</div>
+<pre class="code" style="font-size:32px"><span class="kw">char</span> ch;
+<span class="kw">do</span>{
+    <span class="kw">printf</span>(<span class="str">"输入 Y/N: "</span>);
+    ch = <span class="kw">getchar</span>();
+    <span class="kw">getchar</span>();   <span class="cmt">// 吃掉回车</span>
+}<span class="kw">while</span>(ch!=<span class="str">'Y'</span> &amp;&amp; ch!=<span class="str">'N'</span>);</pre>
+          <div class="box key" style="margin-top:12px; font-size:25px">
+            <span class="label">为什么用 do-while</span>
+            必须先问一次、拿到输入后才能判断合不合法；不合法就<b>至少再问一次</b>——正是"至少执行一次"的典型场景。
+          </div>
+          <div class="box warn" style="margin-top:12px; font-size:24px">
+            <span class="label">注意</span>
+            用 <code class="inline">getchar()</code> 时，输入后按的回车会留在缓冲区，需再吃一个回车。
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 16 模块2 例·数值合法性确认 -->
+  <section class="slide">
+    <div class="s-title">例：输入三角形的三边（合法性确认）</div>
+    <div class="s-body">
+      <div class="two wide" style="margin-top:0; align-items:center; grid-template-columns:1.25fr 2fr; gap:20px">
+        <div>
+          <div class="flow">
+            <div class="cap">算法流程图（后测试循环）</div>
+            <svg viewBox="0 0 300 356" style="max-width:400px">
+              <rect class="fc-term" height="34" rx="17" width="96" x="62" y="10"/>
+              <text class="fc-term-t" font-size="19" text-anchor="middle" x="110" y="32">开始</text>
+              <line class="fc-line" x1="110" x2="110" y1="44" y2="68" marker-end="url(#fcArrow)"/>
+              <polygon class="fc-io" points="58,68 202,68 180,112 40,112"/>
+              <text class="fc-io-t" font-size="17" text-anchor="middle" x="121" y="95">输入 a, b, c</text>
+              <line class="fc-line" x1="110" x2="110" y1="112" y2="136" marker-end="url(#fcArrow)"/>
+              <rect class="fc-proc" height="46" rx="4" width="140" x="40" y="136"/>
+              <text class="fc-proc-t" font-size="17" text-anchor="middle" x="110" y="163">判断是否合法</text>
+              <line class="fc-line" x1="110" x2="110" y1="182" y2="206" marker-end="url(#fcArrow)"/>
+              <polygon class="fc-dec" points="110,206 164,244 110,282 56,244"/>
+              <text class="fc-dec-t" font-size="17" text-anchor="middle" x="110" y="250">不合法?</text>
+              <text class="fc-yes" font-size="17" text-anchor="middle" x="40" y="234">非0</text>
+              <text class="fc-no" font-size="18" text-anchor="middle" x="126" y="300">0</text>
+              <path class="fc-line" d="M56,244 L20,244 L20,56 L107,56" marker-end="url(#fcArrow)"/>
+              <line class="fc-line" x1="110" x2="110" y1="282" y2="306" marker-end="url(#fcArrow)"/>
+              <rect class="fc-term" height="34" rx="17" width="96" x="62" y="306"/>
+              <text class="fc-term-t" font-size="19" text-anchor="middle" x="110" y="328">结束</text>
+            </svg>
+          </div>
+        </div>
+        <div>
+          <div class="s-sub blue" style="margin-top:0">代码</div>
+<pre class="code" style="font-size:32px"><span class="kw">double</span> a,b,c;
+<span class="kw">do</span>{
+    <span class="kw">printf</span>(<span class="str">"输入三边: "</span>);
+    <span class="kw">scanf</span>(<span class="str">"%lf%lf%lf"</span>,&amp;a,&amp;b,&amp;c);
+}<span class="kw">while</span>(!(a+b&gt;c &amp;&amp; a+c&gt;b &amp;&amp; b+c&gt;a &amp;&amp; a&gt;<span class="num">0</span>));</pre>
+          <div class="box key" style="margin-top:12px; font-size:24px">
+            <span class="label">思路</span>
+            三角形需满足"<b>任意两边之和大于第三边且边长均为正</b>"。用 do-while 保证用户至少输入一次，不合法就重输。
+          </div>
+          <div class="box" style="margin-top:12px; font-size:24px">
+            <span class="label">读法</span>
+            <code class="inline">!(条件)</code> 取反：只要有一个不成立（不合法），就继续循环。
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 17 模块2 小练手·do-while -->
+  <section class="slide">
+    <div class="s-title">小练手 · do-while（"至少做一次"才自然）</div>
+    <div class="s-body">
+      <div class="box key" style="margin-top:0;font-size:26px">
+        <span class="label">判断口诀</span>
+        凡是"<b>先让用户做／先执行一次，再问要不要继续</b>"的场景——菜单、猜数、输入校验——就是 do-while。
+      </div>
+      <div class="grid c3" style="margin-top:16px">
+        <div class="card">
+          <h4><span class="ico">①</span>猜数字</h4>
+          <p>答案预设为 <b>58</b>。反复读入猜测值，猜中才结束；每次提示"大了"或"小了"。</p>
+          <p style="margin-top:10px;font-size:24px;color:var(--blue-600)">提示：至少要读一次，才谈得上判断</p>
+        </div>
+        <div class="card orange">
+          <h4><span class="ico">②</span>简易菜单</h4>
+          <p>显示"1-加法 2-减法 0-退出"，用户选 0 才退出。</p>
+          <p style="margin-top:10px;font-size:24px;color:#b95a05">提示：菜单必须先显示给用户看</p>
+        </div>
+        <div class="card purple">
+          <h4><span class="ico">③</span>改写对比</h4>
+          <p>把"各位数字之和"改用 do-while。当 <code class="inline" style="font-size:23px">n = 0</code> 时，两版执行几次？结果一样吗？</p>
+          <p style="margin-top:10px;font-size:24px;color:var(--purple)">提示：结果同为 0，但 do-while 多跑了一遍</p>
+        </div>
+      </div>
+      <div class="coll">
+        <div class="coll-hd">参考解答（先自己写，再参考）</div>
+        <div class="coll-bd">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0 14px">
+<pre class="code" style="font-size:20px;margin:0"><span class="cmt">// ① 猜数字</span>
+<span class="kw">int</span> g;
+<span class="kw">do</span>{
+  <span class="kw">scanf</span>(<span class="str">"%d"</span>, &amp;g);
+  <span class="kw">if</span>(g&gt;<span class="num">58</span>) <span class="kw">printf</span>(<span class="str">"大了\n"</span>);
+  <span class="kw">else if</span>(g&lt;<span class="num">58</span>) <span class="kw">printf</span>(<span class="str">"小了\n"</span>);
+}<span class="kw">while</span>(g != <span class="num">58</span>);</pre>
+<pre class="code" style="font-size:20px;margin:0"><span class="cmt">// ② 简易菜单</span>
+<span class="kw">int</span> c;
+<span class="kw">do</span>{
+  <span class="kw">printf</span>(<span class="str">"1-加 2-减 0-退出\n"</span>);
+  <span class="kw">scanf</span>(<span class="str">"%d"</span>, &amp;c);
+}<span class="kw">while</span>(c != <span class="num">0</span>);</pre>
+<pre class="code" style="font-size:20px;margin:0"><span class="cmt">// ③ 各位数字之和</span>
+<span class="kw">int</span> n, s=<span class="num">0</span>;
+<span class="kw">scanf</span>(<span class="str">"%d"</span>, &amp;n);
+<span class="kw">do</span>{
+  s += n%<span class="num">10</span>;  n /= <span class="num">10</span>;
+}<span class="kw">while</span>(n != <span class="num">0</span>);</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 18 模块3 for 语法与执行流程 -->
+  <section class="slide">
+    <div class="s-title">for 循环：语法与执行流程</div>
+    <div class="s-body">
+      <div class="two wide" style="margin-top:0; align-items:start; grid-template-columns:1fr 1.2fr; gap:20px">
+        <div>
+          <div class="flow">
+            <div class="cap">传统流程图（前测试）</div>
+            <svg viewBox="0 0 300 405" style="max-width:390px">
+              <rect class="fc-proc" height="44" rx="4" width="150" x="35" y="10"/>
+              <text class="fc-proc-t" font-size="18" text-anchor="middle" x="110" y="38">表达式1</text>
+              <line class="fc-line" x1="110" x2="110" y1="54" y2="84" marker-end="url(#fcArrow)"/>
+              <polygon class="fc-dec" points="110,84 164,122 110,160 56,122"/>
+              <text class="fc-dec-t" font-size="18" text-anchor="middle" x="110" y="128">表达式2</text>
+              <text class="fc-yes" font-size="17" text-anchor="start" x="124" y="178">非0</text>
+              <text class="fc-no" font-size="17" text-anchor="middle" x="204" y="114">0</text>
+              <line class="fc-line" x1="110" x2="110" y1="160" y2="186" marker-end="url(#fcArrow)"/>
+              <rect class="fc-proc" height="44" rx="4" width="150" x="35" y="186"/>
+              <text class="fc-proc-t" font-size="18" text-anchor="middle" x="110" y="214">循环体</text>
+              <line class="fc-line" x1="110" x2="110" y1="230" y2="252" marker-end="url(#fcArrow)"/>
+              <rect class="fc-proc" height="44" rx="4" width="150" x="35" y="252"/>
+              <text class="fc-proc-t" font-size="18" text-anchor="middle" x="110" y="280">表达式3</text>
+              <path class="fc-line" d="M35,274 L15,274 L15,66 L107,66" marker-end="url(#fcArrow)"/>
+              <path class="fc-line" d="M164,122 L236,122 L236,336 L110,336 L110,354" marker-end="url(#fcArrow)"/>
+              <rect class="fc-proc" height="42" rx="4" width="150" x="35" y="354"/>
+              <text class="fc-proc-t" font-size="17" text-anchor="middle" x="110" y="381">后续语句</text>
+            </svg>
+          </div>
+        </div>
+        <div>
+          <div class="s-sub blue" style="margin-top:0">语法形式</div>
+<pre class="code" style="font-size:30px"><span class="kw">for</span>(表达式1; 表达式2; 表达式3){
+    循环体
+}</pre>
+          <div class="box" style="margin-top:12px; font-size:25px">
+            <span class="label">三者分工</span>
+            表达式1 是<b>初值</b>（只做一次）；表达式2 是<b>条件</b>（非0 继续）；表达式3 是<b>每轮收尾</b>（如 i++）。
+          </div>
+          <div class="box key" style="margin-top:12px; font-size:25px">
+            <span class="label">执行顺序</span>
+            ① → ② → 循环体 → ③ → <b>回到 ②</b> → … 直到 ② 为 0，跳出循环，执行后续语句。
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- 19 模块3 for 与 while 的等价形式 -->
+  <section class="slide">
+    <div class="s-title">for 与 while 的等价形式</div>
+    <div class="s-body">
+      <div class="two" style="margin-top:0; gap:22px">
+        <div>
+          <div class="s-sub blue" style="margin-top:0">等价的 while 形式</div>
+<pre class="code" style="font-size:32px">表达式1;
+<span class="kw">while</span>(表达式2){
+    循环体;
+    表达式3;      <span class="cmt">// 收尾搬到循环体末尾</span>
+}</pre>
+          <div class="box" style="margin-top:12px; font-size:26px">
+            <span class="label">三条对应</span>
+            表达式1 → for 之前一句；表达式2 → while 的条件；表达式3 → 循环体最后一句。
+          </div>
+          <div class="box key" style="margin-top:12px; font-size:26px">
+            <span class="label">本质</span>
+            for 就是"把初值、条件、收尾三件事写在一行"的 while，<b>结构最紧凑</b>，最适合计数循环。
+          </div>
+        </div>
+        <div>
+          <div class="s-sub orange" style="margin-top:0">同一段求和，两种写法</div>
+<pre class="code" style="font-size:29px"><span class="kw">int</span> i, sum=<span class="num">0</span>;
+<span class="kw">for</span>(i=<span class="num">1</span>; i&lt;=<span class="num">100</span>; i++)
+    sum += i;</pre>
+<pre class="code" style="font-size:29px"><span class="kw">int</span> i=<span class="num">1</span>, sum=<span class="num">0</span>;
+<span class="kw">while</span>(i&lt;=<span class="num">100</span>){
+    sum += i;
+    i++;          <span class="cmt">// 就是 i++</span>
+}</pre>
+          <div class="box tip" style="margin-top:12px; font-size:26px">
+            <span class="label">差别</span>
+            while 版把 <b>i++</b> 藏在循环体里，<b>忘写就死循环</b>；for 版写进括号，收尾跑不掉。
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 20 模块3 三表达式省略与灵活用法 -->
+  <section class="slide">
+    <div class="s-title">for 的三个表达式可以省略 / 灵活使用</div>
+    <div class="s-body">
+      <ul class="feat" style="margin-top:0">
+        <li><span class="k">表达式1 省</span><span class="v">在 for 前已初始化，如 <code class="inline">int i=1; for(;i&lt;=n;i++)</code></span></li>
+        <li><span class="k">表达式2 省</span><span class="v">条件恒真 → 死循环，需在循环体内用 break 退出</span></li>
+        <li><span class="k">表达式3 省</span><span class="v">在循环体内自增，如 <code class="inline">for(i=1;i&lt;=n;){… i++;}</code></span></li>
+        <li><span class="k">逗号运算符</span><span class="v"><code class="inline">for(i=1,j=100; i&lt;j; i++,j--)</code> 同时控制两个变量</span></li>
+        <li><span class="k">全部省略</span><span class="v"><code class="inline">for(;;)</code> 是常见死循环写法（配合 break）</span></li>
+      </ul>
+      <div class="box warn" style="margin-top:14px">
+        <span class="label">提醒</span>
+        省略表达式2 极易写成死循环；无论怎么省略，<b>两个分号都不能省</b>。
+      </div>
+    </div>
+  </section>
+
+  <!-- 21 模块3 浮点陷阱 -->
+  <section class="slide">
+    <div class="s-title">for 的常见陷阱：不要用浮点做循环变量</div>
+    <div class="s-body">
+      <div class="two" style="margin-top:0">
+        <div>
+          <div class="s-sub blue" style="margin-top:0">❌ 错误写法</div>
+<pre class="code" style="font-size:31px"><span class="kw">float</span> x = <span class="num">0.1</span>;
+<span class="kw">for</span>( ;  x != <span class="num">1.0</span>;  x += <span class="num">0.1</span>)
+    <span class="kw">printf</span>(<span class="str">"%.1f "</span>, x);</pre>
+          <div class="s-sub orange" style="margin-top:12px">可能的运行结果</div>
+<pre class="out" style="font-size:22px">0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0
+1.1 1.2 1.3 1.4 1.5 …    ← 停不下来</pre>
+          <div class="reveal step">
+            <div class="box red" style="margin-top:0; font-size:24px">
+              <span class="label">原因</span>
+              累加到第 10 次，x 里存的实际是 <b>1.0000001</b>，并不等于 1.0；<code class="inline" style="font-size:23px">%.1f</code> 只是把它<i>显示</i>成 "1.0"。换编译器或平台，还可能停在 0.9、或多打几个数 —— 次数<b>不可预期</b>。
+            </div>
+          </div>
+        </div>
+        <div class="reveal step col">
+          <div class="s-sub orange" style="margin-top:0">✅ 正确写法</div>
+<pre class="code" style="font-size:32px"><span class="kw">int</span> i;
+<span class="kw">for</span>(i=<span class="num">1</span>; i&lt;=<span class="num">10</span>; i++){
+    <span class="kw">float</span> x = i / <span class="num">10.0</span>;
+    <span class="kw">printf</span>(<span class="str">"%.1f "</span>, x);
+}</pre>
+          <div class="box tip" style="margin-top:12px; font-size:25px">
+            <span class="label">原则</span>
+            用<b>整数</b>控制次数，小数由整数换算：<code class="inline" style="font-size:23px;white-space:nowrap">x = i / 10.0</code>
+          </div>
+        </div>
+      </div>
+      <div class="reveal-hint" data-label="点一下，往下看">点一下，往下看</div>
+    </div>
+  </section>
+
+  <!-- 22 模块3 例·求和用for -->
+  <section class="slide">
+    <div class="s-title">例：求 1 + 2 + … + 100（for）</div>
+    <div class="s-body">
+      <div class="two wide" style="margin-top:0; align-items:center; grid-template-columns:1fr 2fr; gap:20px">
+        <div>
+          <div class="flow">
+            <div class="cap">N-S 图（当型循环）</div>
+            <svg viewBox="0 0 180 183" style="max-width:380px">
+              <rect class="fc-ns" height="156" rx="8" width="169" x="5" y="12"/>
+              <path class="fc-ns-cond" d="M5,20 a8,8 0 0 1 8,-8 h153 a8,8 0 0 1 8,8 v31 h-122 v117 h-39 a8,8 0 0 1 -8,-8 v-140 z"/>
+              <text class="fc-ns-t" font-size="17" font-weight="700" text-anchor="middle" x="90" y="39">当 i ≤ 100</text>
+              <text class="fc-ns-t" font-size="14" text-anchor="middle" x="113" y="116">sum += i;  i++</text>
+            </svg>
+          </div>
+        </div>
+        <div>
+          <div class="coll" style="margin-top:0">
+            <div class="coll-hd">代码（先照着 N-S 图自己写，再点开）</div>
+            <div class="coll-bd">
+              <div class="s-sub blue" style="margin-top:0">代码</div>
+<pre class="code" style="font-size:32px"><span class="kw">int</span> i, sum=<span class="num">0</span>;
+<span class="kw">for</span>(i=<span class="num">1</span>; i&lt;=<span class="num">100</span>; i++)
+    sum += i;
+<span class="kw">printf</span>(<span class="str">"%d"</span>, sum);</pre>
+              <div class="box key" style="margin-top:12px; font-size:26px">
+                <span class="label">对照 while</span>
+                把初值、条件、自增挤进一行，<b>结构清晰、不易漏写 i++</b>。这是计数循环最常用的写法。N-S 图与 while 例画的是<b>同一个算法</b>，只是写法不同。
+              </div>
+              <div class="box" style="margin-top:12px; font-size:25px">
+                <span class="label">结果</span>
+                5050（与 while 例完全一致，仅写法不同）。
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 23 模块3 斐波那契数列是什么 -->
+  <section class="slide">
+    <div class="s-title">斐波那契数列</div>
+    <div class="s-body">
+      <div class="two" style="margin-top:0; grid-template-columns:1fr 1.1fr; gap:26px">
+        <div>
+          <div class="box key" style="margin-top:0; font-size:25px">
+            <span class="label">由来</span>
+            1202 年，意大利数学家<b>斐波那契</b>在《计算之书》里提出一道兔子问题：一对小兔出生后满两个月（第三个月）开始每月生一对新兔，且兔子都不死——问第 n 个月共有多少对兔子？
+          </div>
+          <div class="box tip" style="margin-top:12px; font-size:25px">
+            <span class="label">定义： </span>
+            前两项为 <b>1</b>；从第 <b>3</b> 项起，每一项等于它<b>前面两项之和</b>：
+          </div>
+<pre class="code" style="font-size:26px; margin:10px 0 0">f(1) = <span class="num">1</span>
+f(2) = <span class="num">1</span>
+f(n) = f(n-1) + f(n-2)      <span class="cmt">(n ≥ 3)</span></pre>
+        </div>
+        <div>
+          <div class="flow">
+            <div class="cap">递推关系：后一项 = 前两项之和</div>
+            <svg viewBox="0 0 630 236" style="max-width:560px">
+              <rect class="fc-proc" height="64" rx="6" width="150" x="40" y="52"/>
+              <text class="fc-proc-t" font-size="30" text-anchor="middle" x="115" y="94">1</text>
+              <text x="115" y="36" font-size="18" text-anchor="middle" fill="#5a7a93">f (n-2)</text>
+              <rect class="fc-proc" height="64" rx="6" width="150" x="240" y="52"/>
+              <text class="fc-proc-t" font-size="30" text-anchor="middle" x="315" y="94">1</text>
+              <text x="315" y="36" font-size="18" text-anchor="middle" fill="#5a7a93">f (n-1)</text>
+              <rect height="64" rx="6" width="150" x="440" y="52" style="fill:#fff8e8;stroke:#e8a33d;stroke-width:3"/>
+              <text font-size="30" text-anchor="middle" x="515" y="94" fill="#9a4a00" font-weight="700">2</text>
+              <text x="515" y="36" font-size="18" text-anchor="middle" fill="#9a4a00">f (n) 新项</text>
+              <path class="fc-line" d="M115,116 L115,172 L515,172 L515,118" marker-end="url(#fcArrow)"/>
+              <path class="fc-line" d="M315,116 L315,172"/>
+              <text x="315" y="204" font-size="19" text-anchor="middle" fill="#9a4a00" font-weight="700">前两项相加</text>
+            </svg>
+          </div>
+          <div class="box tip" style="margin-top:10px; font-size:23px">
+            <span class="label">前 12 项</span>
+            1, 1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144 …
+            相邻两项之比越来越接近 <b>0.618</b>（黄金分割），向日葵籽、松果鳞片的排列也遵循它。
+          </div>
+          <div class="box" style="margin-top:10px; font-size:24px">
+            <span class="label">题目的要求</span>
+            输出数列的<b>前 30 项</b>，每行 6 个。<br>
+            思考：既然每项只要"前两项"，是不是<b>不必保存全部 30 项</b>？
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 24 模块3 例·Fibonacci（1）三变量滚动 -->
+  <section class="slide">
+    <div class="s-title">例：Fibonacci 数列（1）—— 照着定义写</div>
+    <div class="s-body">
+      <div class="two" style="margin-top:0; grid-template-columns:1fr 1fr; gap:24px">
+        <div>
+          <div class="s-sub orange" style="margin-top:0">手工推演：变量怎么"滚"</div>
+          <table class="tb">
+            <thead><tr><th>进入本轮</th><th>f1</th><th>f2</th><th>f = f1+f2</th><th>输出</th></tr></thead>
+            <tbody>
+              <tr><td>i = 3</td><td>1</td><td>1</td><td>2</td><td>2</td></tr>
+              <tr><td>i = 4</td><td>1</td><td>2</td><td>3</td><td>3</td></tr>
+              <tr><td>i = 5</td><td>2</td><td>3</td><td>5</td><td>5</td></tr>
+              <tr><td>i = 6</td><td>3</td><td>5</td><td>8</td><td>8</td></tr>
+            </tbody>
+          </table>
+          <div class="box warn" style="margin-top:12px;font-size:24px">
+            <span class="label">易错</span>
+            <code class="inline" style="font-size:23px">f1 = f2; f2 = f;</code> 这两句<b>顺序不能换</b>。若先写 <code class="inline" style="font-size:23px">f2 = f</code>，f2 原来的值就被冲掉了，f1 再也接不到它。
+          </div>
+        </div>
+        <div class="reveal step col">
+          <div class="s-sub blue" style="margin-top:0">方法一：三变量滚动</div>
+<pre class="code" style="font-size:30px"><span class="kw">int</span> f1=<span class="num">1</span>, f2=<span class="num">1</span>, f, i;
+<span class="kw">printf</span>(<span class="str">"%d %d "</span>, f1, f2);
+<span class="kw">for</span>(i=<span class="num">3</span>; i&lt;=<span class="num">30</span>; i++){
+    f = f1 + f2;    <span class="cmt">// ① 新项 = 前两项之和</span>
+    <span class="kw">printf</span>(<span class="str">"%d "</span>, f);
+    f1 = f2;         <span class="cmt">// ② f1 接住 f2</span>
+    f2 = f;         <span class="cmt">// ③ f2 接住新项</span>
+}</pre>
+          <div class="box key" style="margin-top:12px;font-size:25px">
+            <span class="label">思路</span>
+            从第 3 项起，<b>每项 = 前两项之和</b>。既然只要前两项，就用三个变量滚动往前推。
+          </div>
+        </div>
+      </div>
+      <div class="reveal-hint" data-label="点这里，看代码">点这里，看代码</div>
+    </div>
+  </section>
+
+  <!-- 25 模块3 例·Fibonacci（2）两变量交替 + 两法对比 -->
+  <section class="slide">
+    <div class="s-title">例：Fibonacci 数列（2）—— 两个变量也能算</div>
+    <div class="s-body">
+      <div class="two" style="margin-top:0; grid-template-columns:1.15fr 1fr; gap:24px">
+        <div>
+          <div class="s-sub blue" style="margin-top:0">方法二：两变量交替（每轮出两项）</div>
+<pre class="code" style="font-size:30px"><span class="kw">int</span> f1=<span class="num">1</span>, f2=<span class="num">1</span>, i;
+<span class="kw">for</span>(i=<span class="num">1</span>; i&lt;=<span class="num">15</span>; i++){
+    <span class="kw">printf</span>(<span class="str">"%d %d "</span>, f1, f2);
+    f1 = f1 + f2;   <span class="cmt">// f1 变成后面第 1 项</span>
+    f2 = f2 + f1;   <span class="cmt">// f2 变成后面第 2 项</span>
+}</pre>
+          <div class="box key" style="margin-top:12px;font-size:25px">
+            <span class="label">巧妙处</span>
+            执行 <code class="inline" style="font-size:23px">f1 = f1 + f2</code> 后 f1 已是新项；<code class="inline" style="font-size:23px">f2 = f2 + f1</code> 用的正是这个新 f1——一轮走两步。
+          </div>
+          <div class="box warn" style="margin-top:12px;font-size:23px">
+            <span class="label">延伸</span>
+            两法都只留"最近两项"。若要存下全部 30 项（倒序输出、查第 n 项），得用<b>数组</b>——第 6 章再讲。
+          </div>
+        </div>
+        <div>
+          <div class="s-sub orange" style="margin-top:0">两种方法怎么选</div>
+          <table class="tb">
+            <thead><tr><th>对比项</th><th>方法一（三变量）</th><th>方法二（两变量）</th></tr></thead>
+            <tbody>
+              <tr><td>用到变量</td><td>f1、f2、f3</td><td>f1、f2</td></tr>
+              <tr><td>每轮推进</td><td>1 项</td><td>2 项</td></tr>
+              <tr><td>循环次数</td><td>28 次</td><td>15 次</td></tr>
+              <tr><td>读懂难度</td><td>低，贴合定义</td><td>中，要转个弯</td></tr>
+            </tbody>
+          </table>
+          <div class="box tip" style="margin-top:12px;font-size:24px">
+            <span class="label">选哪个</span>
+            两种结果完全一样，<b>选你能讲清楚的那个</b>。第一次学建议方法一，熟练后再用方法二。
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 26 模块3 例·级数求和（符号开关） -->
+  <section class="slide">
+    <div class="s-title">例：求 s = 1 − 1/2 + 1/3 − … − 1/100</div>
+    <div class="s-body">
+      <div class="two wide" style="margin-top:0; align-items:center; grid-template-columns:1fr 2fr; gap:20px">
+        <div>
+          <div class="flow">
+            <div class="cap">N-S 图（当型循环）</div>
+            <svg viewBox="0 0 180 183" style="max-width:420px">
+              <rect class="fc-ns" height="156" rx="8" width="169" x="5" y="12"/>
+              <path class="fc-ns-cond" d="M5,20 a8,8 0 0 1 8,-8 h153 a8,8 0 0 1 8,8 v31 h-122 v117 h-39 a8,8 0 0 1 -8,-8 v-140 z"/>
+              <text class="fc-ns-t" font-size="17" font-weight="700" text-anchor="middle" x="90" y="39">当 i ≤ 100</text>
+              <text class="fc-ns-t" font-size="14" text-anchor="middle" x="113" y="106">s += t * 1.0 / i</text>
+              <text class="fc-ns-t" font-size="14" text-anchor="middle" x="113" y="136">t = −t;  i++</text>
+            </svg>
+          </div>
+        </div>
+        <div>
+          <div class="reveal step">
+            <div class="s-sub blue" style="margin-top:0">代码</div>
+<pre class="code" style="font-size:30px"><span class="kw">double</span> s=<span class="num">0</span>;
+<span class="kw">int</span> i, t=<span class="num">1</span>;
+<span class="kw">for</span>(i=<span class="num">1</span>; i&lt;=<span class="num">100</span>; i++){
+    s = s + t * <span class="num">1.0</span> / i;
+    t = -t;          <span class="cmt">// 符号开关</span>
+}
+<span class="kw">printf</span>(<span class="str">"%.6f"</span>, s);</pre>
+          </div>
+          <div class="reveal step">
+            <div class="box key" style="margin-top:0; font-size:24px">
+              <span class="label">技巧</span>
+              引入<b>符号开关变量 t</b>，每轮取反（1→−1→1…），把正负交替"吸收"进通项，代码最简。
+            </div>
+          </div>
+          <div class="reveal step">
+            <div class="box warn" style="margin-top:0; font-size:24px">
+              <span class="label">别错</span>
+              写成 <code class="inline">1/i</code> 会做整数除法得 0，必须 <code class="inline">1.0/i</code>。
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="reveal-hint" data-label="点一下，往下看">点一下，往下看</div>
+    </div>
+  </section>
+
+  <!-- 27 模块3 例·π近似 铺垫·莱布尼茨级数 -->
+  <section class="slide">
+    <div class="s-title">π 怎么算？—— 莱布尼茨级数</div>
+    <div class="s-body">
+      <div style="display:flex;align-items:center;gap:30px;background:linear-gradient(135deg,#fdf1e4 0%,#fff 75%);border:2px solid #f0c79a;border-radius:14px;padding:8px 26px;margin-bottom:14px">
+        <div style="font-size:38px;font-weight:800;color:#b3471c;letter-spacing:1px;white-space:nowrap">π = 4 × ( 1 − 1/3 + 1/5 − 1/7 + ⋯ )</div>
+        <div style="font-size:22px;line-height:1.3;color:#7a5a3a">括号里这一串无限加下去，结果就是 π/4</div>
+      </div>
+      <div class="two wide" style="margin-top:0; grid-template-columns:1.3fr 1fr; gap:26px">
+        <div>
+          <ul class="feat" style="gap:12px">
+            <li><span class="k" style="width:170px">分母</span><span class="v">1, 3, 5, 7 … 每轮 <b>+2</b>：n 从 1 起，<code class="inline" style="font-size:22px">n += 2</code></span></li>
+            <li><span class="k" style="width:170px">符号</span><span class="v"><b>+ − + −</b> 交替：用 sign 每轮取反</span></li>
+            <li><span class="k" style="width:170px">为什么乘 4</span><span class="v">这条级数算出来是 <b>π/4</b>，加上 4 倍才是 π</span></li>
+            <li><span class="k" style="width:170px">什么时候停</span><span class="v"><b>|t| &lt; 1e-6</b> 就停：次数由<b>精度</b>定</span></li>
+          </ul>
+        </div>
+        <div>
+          <div class="s-sub orange" style="margin-top:0">前几轮累加：来回摆动，越摆越近</div>
+          <table class="tb" style="font-size:24px">
+            <thead><tr><th>n</th><th>t = ±1/n</th><th>累加 s</th><th>4s</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>+1</td><td>1.000000</td><td>4.000000</td></tr>
+              <tr><td>3</td><td>−0.333333</td><td>0.666667</td><td>2.666667</td></tr>
+              <tr><td>5</td><td>+0.200000</td><td>0.866667</td><td>3.466667</td></tr>
+              <tr><td>7</td><td>−0.142857</td><td>0.723810</td><td>2.895238</td></tr>
+              <tr><td>9</td><td>+0.111111</td><td>0.834921</td><td>3.339683</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="box key" style="margin-top:12px; font-size:24px">
+        <span class="label">为什么值得用循环</span>
+        要加到 |t| &lt; 1e-6，大约得跑 <b>50 万轮</b>，结果收敛到 <b>3.141593</b>——手工不可能，循环一句话就能写完。
+      </div>
+    </div>
+  </section>
+
+  <!-- 28 模块3 例·π近似（精度终止） -->
+  <section class="slide">
+    <div class="s-title">例：π 近似 —— 用循环实现</div>
+    <div class="s-body">
+      <div class="two wide" style="margin-top:0; align-items:center; grid-template-columns:1fr 1.45fr; gap:20px">
+        <div>
+          <div class="flow">
+            <div class="cap">算法流程图（按精度终止）</div>
+            <svg viewBox="0 0 300 520" style="max-width:332px">
+              <rect class="fc-term" height="34" rx="17" width="100" x="60" y="8"/>
+              <text class="fc-term-t" font-size="18" text-anchor="middle" x="110" y="30">开始</text>
+              <line class="fc-line" x1="110" x2="110" y1="42" y2="58" marker-end="url(#fcArrow)"/>
+              <rect class="fc-proc" height="48" rx="4" width="170" x="25" y="58"/>
+              <text class="fc-proc-t" font-size="15" text-anchor="middle" x="110" y="78">pi=0; t=1</text>
+              <text class="fc-proc-t" font-size="15" text-anchor="middle" x="110" y="97">sign=1; n=1</text>
+              <line class="fc-line" x1="110" x2="110" y1="106" y2="130" marker-end="url(#fcArrow)"/>
+              <polygon class="fc-dec" points="110,130 168,164 110,198 52,164"/>
+              <text class="fc-dec-t" font-size="16" text-anchor="middle" x="110" y="170">|t| ≥ 1e-6</text>
+              <text class="fc-yes" font-size="16" text-anchor="start" x="124" y="216">非0</text>
+              <text class="fc-no" font-size="16" text-anchor="middle" x="204" y="156">0</text>
+              <line class="fc-line" x1="110" x2="110" y1="198" y2="232" marker-end="url(#fcArrow)"/>
+              <rect class="fc-proc" height="40" rx="4" width="170" x="25" y="232"/>
+              <text class="fc-proc-t" font-size="15" text-anchor="middle" x="110" y="258">t = sign * 1.0 / n</text>
+              <line class="fc-line" x1="110" x2="110" y1="272" y2="286" marker-end="url(#fcArrow)"/>
+              <rect class="fc-proc" height="48" rx="4" width="170" x="25" y="286"/>
+              <text class="fc-proc-t" font-size="15" text-anchor="middle" x="110" y="307">pi += t</text>
+              <text class="fc-proc-t" font-size="14" text-anchor="middle" x="110" y="325">sign=-sign; n+=2</text>
+              <path class="fc-line" d="M25,310 L5,310 L5,118 L107,118" marker-end="url(#fcArrow)"/>
+              <path class="fc-line" d="M168,164 L240,164 L240,358 L110,358 L110,372" marker-end="url(#fcArrow)"/>
+              <rect class="fc-proc" height="40" rx="4" width="170" x="25" y="372"/>
+              <text class="fc-proc-t" font-size="16" text-anchor="middle" x="110" y="398">pi = pi * 4</text>
+              <line class="fc-line" x1="110" x2="110" y1="412" y2="426" marker-end="url(#fcArrow)"/>
+              <polygon class="fc-io" points="35,426 165,426 185,468 55,468"/>
+              <text class="fc-io-t" font-size="17" text-anchor="middle" x="110" y="455">输出 pi</text>
+              <line class="fc-line" x1="110" x2="110" y1="468" y2="482" marker-end="url(#fcArrow)"/>
+              <rect class="fc-term" height="34" rx="17" width="100" x="60" y="482"/>
+              <text class="fc-term-t" font-size="18" text-anchor="middle" x="110" y="504">结束</text>
+            </svg>
+          </div>
+        </div>
+        <div class="reveal col">
+          <div class="s-sub blue" style="margin-top:0">代码</div>
+<pre class="code" style="font-size:26px"><span class="kw">double</span> pi=<span class="num">0</span>, t=<span class="num">1</span>;
+<span class="kw">int</span> sign=<span class="num">1</span>, n=<span class="num">1</span>;
+<span class="kw">while</span>(<span class="kw">fabs</span>(t) &gt;= <span class="num">1e-6</span>){
+    t = sign * <span class="num">1.0</span> / n;
+    pi += t;
+    sign = -sign;
+    n += <span class="num">2</span>;
+}
+pi = pi * <span class="num">4</span>;
+<span class="kw">printf</span>(<span class="str">"%.6f"</span>, pi);</pre>
+          <div class="box key" style="margin-top:12px; font-size:23px">
+            <span class="label">两点关键</span>
+            ① 条件是"<b>当前项 |t| ≥ 1e-6 就继续</b>"，次数由精度定；<br>
+            ② 级数得的是 π/4，<b>最后要乘 4</b>；<code class="inline">fabs</code> 需 <code class="inline">#include &lt;math.h&gt;</code>。
+          </div>
+        </div>
+      </div>
+      <div class="reveal-hint" data-label="点这里，看代码">点这里，看代码</div>
+    </div>
+  </section>
+
+  <!-- 29 模块3 小练手·for -->
+  <section class="slide">
+    <div class="s-title">小练手 · for（格式输出 + 组合套路）</div>
+    <div class="s-body">
+      <div class="box key" style="margin-top:0;font-size:26px">
+        <span class="label">先想清楚</span>
+        for 的三格分别写：<b>从哪开始 · 到哪结束 · 每轮走多大一步</b>。步长是 1、2 还是 3，直接决定要不要写 if 判断。
+      </div>
+      <div class="grid c3" style="margin-top:16px">
+        <div class="card">
+          <h4><span class="ico">①</span>3 的倍数</h4>
+          <p>输出 1 ~ 100 中所有 3 的倍数，<b>每行 5 个</b>。</p>
+          <p style="margin-top:10px;font-size:24px;color:var(--blue-600)">提示：步长写 3；另设计数器控制换行</p>
+        </div>
+        <div class="card orange">
+          <h4><span class="ico">②</span>等差求和</h4>
+          <p>求 <b>1 + 4 + 7 + … + 100</b> 的和（每项比前一项大 3）。</p>
+          <p style="margin-top:10px;font-size:24px;color:#b95a05">提示：步长写 3，循环变量本身就是每一项，别再写 i++</p>
+        </div>
+        <div class="card purple">
+          <h4><span class="ico">③</span>水仙花数</h4>
+          <p>输出 100 ~ 999 中所有"各位数字立方和等于自身"的数。</p>
+          <p style="margin-top:10px;font-size:24px;color:var(--purple)">提示：用 <code class="inline" style="font-size:23px">/ 10</code> 与 <code class="inline" style="font-size:23px">% 10</code> 拆出百位、十位、个位</p>
+        </div>
+      </div>
+      <div class="coll">
+        <div class="coll-hd">参考解答（先自己写，再点开）</div>
+        <div class="coll-bd">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0 14px">
+<pre class="code" style="font-size:20px;margin:0"><span class="cmt">// ① 每行 5 个</span>
+<span class="kw">int</span> i, c=<span class="num">0</span>;
+<span class="kw">for</span>(i=<span class="num">3</span>; i&lt;=<span class="num">100</span>; i+=<span class="num">3</span>){
+  <span class="kw">printf</span>(<span class="str">"%4d"</span>, i);
+  <span class="kw">if</span>(++c%<span class="num">5</span>==<span class="num">0</span>) <span class="kw">printf</span>(<span class="str">"\n"</span>);
+}</pre>
+<pre class="code" style="font-size:20px;margin:0"><span class="cmt">// ② 等差求和</span>
+<span class="kw">int</span> i, s=<span class="num">0</span>;
+<span class="kw">for</span>(i=<span class="num">1</span>; i&lt;=<span class="num">100</span>; i+=<span class="num">3</span>)
+  s += i;
+<span class="kw">printf</span>(<span class="str">"%d"</span>, s);</pre>
+<pre class="code" style="font-size:20px;margin:0"><span class="cmt">// ③ 水仙花数</span>
+<span class="kw">int</span> n, a, b, c;
+<span class="kw">for</span>(n=<span class="num">100</span>; n&lt;=<span class="num">999</span>; n++){
+  a=n/<span class="num">100</span>; b=n/<span class="num">10</span>%<span class="num">10</span>; c=n%<span class="num">10</span>;
+  <span class="kw">if</span>(a*a*a+b*b*b+c*c*c==n)
+    <span class="kw">printf</span>(<span class="str">"%d "</span>, n);
+}</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 30 收尾 循环调试与避坑 tips -->
+  <section class="slide">
+    <div class="s-title">循环调试与避坑 · 6 个小 tips</div>
+    <div class="s-body">
+      <div class="grid c2" style="margin-top:0">
+        <div class="card red">
+          <h4><span class="ico">1</span>死循环三查</h4>
+          <p>循环变量<b>有初值</b>吗？循环体里<b>改变它</b>了吗？条件是不是误写成 <code class="inline" style="font-size:24px">=</code>？</p>
+        </div>
+        <div class="card">
+          <h4><span class="ico">2</span>printf 打点法</h4>
+          <p>先<b>纸上走</b>前两轮，再上机打印 <code class="inline" style="font-size:24px">i</code> 和关键变量；两者一对照，错在哪一目了然。</p>
+        </div>
+        <div class="card orange">
+          <h4><span class="ico">3</span>边界先测三个值</h4>
+          <p>拿 <b>n = 0、n = 1、n = 最大值</b> 各跑一次，能走通再交。多数"差一位"就死在这三处。</p>
+        </div>
+        <div class="card purple">
+          <h4><span class="ico">4</span>i++ 放在哪</h4>
+          <p>放在累加<b>前</b>还是<b>后</b>，结果可能完全不同：先加再判断，等于少算一项或多算一项。</p>
+        </div>
+        <div class="card green">
+          <h4><span class="ico">5</span>分号陷阱</h4>
+          <p><code class="inline" style="font-size:24px">for(i=1;i&lt;=100;i++);</code> 多一个分号，循环体变成<b>空语句</b>，循环白跑 100 次。</p>
+        </div>
+        <div class="card red">
+          <h4><span class="ico">6</span>初值要"单位元"</h4>
+          <p>累加初值 <b>0</b>、累乘初值 <b>1</b>。<code class="inline" style="font-size:24px">int</code> 只到 21 亿，<b>13! 就溢出</b>；<code class="inline" style="font-size:24px">long</code> 在 Windows 上也是 32 位，一样装不下——要 <b>long long</b>。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 31 收尾 分层习题 -->
+  <section class="slide">
+    <div class="s-title">课后习题（基础必做 · 提高选做 · 挑战）</div>
+    <div class="s-body">
+      <div class="grid c3" style="margin-top:0">
+        <div class="card">
+          <h4><span class="ico">A</span>基础（必做 5 题）</h4>
+          <ol style="font-size:27px;line-height:1.55;padding-left:1.2em;color:var(--muted)">
+            <li>求 1 + 3 + 5 + … + 99。</li>
+            <li>输出 1~100 中 7 的倍数，每行 4 个。</li>
+            <li>输入 n，求 n!（n ≤ 12）。</li>
+            <li>输入 10 个数，分别统计正数、负数、零的个数。</li>
+            <li>求 1~1000 中同时被 3 和 5 整除的数之和。</li>
+          </ol>
+        </div>
+        <div class="card orange">
+          <h4><span class="ico">B</span>提高（选做 2 题）</h4>
+          <ol style="font-size:27px;line-height:1.55;padding-left:1.2em;color:var(--muted)">            
+            <li>输出 100~999 中所有水仙花数。</li>
+            <li>输出 Fibonacci 前 20 项，并同时输出相邻两项的比值，观察它趋近哪个数。</li>           
+          </ol>
+          <p style="margin-top:12px;font-size:23px;color:var(--purple)">比值会趋近 0.618——黄金分割，就在兔子问题里。</p>
+        </div>
+        <div class="card purple">
+          <h4><span class="ico">C</span>挑战（2 题）</h4>
+          <ol style="font-size:27px;line-height:1.55;padding-left:1.2em;color:var(--muted)">            
+            <li>求 1! + 2! + … + 10!（提示：s 与 f 两个变量，边乘边加）。</li>
+            <li>求 e ≈ 1 + 1/1! + 1/2! + …，直到最后一项的绝对值小于 1e-6。</li>
+          </ol>          
+          <p style="margin-top:12px;font-size:23px;color:#b95a05">提示：第 2 题与 π 的例子同一套路——<b>按精度终止</b>。</p>
+        </div>
+      </div>
+      <div class="box key" style="margin-top:16px;font-size:25px">
+        <span class="label">练习要求</span>
+        每题除<b>代码 </b>外，凡是循环，至少设计3-5组测试样例，其中必须用 n = 0、n = 1 各测一次（没有输入的就测边界值）。
+      </div>
+    </div>
+  </section>
+
+  <!-- 32 总结·选型口诀 -->
+  <section class="slide">
+    <div class="s-title">总结：三种循环怎么选？</div>
+    <div class="s-body">
+      <div class="grid c3" style="margin-top:0; gap:18px 16px">
+        <div class="card"><h4><span class="ico">🔄</span>次数不确定</h4><p>用 <code class="inline">while</code>。先判断、可能一次都不做，最通用。</p></div>
+        <div class="card orange"><h4><span class="ico">✅</span>至少做一次</h4><p>用 <code class="inline">do-while</code>。输入确认、菜单交互最自然。</p></div>
+        <div class="card green"><h4><span class="ico">🔢</span>次数明确</h4><p>用 <code class="inline">for</code>。初值/条件/收尾一行搞定，最清爽。</p></div>
+      </div>
+      <div class="box key" style="margin-top:18px">
+        <span class="label">共同纪律</span>
+        无论哪种循环，都要守住：<b>变量有初值、循环体内能改变条件、必有退出通路</b>——否则就是死循环。
+      </div>
+    </div>
+  </section>
+
+  <!-- 33 结束页 -->
+  <section class="slide end">
+    <div class="end-inner">
+      <h2>谢　谢</h2>
+      <p>下一部分：break 与 continue · 循环嵌套 · 综合应用</p>
+    </div>
+  </section>
+
+  <!-- 导航 UI（无需改动） -->
+  <div class="pageinfo"><b id="cur">1</b> / <span id="total">33</span></div>
+  <div class="nav">
+    <button class="tocbtn" id="btnToc" title="目录（按 O 键）">目录</button>
+    <button id="btnPrev" title="上一页（←）">‹</button>
+    <button id="btnNext" title="下一页（→ / 空格）">›</button>
+  </div>
+  <div class="keyhint" id="keyhint">← → 翻页　·　空格下一页　·　拖动选中文字可直接复制　·　B 黑屏　·　O 目录　·　Esc 关闭</div>
+  <div class="progress" id="progress"></div>
+  <div class="toc" id="toc">
+    <button class="toc-close" id="btnTocClose">关闭 ✕</button>
+    <h3>目录</h3>
+    <div class="toc-bar"></div>
+    <div class="toc-list" id="tocList"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var stage   = document.getElementById('stage');
+  var slides  = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var total   = slides.length;
+  var cur     = 0;
+  var curEl   = document.getElementById('cur');
+  var pageinfo = document.querySelector('.pageinfo');
+  var bar     = document.getElementById('progress');
+  var btnPrev = document.getElementById('btnPrev');
+  var btnNext = document.getElementById('btnNext');
+  var toc     = document.getElementById('toc');
+  var tocList = document.getElementById('tocList');
+  var keyhint = document.getElementById('keyhint');
+
+  document.getElementById('total').textContent = total;
+
+  slides.forEach(function(slide){
+    var body = slide.querySelector('.s-body');
+    if(!body) return;
+    var fit = document.createElement('div');
+    fit.className = 'fit';
+    while(body.firstChild){ fit.appendChild(body.firstChild); }
+    body.appendChild(fit);
+  });
+
+  function fitSlide(slide){
+    if(!slide) return;
+    var body = slide.querySelector('.s-body');
+    var fit  = slide.querySelector('.fit');
+    if(!body || !fit) return;
+    fit.style.transform = 'none';
+    fit.style.width = '';
+    var avail = body.clientHeight;
+    var s = 1;
+    for(var i = 0; i < 3; i++){
+      var natural = fit.scrollHeight;
+      if(natural <= avail + 1) break;
+      var s2 = Math.min(1, avail / natural);
+      if(Math.abs(s2 - s) < 0.004) break;
+      s = s2;
+      fit.style.width = (100 / s) + '%';
+    }
+    if(s < 1){
+      fit.style.transform = 'scale(' + s + ')';
+      fit.style.transformOrigin = 'top left';
+    } else {
+      fit.style.width = '';
+    }
+  }
+
+  function hasPendingReveal(){
+    var s = slides[cur];
+    return !!(s && s.querySelector('.reveal:not(.shown)'));
+  }
+  // 逐条揭示：本页若有 .reveal.step，则一次只放一条
+  function updateRevealHint(s){
+    var hint = s && s.querySelector('.reveal-hint');
+    if(!hint) return;
+    var all = s.querySelectorAll('.reveal').length;
+    var shown = s.querySelectorAll('.reveal.shown').length;
+    if(shown >= all){ hint.classList.add('gone'); return; }
+    hint.classList.remove('gone');
+    var base = hint.getAttribute('data-label') || '点一下';
+    hint.textContent = base + '（' + (shown + 1) + ' / ' + all + '）';
+  }
+  function revealAnswers(){
+    var s = slides[cur];
+    if(!s) return false;
+    var pending = s.querySelectorAll('.reveal:not(.shown)');
+    if(!pending.length) return false;
+    var batch = s.querySelector('.reveal.step')
+      ? [pending[0]]
+      : Array.prototype.slice.call(pending);
+    batch.forEach(function(el){ el.classList.add('shown'); });
+    updateRevealHint(s);
+    fitSlide(s);
+    setTimeout(function(){ fitSlide(s); }, 560);
+    return true;
+  }
+
+  var tocGroups = [
+    {
+      title: '开场',
+      items: [
+        { i: 0,  t: '封面' },
+        { i: 1,  t: '本节内容导览' }
+      ]
+    },
+    {
+      title: '模块0 引入',
+      items: [
+        { i: 2,  t: '为什么需要循环' },
+        { i: 3,  t: '例·计算多个整数的和' },
+        { i: 4,  t: '三种循环语句一览' }
+      ]
+    },
+    {
+      title: '模块1 while',
+      items: [
+        { i: 5,  t: 'while 语法' },
+        { i: 6,  t: 'while 五点注意' },
+        { i: 7,  t: 'while vs if' },
+        { i: 8,  t: '例·求1~100和' },
+        { i: 9,  t: '例·求阶乘' },
+        { i: 10, t: '例·各位数字之和' },
+        { i: 11, t: '小练手·while' }
+      ]
+    },
+    {
+      title: '模块2 do-while',
+      items: [
+        { i: 12, t: 'do-while 语法' },
+        { i: 13, t: 'while vs do-while' },
+        { i: 14, t: '例·求1~100和(do-while)' },
+        { i: 15, t: '例·字符确认' },
+        { i: 16, t: '例·数值合法性' },
+        { i: 17, t: '小练手·do-while' }
+      ]
+    },
+    {
+      title: '模块3 for',
+      items: [
+        { i: 18, t: 'for 语法与执行流程' },
+        { i: 19, t: 'for 与 while 等价' },
+        { i: 20, t: '表达式省略与灵活' },
+        { i: 21, t: '浮点陷阱' },
+        { i: 22, t: '例·求和用for' },
+        { i: 23, t: '铺垫·斐波那契数列' },
+        { i: 24, t: '例·Fibonacci(1)' },
+        { i: 25, t: '例·Fibonacci(2)' },
+        { i: 26, t: '例·级数求和' },
+        { i: 27, t: 'π·莱布尼茨级数' },
+        { i: 28, t: '例·π近似(代码)' },
+        { i: 29, t: '小练手·for' }
+      ]
+    },
+    {
+      title: '收尾',
+      items: [
+        { i: 30, t: '调试与避坑 6 tips' },
+        { i: 31, t: '课后分层习题' },
+        { i: 32, t: '总结·选型口诀' },
+        { i: 33, t: '结束页' }
+      ]
+    }
+  ];
+
+  tocGroups.forEach(function(group){
+    var g = document.createElement('div');
+    g.className = 'toc-group';
+    var h = document.createElement('div');
+    h.className = 'toc-group-title';
+    h.textContent = group.title;
+    g.appendChild(h);
+    group.items.forEach(function(item){
+      var a = document.createElement('a');
+      a.textContent = item.t;
+      a.onclick = function(){ go(item.i); closeToc(); };
+      g.appendChild(a);
+    });
+    tocList.appendChild(g);
+  });
+
+  function resize(){
+    var s = Math.min(window.innerWidth / 1600, window.innerHeight / 900);
+    stage.style.setProperty('--s', s);
+    fitSlide(slides[cur]);
+  }
+  window.addEventListener('resize', resize);
+
+  function go(i){
+    cur = Math.max(0, Math.min(total - 1, i));
+    hideCopyTip();
+    if (window.getSelection) window.getSelection().removeAllRanges();  // 翻页后清掉上一页的选中，避免误复制
+    slides.forEach(function(s, k){ s.classList.toggle('active', k === cur); });
+    curEl.textContent = cur + 1;
+    var isCover = slides[cur].classList.contains('cover') || slides[cur].classList.contains('end');
+    pageinfo.style.visibility = isCover ? 'hidden' : 'visible';
+    bar.style.width = ((cur + 1) / total * 100) + '%';
+    btnPrev.disabled = (cur === 0);
+    btnNext.disabled = (cur === total - 1);
+    fitSlide(slides[cur]);
+    updateRevealHint(slides[cur]);
+  }
+
+  btnPrev.onclick = function(){ go(cur - 1); this.blur(); hideHint(); };
+  btnNext.onclick = function(){ if(hasPendingReveal()){ revealAnswers(); this.blur(); hideHint(); return; } go(cur + 1); this.blur(); hideHint(); };
+
+  function openToc(){ toc.classList.add('show'); }
+  function closeToc(){ toc.classList.remove('show'); }
+  document.getElementById('btnToc').onclick = function(){
+    toc.classList.contains('show') ? closeToc() : openToc();
+    this.blur();
+  };
+  document.getElementById('btnTocClose').onclick = function(){
+    closeToc(); this.blur();
+  };
+
+  document.addEventListener('keydown', function(e){
+    var k = e.key;
+    // 放大镜开启期间屏蔽全部全局快捷键，避免调整滑块（←/↑/PageUp/Backspace）时误翻页
+    if (document.body.classList.contains('loupe-on')) return;
+    // Ctrl/Cmd + A：一键选中本页正文（方便整页复制），不翻页
+    if ((e.ctrlKey || e.metaKey) && (k === 'a' || k === 'A')) {
+      e.preventDefault();
+      var bodyEl = slides[cur].querySelector('.s-body');
+      if (bodyEl && window.getSelection) {
+        var rng = document.createRange();
+        rng.selectNodeContents(bodyEl);
+        var sel = window.getSelection();
+        sel.removeAllRanges(); sel.addRange(rng);
+        setTimeout(showCopyTip, 30);
+      }
+      return;
+    }
+    if (toc.classList.contains('show')) {
+      if (k === 'Escape' || k === 'o' || k === 'O') { e.preventDefault(); closeToc(); }
+      return;
+    }
+    if (k === 'ArrowRight' || k === 'ArrowDown' || k === 'PageDown' ||
+        k === ' ' || k === 'Enter') {
+      e.preventDefault();
+      if (hasPendingReveal()) { revealAnswers(); hideHint(); return; }
+      go(cur + 1); hideHint();
+    } else if (k === 'ArrowLeft' || k === 'ArrowUp' || k === 'PageUp' ||
+               k === 'Backspace') {
+      e.preventDefault(); go(cur - 1); hideHint();
+    } else if (k === 'Home') {
+      e.preventDefault(); go(0); hideHint();
+    } else if (k === 'End') {
+      e.preventDefault(); go(total - 1); hideHint();
+    } else if (k === 'o' || k === 'O') {
+      e.preventDefault(); openToc();
+    } else if (k === 'b' || k === 'B' || k === '.') {
+      e.preventDefault();
+      document.body.classList.toggle('blackout');
+    }
+  });
+
+  var wheelLock = false;
+  document.addEventListener('wheel', function(e){
+    // 放大镜开启期间屏蔽滚轮翻页，避免滚轮落在设置面板上时误翻页
+    if (document.body.classList.contains('loupe-on')) return;
+    if (toc.classList.contains('show')) return;
+    if (wheelLock) return;
+    wheelLock = true;
+    setTimeout(function(){ wheelLock = false; }, 420);
+    if (e.deltaY > 0) go(cur + 1); else go(cur - 1);
+    hideHint();
+  }, { passive: true });
+
+  /* ===== 文本选中 / 复制：选中、拖选、长按一律不翻页 ===== */
+  var press = { x: 0, y: 0, t: 0, moved: false, hadSel: false };
+  var copyTip = document.createElement('div');
+  copyTip.id = 'copyTip';
+  copyTip.innerHTML = '<span id="copyTipTx">已选中 0 字</span>'
+    + '<span class="kbd">Ctrl</span><span class="kbd">C</span>'
+    + '<button type="button" id="copyTipBtn">复制</button>';
+  document.body.appendChild(copyTip);
+  var copyTipTx  = document.getElementById('copyTipTx');
+  var copyTipBtn = document.getElementById('copyTipBtn');
+  var copyTimer  = null;
+
+  function selText(){
+    var s = window.getSelection ? window.getSelection() : null;
+    return s ? String(s).replace(/\s+$/, '') : '';
+  }
+  function hideCopyTip(){ clearTimeout(copyTimer); if (copyTip) copyTip.classList.remove('on'); }
+  function showCopyTip(){
+    var t = selText();
+    if (!t || document.body.classList.contains('loupe-on')) { hideCopyTip(); return; }
+    copyTipTx.innerHTML = '已选中 <b>' + t.length + '</b> 字';
+    copyTipBtn.textContent = '复制';
+    copyTip.classList.add('on');
+    clearTimeout(copyTimer);
+    copyTimer = setTimeout(hideCopyTip, 4000);
+  }
+  function copySel(){
+    var t = selText();
+    if (!t) return;
+    var done = function(){
+      copyTipBtn.textContent = '已复制 ✓';
+      clearTimeout(copyTimer);
+      copyTimer = setTimeout(hideCopyTip, 900);
+    };
+    function fallback(){
+      var ta = document.createElement('textarea');
+      ta.value = t; ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0;';
+      document.body.appendChild(ta);
+      ta.select();
+      try { if (document.execCommand('copy')) done(); } catch (err) {}
+      document.body.removeChild(ta);
+    }
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(t).then(done, fallback);
+    } else {
+      fallback();
+    }
+  }
+  copyTipBtn.addEventListener('mousedown', function(e){ e.preventDefault(); e.stopPropagation(); });
+  copyTipBtn.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); copySel(); });
+  copyTip.addEventListener('click', function(e){ e.stopPropagation(); });
+
+  document.addEventListener('mousedown', function(e){
+    if (e.button !== 0) return;
+    if (copyTip.contains(e.target)) return;   // 点"复制"按钮：不当作翻页动作
+    press.x = e.clientX; press.y = e.clientY; press.t = Date.now();
+    press.moved = false;
+    press.hadSel = !!selText();          // 按下前已有选中内容 → 这一下是"取消选中"，不是翻页
+    hideCopyTip();
+  });
+  document.addEventListener('mousemove', function(e){
+    if (!press.t || press.moved) return;
+    if (Math.abs(e.clientX - press.x) > 6 || Math.abs(e.clientY - press.y) > 6) press.moved = true;
+  });
+  document.addEventListener('mouseup', function(e){
+    if (e.button !== 0) return;
+    if (!copyTip.contains(e.target)) setTimeout(showCopyTip, 30);
+  });
+
+  document.addEventListener('click', function(e){
+    // 放大镜开启期间屏蔽点击翻页，避免点击设置面板（滑块）时误翻页
+    if (document.body.classList.contains('loupe-on')) return;
+    if (e.button !== 0) return;                       // 右键 / 中键不翻页，保留原生菜单（右键可复制）
+    var hd = e.target.closest('.coll-hd');
+    if (hd) {
+      var box = hd.parentElement;
+      box.classList.toggle('open');
+      fitSlide(slides[cur]);
+      setTimeout(function(){ fitSlide(slides[cur]); }, 520);
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+    if (toc.classList.contains('show')) return;
+    if (e.target.closest('.nav')) return;
+    if (e.target.closest('.toc')) return;
+    if (e.target.closest('a')) return;
+    if (e.target.closest('#copyTip')) return;
+    if (e.target.closest('.code, .out, pre, table, .reveal, .coll')) return;
+    if (selText()) { hideHint(); return; }             // ① 当前有选中文字：只算选中，不翻页
+    if (press.hadSel) { press.hadSel = false; return; } // ② 按下前有选中：这一下只取消选中，不翻页
+    if (press.moved) return;                           // ③ 拖动过（拖选）：不翻页
+    if (press.t && Date.now() - press.t > 600) { press.t = 0; return; } // ④ 长按（触屏取词）：不翻页
+    if (hasPendingReveal()) { revealAnswers(); hideHint(); return; }
+    if (e.clientX > window.innerWidth / 2) go(cur + 1);
+    else go(cur - 1);
+    hideHint();
+  });
+
+  var tx = 0, ty = 0;
+  document.addEventListener('touchstart', function(e){
+    if (copyTip.contains(e.target)) return;   // 落在复制提示条上：保持提示条可见
+    tx = e.changedTouches[0].clientX;
+    ty = e.changedTouches[0].clientY;
+    press.x = tx; press.y = ty; press.t = Date.now();
+    press.moved = false;
+    press.hadSel = !!selText();
+    hideCopyTip();
+  }, { passive: true });
+  document.addEventListener('touchmove', function(e){
+    if (!press.t || press.moved) return;
+    if (Math.abs(e.changedTouches[0].clientX - press.x) > 6 ||
+        Math.abs(e.changedTouches[0].clientY - press.y) > 6) press.moved = true;
+  }, { passive: true });
+  document.addEventListener('touchend', function(e){
+    if (copyTip.contains(e.target)) return;
+    var dx = e.changedTouches[0].clientX - tx;
+    var dy = e.changedTouches[0].clientY - ty;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) {
+      if (hasPendingReveal()) { revealAnswers(); hideHint(); return; }
+      go(dx < 0 ? cur + 1 : cur - 1);
+      hideHint();
+      return;
+    }
+    setTimeout(showCopyTip, 60);   // 长按取词 / 点选后给出"复制"提示
+  }, { passive: true });
+
+  var hintTimer = null;
+  function hideHint(){
+    if (keyhint.classList.contains('hide')) return;
+    clearTimeout(hintTimer);
+    hintTimer = setTimeout(function(){ keyhint.classList.add('hide'); }, 500);
+  }
+  hintTimer = setTimeout(function(){ keyhint.classList.add('hide'); }, 6000);
+
+  resize();
+  go(0);
+})();
+</script>
+
+<script>
+(function(){
+  var stage=document.getElementById('stage'); if(!stage) return;
+  var L=320, Z=2.5, on=false, lens=null, tip=null, panel=null, clone=null, btn=null;
+  var last=[innerWidth/2, innerHeight/2];
+  var lock=false;
+
+  btn=document.createElement('button'); btn.id='btnLoupe';
+  btn.title='放大镜：移动鼠标查看细节，Esc 退出'; btn.textContent='\uD83D\uDD0D';
+  document.body.appendChild(btn);
+
+  tip=document.createElement('div'); tip.id='loupeTip';
+  tip.textContent='\uD83D\uDD0D 放大镜：鼠标移到哪儿，就以那儿为中心放大 · 单击锁定位置 · 滚轮调倍数 · Esc 退出';
+  document.body.appendChild(tip);
+
+  lens=document.createElement('div'); lens.id='loupe'; document.body.appendChild(lens);
+
+  panel=document.createElement('div'); panel.id='loupePanel';
+  panel.innerHTML='<div class="ttl">\uD83D\uDD0D 放大镜设置</div>'
+    +'<div class="row"><label>缩放</label><input id="lpZoom" type="range" min="1.5" max="8" step="0.1" value="2.5"><span class="val" id="lpZoomV">2.5×</span></div>'
+    +'<div class="row"><label>尺寸</label><input id="lpSize" type="range" min="180" max="520" step="10" value="320"><span class="val" id="lpSizeV">320</span></div>';
+  document.body.appendChild(panel);
+  var lpZoom=panel.querySelector('#lpZoom'), lpZoomV=panel.querySelector('#lpZoomV');
+  var lpSize=panel.querySelector('#lpSize'), lpSizeV=panel.querySelector('#lpSizeV');
+
+  function build(){
+    clone=stage.cloneNode(true); clone.removeAttribute('id');
+    var ids=clone.querySelectorAll('[id]'); for(var i=0;i<ids.length;i++) ids[i].removeAttribute('id');
+    clone.style.transform=''; clone.style.width=''; clone.style.height='';
+    clone.style.position='absolute'; clone.classList.add('lens-stage');
+    lens.innerHTML=''; lens.appendChild(clone);
+  }
+  function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+  function refreshTip(){
+    tip.textContent = lock
+      ? '🔒 已锁定该位置 · 单击任意处解除锁定 · Esc 退出'
+      : '🔍 放大镜：鼠标移到哪儿，就以那儿为中心放大 · 单击锁定位置 · 滚轮调倍数 · Esc 退出';
+  }
+
+  function update(cx,cy){
+    var r=stage.getBoundingClientRect();
+    var iw=stage.offsetWidth, ih=stage.offsetHeight;
+    clone.style.width=iw+'px'; clone.style.height=ih+'px';
+    var s=parseFloat(getComputedStyle(stage).getPropertyValue('--s'))||1;
+    var fx=clamp((cx-r.left)/r.width,0,1), fy=clamp((cy-r.top)/r.height,0,1);
+    var k=s*Z;
+    var px=fx*iw, py=fy*ih;
+    var q=position(cx,cy), ox=q[0], oy=q[1];
+    clone.style.transformOrigin='0 0';
+    clone.style.transform='translate('+(ox - k*px)+'px,'+(oy - k*py)+'px) scale('+k+')';
+  }
+  function position(cx,cy){
+    var lx=clamp(cx-L/2, 8, Math.max(8, innerWidth-L-8));
+    var ly=clamp(cy-L/2, 8, Math.max(8, innerHeight-L-8));
+    lens.style.left=lx+'px'; lens.style.top=ly+'px';
+    return [cx-lx, cy-ly];
+  }
+  var pt=[innerWidth/2, innerHeight/2];
+  document.addEventListener('mousemove',function(e){ pt=[e.clientX,e.clientY]; },true);
+  function startPt(){
+    var b=btn.getBoundingClientRect();
+    if(pt[0]>b.left-60 && pt[0]<b.right+60 && pt[1]>b.top-60 && pt[1]<b.bottom+60) return [innerWidth/2, innerHeight/2];
+    return [pt[0],pt[1]];
+  }
+  function enter(){
+    if(on) return; on=true; lock=false; btn.classList.add('on'); document.body.classList.add('loupe-on');
+    build(); lens.style.display='block'; tip.style.display='block'; panel.style.display='block';
+    lens.classList.remove('lock'); refreshTip();
+    last=startPt(); update(last[0],last[1]);
+    document.addEventListener('mousemove',onMove,true); addI();
+  }
+  function exit(){
+    if(!on) return; on=false; lock=false; btn.classList.remove('on'); document.body.classList.remove('loupe-on');
+    lens.classList.remove('lock');
+    lens.style.display='none'; tip.style.display='none'; panel.style.display='none';
+    document.removeEventListener('mousemove',onMove,true); remI();
+    lens.innerHTML=''; clone=null;
+  }
+  function onMove(e){ if(!on) return; last=[e.clientX,e.clientY]; if(lock) return; update(e.clientX,e.clientY); }
+  function setZ(z){ Z=clamp(z,1.5,8); lpZoom.value=Z; lpZoomV.textContent=Z.toFixed(1)+'×'; update(last[0],last[1]); }
+  function setL(l){ L=clamp(l,180,520); lpSize.value=L; lpSizeV.textContent=L; lens.style.width=L+'px'; lens.style.height=L+'px'; update(last[0],last[1]); }
+  btn.addEventListener('click',function(e){ e.stopPropagation(); on?exit():enter(); });
+  lpZoom.addEventListener('input',function(){ setZ(parseFloat(this.value)); });
+  lpSize.addEventListener('input',function(){ setL(parseFloat(this.value)); });
+
+  function inCtrl(e){ return e.target===btn||btn.contains(e.target)||panel.contains(e.target); }
+  var inter=[
+    ['wheel',function(e){ if(inCtrl(e)) return; if(!on) return; e.stopImmediatePropagation(); e.preventDefault(); setZ(Z+(e.deltaY<0?0.3:-0.3)); },true],
+    ['click',function(e){ if(inCtrl(e)) return; if(!on) return; e.stopImmediatePropagation(); e.preventDefault();
+      lock=!lock; lens.classList.toggle('lock',lock); if(!lock) update(last[0],last[1]); refreshTip(); },true],
+    ['contextmenu',function(e){ if(inCtrl(e)) return; if(!on) return; e.stopImmediatePropagation(); e.preventDefault(); },true],
+    ['keydown',function(e){ if(!on) return; if(e.key==='Escape'){ exit(); return; } if(inCtrl(e)){ e.stopPropagation(); return; } e.stopImmediatePropagation(); e.preventDefault(); },true],
+    ['touchstart',function(e){ if(inCtrl(e)) return; if(!on) return; e.stopImmediatePropagation(); e.preventDefault(); },true],
+    ['touchend',function(e){ if(inCtrl(e)) return; if(!on) return; e.stopImmediatePropagation(); e.preventDefault(); },true]
+  ];
+  function addI(){ for(var i=0;i<inter.length;i++) document.addEventListener(inter[i][0],inter[i][1],true); }
+  function remI(){ for(var i=0;i<inter.length;i++) document.removeEventListener(inter[i][0],inter[i][1],true); }
+  window.__loupe={enter:enter,exit:exit,setZ:setZ,setL:setL,getZ:function(){return Z;},getL:function(){return L;},isOn:function(){return on;},isLock:function(){return lock;}};
+})();
+</script>
+</body>
+</html>
