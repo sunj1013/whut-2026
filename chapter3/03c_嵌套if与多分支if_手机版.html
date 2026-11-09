@@ -343,6 +343,51 @@
 }
 </style>
 
+<!-- MOBILE PATCH 03c — 章节专属手机端修正（独立样式块） -->
+<style id="mLayerPatchCss">
+/* MOBILE PATCH 03c — 第 4 周《嵌套 if 与多分支 if》章节专属手机端修正。
+   自带 @media 包裹，作为独立 style 块注入，桌面端完全不受影响。
+   由 build_mobile.py --patch 03c 注入；结构重排见同名 .js。 */
+@media (max-width:720px){
+  /* 1) 本节内容卡片：桌面四列等高的 min-height:258px 带到手机单列后，
+        每张卡只剩两行文字却空出约 180px，改为内容决定高度 */
+  .grid.c4{gap:10px!important;}
+  .grid.c4 .card,.slide .card{min-height:0!important;margin:0!important;}
+  .grid.c4 .card p{margin:0!important;}
+
+  /* 2) 算法步骤：内联 font-size:21px 比 .s-sub 小标题 16px 还大 */
+  .algo-step{font-size:15px!important;line-height:1.6!important;}
+
+  /* 3) PTA 提交结果前移后给截图一点呼吸空间 */
+  .m-pta-move{margin:10px 0 12px!important;}
+
+  /* 4) 升序排列实例（嵌套写法）：桌面三列 grid 带 grid-row / grid-column，
+        手机单列会生成隐式列、把代码列压成 0px；由 03c.js 重排为两个逻辑卡片 */
+  .m-reflow{display:block!important;margin-top:12px!important;}
+  .m-case{border:1px solid #dce7f1;border-radius:12px;background:#fff;
+    padding:12px 14px!important;margin:12px 0 0!important;}
+  .m-case .m-case-hd{font-size:15px!important;font-weight:700!important;color:#124f83;
+    text-align:left!important;margin:10px 0 6px!important;}
+  .m-case .s-sub{font-size:15px!important;margin:0 0 6px!important;}
+  .m-case pre.code{font-size:13px!important;}
+  .m-case svg,.m-case img{display:block!important;width:100%!important;height:auto!important;
+    max-width:100%!important;margin:6px auto 0!important;}
+  .m-case-note{font-size:13px!important;color:#5b6b7b;text-align:left!important;
+    margin-top:10px!important;}
+
+  /* 5) 综合习题演练：桌面三列各 140px + min-height:600px，手机上像表格且空高；
+        按题单列分开，字号随手机正文 */
+  .ex3{grid-template-columns:1fr!important;gap:14px!important;}
+  .ex-col{min-height:0!important;padding:14px 14px 16px!important;margin:0!important;}
+  .ex-no{font-size:16px!important;padding:3px 12px!important;}
+  .ex-tag{font-size:14px!important;margin-left:8px!important;}
+  .ex-q{font-size:15px!important;margin:6px 0 8px!important;}
+  .ex-col .code{font-size:13px!important;line-height:1.5!important;}
+  .ex3 .coll-hd{font-size:15px!important;padding:8px 16px!important;}
+  .ex3 .coll-bd .box{padding:12px 14px!important;font-size:14px!important;}
+}
+</style>
+
 </head>
 <body>
   <div id="stage">
@@ -2020,6 +2065,100 @@ scanf(<span class="str">"%d"</span>,&amp;score);
       if(e.key==="Escape" && !view.classList.contains("hidden")) closeImg();
     });
   }
+})();
+</script>
+
+<script>
+/* MOBILE PATCH 03c — 章节专属「仅手机端」DOM 重排。
+   桌面视口直接 return，桌面 DOM / 桌面分页零改动。
+   自检结果写在 documentElement 的 data-mpatch 上，供 verify_mobile.py 核对：
+   [.ex3 单列, 卡片无空高, 升序实例已重排, PTA 图已前移]，期望 1,1,1,1 */
+(function(){
+  if(!window.matchMedia("(max-width:720px)").matches) return;
+  var ok=[0,0,0,0];
+
+  function findSlide(key){
+    var ss=document.querySelectorAll('.slide');
+    for(var i=0;i<ss.length;i++){
+      var t=ss[i].querySelector('.s-title');
+      if(t && (t.textContent||'').indexOf(key)>=0) return ss[i];
+    }
+    return null;
+  }
+
+  /* 2) 升序排列实例的算法步骤：内联 21px 超过小标题，加类交给补丁 CSS 压字号 */
+  var steps=document.querySelectorAll('.s-body div[style*="font-size:21px"]');
+  Array.prototype.forEach.call(steps,function(e){
+    if(/^\s*\(\d\)/.test(e.textContent||'')) e.classList.add('algo-step');
+  });
+
+  /* 3) 引入实例：把「PTA 提交结果（第一版）」标题与截图移到「运行结果」之前 */
+  var s7=findSlide('三个整数中是否有两个相等');
+  if(s7){
+    var pta=s7.querySelector('.pta');
+    if(pta){
+      var hd=pta.previousElementSibling;
+      var target=null;
+      Array.prototype.forEach.call(s7.querySelectorAll('.coll'),function(c){
+        var h=c.querySelector('.coll-hd');
+        if(h && (h.textContent||'').indexOf('运行结果')>=0) target=c;
+      });
+      if(target){
+        if(hd){ hd.classList.add('m-pta-move'); target.parentNode.insertBefore(hd,target); }
+        pta.classList.add('m-pta-move');
+        target.parentNode.insertBefore(pta,target);
+        ok[3]=1;
+      }
+    }
+  }
+
+  /* 4) 升序排列实例（嵌套写法）：三列 grid → 两个按逻辑分组的卡片
+        原顺序：代码列(原版+嵌套) / 两个图标题 / 两张图 / 注释
+        新顺序：原版(小标题+代码+图标题+图) → 嵌套(小标题+代码+图标题+图) → 注释 */
+  var s10=findSlide('升序排列 3 个整数（嵌套写法）');
+  if(s10){
+    var g=s10.querySelector('.s-body > div[style*="40fr"]');
+    if(g){
+      var k=Array.prototype.slice.call(g.children);
+      if(k.length>=6){
+        var ck=Array.prototype.slice.call(k[0].children);
+        var svg=k[3].querySelector('svg'), img=k[4].querySelector('img');
+        if(ck.length>=4 && svg && img){
+          function mkCase(sub,code,hd,pic){
+            var d=document.createElement('div'); d.className='m-case';
+            if(sub) d.appendChild(sub);
+            if(code) d.appendChild(code);
+            if(hd){ hd.className='m-case-hd'; hd.removeAttribute('style'); d.appendChild(hd); }
+            if(pic){ pic.removeAttribute('style'); d.appendChild(pic); }
+            return d;
+          }
+          var c1=mkCase(ck[0],ck[1],k[1],svg);
+          var c2=mkCase(ck[2],ck[3],k[2],img);
+          var note=k[5];
+          note.className='m-case-note'; note.removeAttribute('style');
+          g.innerHTML='';
+          g.removeAttribute('style');
+          g.className='m-reflow';
+          g.appendChild(c1); g.appendChild(c2); g.appendChild(note);
+          ok[2]=1;
+        }
+      }
+    }
+  }
+
+  /* 自检：补丁 CSS 是否真的生效（单列 / 无 min-height 空高） */
+  var ex3=document.querySelector('.ex3');
+  if(ex3){
+    var cols=(getComputedStyle(ex3).gridTemplateColumns||'').trim().split(/\s+/).length;
+    ok[0]=(cols===1)?1:0;
+  }
+  var maxMin=0;
+  Array.prototype.forEach.call(document.querySelectorAll('.grid.c4 .card'),function(c){
+    var v=parseFloat(getComputedStyle(c).minHeight)||0;
+    if(v>maxMin) maxMin=v;
+  });
+  ok[1]=(maxMin<1)?1:0;
+  document.documentElement.setAttribute('data-mpatch',ok.join(','));
 })();
 </script>
 
