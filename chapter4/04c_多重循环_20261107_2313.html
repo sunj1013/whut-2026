@@ -1,0 +1,1645 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head>
+<meta charset="UTF-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>多重循环</title>
+<style>
+  :root{
+    --fs-title: 48px; --fs-body: 32px; --fs-other: 30px; --fs-list: 29px;
+    --blue-900:#0a3d63; --blue-700:#124f83; --blue-600:#1a6fb5; --blue-400:#4a97d4; --blue-100:#e8f2fb;
+    --orange:#e8720c; --orange-soft:#fdf1e4;
+    --green:#2e8b57; --green-soft:#eaf7ef;
+    --purple:#8e44ad; --purple-soft:#f5ecfa;
+    --red:#c0392b; --red-soft:#fdeceb;
+    --ink:#1d2b36; --muted:#4d6376; --line:#d6e2ee;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;overflow:hidden;background:var(--blue-900);font-family:"Microsoft YaHei","PingFang SC","Hiragino Sans GB","Source Han Sans SC",sans-serif;-webkit-font-smoothing:antialiased;}
+  #stage{position:fixed;left:50%;top:50%;width:1600px;height:900px;transform:translate(-50%,-50%) scale(var(--s,1));transform-origin:center center;background:#fff;overflow:hidden;transition:opacity .22s ease;}
+  body.blackout #stage{opacity:0;}
+  .slide{position:absolute;inset:0;display:none;flex-direction:column;padding:30px 64px 60px;background:linear-gradient(180deg,#ffffff 0%,#f4faff 100%);}
+  .slide.active{display:flex;animation:fadeUp .26s ease;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+  @keyframes itemIn{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:none;}}
+  .slide.active .s-title{animation:itemIn .42s ease both;}
+  .slide.active .fit > *:not(.reveal):not(.reveal-hint){animation:itemIn .42s ease both;}
+  .slide.active .fit > *:not(.reveal):not(.reveal-hint):nth-child(1){animation-delay:.08s;}
+  .slide.active .fit > *:not(.reveal):not(.reveal-hint):nth-child(2){animation-delay:.16s;}
+  .slide.active .fit > *:not(.reveal):not(.reveal-hint):nth-child(3){animation-delay:.24s;}
+  .slide.active .fit > *:not(.reveal):not(.reveal-hint):nth-child(4){animation-delay:.32s;}
+  .slide.active .fit > *:not(.reveal):not(.reveal-hint):nth-child(5){animation-delay:.40s;}
+  .slide.active .fit > *:not(.reveal):not(.reveal-hint):nth-child(6){animation-delay:.48s;}
+  .slide.cover.active .s-title,.slide.end.active .s-title{animation:none;}
+  .slide::after{content:"";position:absolute;right:-90px;bottom:-90px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(26,111,181,.10) 0%,rgba(26,111,181,0) 70%);pointer-events:none;}
+  .s-title{flex:0 0 auto;align-self:flex-start;background:linear-gradient(135deg,#1a6fb5 0%,#124f83 100%);color:#fff;font-size:48px;font-weight:700;letter-spacing:1.5px;line-height:1.15;padding:14px 30px 14px 24px;border-left:10px solid var(--orange);border-radius:0 12px 12px 0;margin-bottom:18px;box-shadow:0 6px 16px rgba(18,79,131,.18);}
+  .s-sub{font-size:var(--fs-body);font-weight:700;color:var(--blue-700);border-left:7px solid var(--orange);padding:2px 0 2px 14px;margin:14px 0 10px;}
+  .s-sub:first-child{margin-top:0;}
+  .s-sub.blue{border-left-color:var(--blue-600);}
+  .s-body{flex:1 1 auto;min-height:0;overflow:hidden;font-size:32px;line-height:1.5;color:var(--ink);}
+  .fit{overflow:hidden;}
+  /* 版心临时加宽（左右 22px）——需要贴边排版时给 .slide 加 .tightL */
+  .slide.tightL{padding-left:22px;padding-right:22px;} .slide.tightL .code{padding-left:18px;}
+  /* 可折叠块（先题后析 / 解析 / 运行结果）：默认收起，点标题展开 */
+  .coll{margin-top:12px;}
+  .coll-hd{display:inline-flex;align-items:center;gap:10px;background:linear-gradient(135deg,#e8720c,#c55807);color:#fff;font-size:24px;padding:9px 22px;border-radius:999px;cursor:pointer;box-shadow:0 5px 12px rgba(232,114,12,.3);user-select:none;transition:filter .2s,box-shadow .2s;}
+  .coll-hd:hover{filter:brightness(1.07);box-shadow:0 7px 16px rgba(232,114,12,.4);}
+  .coll-hd::after{content:"▾";font-size:19px;line-height:1;}
+  .coll.open .coll-hd{background:linear-gradient(135deg,#1a6fb5,#124f83);box-shadow:0 5px 12px rgba(18,79,131,.28);}
+  .coll.open .coll-hd::after{content:"▴";}
+  .coll-bd{max-height:0;opacity:0;overflow:hidden;transition:max-height .5s ease,opacity .4s ease;}
+  .coll.open .coll-bd{max-height:3200px;opacity:1;margin-top:12px;}
+  .s-body p{margin:8px 0;}
+  .s-body p:first-child{margin-top:0;}
+  .s-body ul,.s-body ol{padding-left:1.5em;margin:8px 0;}
+  .s-body li{margin:4px 0;}
+  .s-body ul>li::marker{color:var(--blue-600);}
+  .s-body ol>li::marker{color:var(--orange);font-weight:800;}
+  b,strong{color:var(--blue-700);}
+  table.tb{width:100%;border-collapse:separate;border-spacing:0;font-size:var(--fs-other);line-height:1.45;margin:6px 0;border-radius:12px;overflow:hidden;box-shadow:0 4px 14px rgba(18,79,131,.08);}
+  table.tb thead th{background:linear-gradient(135deg,#1a6fb5,#124f83);color:#fff;font-weight:600;font-size:var(--fs-other);padding:12px 18px;text-align:left;}
+  table.tb td,table.tb tbody th{padding:11px 18px;background:#fff;border-bottom:1px solid var(--line);vertical-align:top;}
+  table.tb tbody tr:last-child td,table.tb tbody tr:last-child th{border-bottom:none;}
+  table.tb tbody th{background:#eaf3fb;color:var(--blue-700);font-weight:600;text-align:left;white-space:nowrap;}
+  table.tb tbody tr:nth-child(even) td{background:#f7fafd;}
+  .c-red{color:var(--red);font-weight:600;} .c-green{color:var(--green);font-weight:700;} .c-blue{color:var(--blue-600);font-weight:700;}
+  .box{border-left:7px solid var(--blue-600);background:var(--blue-100);border-radius:0 10px 10px 0;padding:16px 28px;margin:10px 0;font-size:30px;line-height:1.7;}
+  .box .label{display:inline-block;font-weight:800;color:var(--blue-700);margin-right:10px;}
+  .box.tip{border-left-color:var(--green);background:var(--green-soft);} .box.tip .label{color:var(--green);}
+  .box.warn{border-left-color:var(--orange);background:var(--orange-soft);} .box.warn .label{color:#b95a05;}
+  .box.key{border-left-color:var(--purple);background:var(--purple-soft);} .box.key .label{color:var(--purple);}
+  .box.red{border-left-color:var(--red);background:var(--red-soft);} .box.red .label{color:var(--red);}
+  pre.code{background:#0d2b45;color:#d8e9f5;border-left:6px solid var(--orange);border-radius:0 12px 12px 0;padding:14px 22px;margin:8px 0;font-family:Consolas,"Courier New",monospace;font-size:32px;line-height:1.55;white-space:pre;overflow:hidden;box-shadow:0 8px 22px rgba(13,43,69,.22);}
+  pre.code .kw{color:#6ec1ff;} pre.code .str{color:#ffc17a;} pre.code .cmt{color:#7fa5c0;font-style:italic;} pre.code .num{color:#ff9d6b;}
+  code.inline{font-family:Consolas,"Courier New",monospace;background:var(--blue-100);color:#c0392b;padding:2px 8px;font-size:32px;border-radius:5px;}
+  .out{background:#0d2b45;color:#bfe4ff;border-left:6px solid var(--blue-400);border-radius:0 12px 12px 0;padding:12px 22px;margin:8px 0;font-family:Consolas,"Courier New",monospace;font-size:32px;line-height:1.5;white-space:pre;}
+  .grid{display:grid;gap:14px;} .grid.c2{grid-template-columns:1fr 1fr;} .grid.c3{grid-template-columns:repeat(3,1fr);} .grid.c4{grid-template-columns:repeat(4,1fr);} .grid{ gap:26px 14px; }
+  .card{background:#fff;border:1px solid var(--line);border-top:7px solid var(--blue-600);border-radius:0 0 16px 16px;padding:22px 28px;box-shadow:0 6px 16px rgba(18,79,131,.08);} .card.orange{border-top-color:var(--orange);} .card.green{border-top-color:var(--green);} .card.purple{border-top-color:var(--purple);} .card.red{border-top-color:var(--red);} .card h4{font-size:30px;color:var(--blue-700);margin-bottom:8px;display:flex;align-items:center;gap:10px;line-height:1.2;} .card.orange h4{color:#b95a05;} .card.green h4{color:var(--green);} .card.purple h4{color:var(--purple);} .card.red h4{color:var(--red);} .card p{font-size:27px;color:var(--muted);line-height:1.7;margin:0;} .card .ico{font-size:30px;line-height:1;}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start;} .two.wide{grid-template-columns:1.15fr 1fr;}
+  .feat{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px;} .feat li{display:flex;align-items:center;gap:22px;background:#fff;border:1px solid var(--line);border-left:7px solid var(--blue-600);border-radius:0 12px 12px 0;padding:12px 24px;box-shadow:0 4px 10px rgba(18,79,131,.06);} .feat li:nth-child(even){border-left-color:var(--orange);} .feat .k{flex:0 0 auto;width:270px;font-size:30px;font-weight:700;color:var(--blue-700);line-height:1.25;} .feat .v{font-size:27px;color:var(--muted);line-height:1.5;}
+  .slide.cover{background:linear-gradient(135deg,#1a6fb5 0%,#0d4a7a 58%,#0a3d63 100%);padding:0 110px 60px;justify-content:center;} .slide.cover::before{content:"";position:absolute;right:-100px;top:-100px;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(232,114,12,.18) 0%,rgba(232,114,12,0) 70%);} .slide.cover::after{content:"";position:absolute;left:-100px;bottom:-120px;width:440px;height:440px;border-radius:50%;background:radial-gradient(circle,rgba(74,151,212,.18) 0%,rgba(74,151,212,0) 70%);} .cover-inner{position:relative;z-index:2;} .cover-kicker{display:inline-block;font-size:var(--fs-other);letter-spacing:3px;color:#ffd9b3;border:1px solid rgba(255,217,179,.55);padding:8px 24px;margin-bottom:28px;border-radius:999px;} .cover h1{font-size:82px;font-weight:800;color:#fff;letter-spacing:5px;line-height:1.15;margin-bottom:16px;} .cover-bar{width:650px;height:8px;border-radius:4px;background:linear-gradient(90deg,#e8720c,#ffb26b);margin-bottom:22px;} .cover-sub{font-size:40px;color:#a9d8f5;letter-spacing:3px;margin-bottom:36px;} .cover-meta{font-size:var(--fs-other);color:#7fb2dd;letter-spacing:2px;}
+  .slide.end{background:linear-gradient(135deg,#1a6fb5 0%,#0d4a7a 58%,#0a3d63 100%);padding:0 110px 60px;justify-content:center;} .slide.end::before{content:"";position:absolute;right:-100px;bottom:-120px;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(232,114,12,.16) 0%,rgba(232,114,12,0) 70%);} .end-inner{position:relative;z-index:2;} .end h2{font-size:82px;font-weight:800;color:#fff;letter-spacing:10px;margin-bottom:22px;} .end p{font-size:var(--fs-body);color:#a9d8f5;letter-spacing:2px;}
+  .pageinfo{position:absolute;right:40px;top:22px;z-index:20;font-size:var(--fs-other);color:var(--blue-600);letter-spacing:1px;background:rgba(255,255,255,.95);border:1px solid var(--line);border-radius:999px;padding:5px 20px;box-shadow:0 4px 10px rgba(18,79,131,.08);} .pageinfo b{font-size:var(--fs-other);color:var(--orange);}
+  .nav{position:absolute;right:36px;bottom:14px;z-index:20;display:flex;align-items:center;gap:10px;} .nav button{height:50px;border:none;cursor:pointer;background:linear-gradient(135deg,#1a6fb5,#124f83);color:#fff;font-size:var(--fs-other);line-height:1;display:flex;align-items:center;justify-content:center;transition:all .18s;font-family:inherit;border-radius:12px;width:50px;box-shadow:0 5px 12px rgba(18,79,131,.28);} .nav button:hover{background:linear-gradient(135deg,#e8720c,#c55807);transform:translateY(-2px);} .nav button:disabled{background:#b9cfe4;cursor:not-allowed;box-shadow:none;transform:none;} .nav .tocbtn{width:auto;padding:0 22px;font-weight:700;letter-spacing:1px;}
+  .progress{position:absolute;left:0;bottom:0;height:6px;width:0;z-index:20;background:linear-gradient(90deg,#1a6fb5,#e8720c);transition:width .3s ease;}
+  .keyhint{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);z-index:20;font-size:20px;color:#7fa8c4;letter-spacing:1px;background:rgba(255,255,255,.85);border:1px solid var(--line);border-radius:999px;padding:4px 16px;transition:opacity .6s ease;} .keyhint.hide{opacity:0;}
+  .toc{position:absolute;inset:0;z-index:40;background:rgba(10,61,99,.96);display:none;padding:44px 60px 60px;overflow:auto;} .toc.show{display:block;} .toc h3{font-size:40px;color:#fff;letter-spacing:4px;margin-bottom:6px;} .toc .toc-bar{width:110px;height:6px;border-radius:3px;background:linear-gradient(90deg,#e8720c,#ffb26b);margin-bottom:20px;} .toc-list{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;align-items:start;} .toc-group{background:rgba(255,255,255,.05);border-radius:14px;padding:14px 14px 16px;border-top:5px solid var(--blue-400);} .toc-group:nth-child(2){border-top-color:var(--orange);} .toc-group:nth-child(3){border-top-color:var(--green);} .toc-group:nth-child(4){border-top-color:var(--purple);} .toc-group:nth-child(5){border-top-color:var(--red);} .toc-group-title{font-size:22px;color:#ffc17a;font-weight:800;letter-spacing:1px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px dashed rgba(255,255,255,.18);line-height:1.25;} .toc-group a{display:block;color:#cfe6f7;font-size:20px;padding:8px 12px;border-radius:8px;cursor:pointer;margin-bottom:4px;text-decoration:none;line-height:1.35;transition:all .16s;} .toc-group a:hover{background:linear-gradient(90deg,#e8720c,#c55807);color:#fff;} .toc-close{position:absolute;right:40px;top:22px;background:none;border:1px solid #7fb2dd;color:#cfe6f7;font-size:var(--fs-other);padding:7px 22px;cursor:pointer;font-family:inherit;border-radius:12px;} .toc-close:hover{background:#e8720c;border-color:#e8720c;color:#fff;}
+  /* 习题解析：先隐藏，点击后动画揭示，避免答案与题目同时出现 */
+  .reveal{max-height:0;opacity:0;overflow:hidden;margin-top:0!important;transition:max-height .55s ease, opacity .45s ease;}
+  .reveal.shown{max-height:3000px;opacity:1;margin-top:14px!important;}
+  .reveal.shown .box{box-shadow:0 0 0 2px rgba(232,114,12,.35), 0 6px 16px rgba(18,79,131,.08);}
+  .reveal-hint{display:inline-flex;align-items:center;gap:8px;margin-top:14px;background:linear-gradient(135deg,#e8720c,#c55807);color:#fff;font-size:24px;padding:8px 18px;border-radius:999px;cursor:pointer;box-shadow:0 5px 12px rgba(232,114,12,.3);animation:pulse 1.5s ease-in-out infinite;user-select:none;}
+  .reveal-hint.gone{display:none;}
+  @keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.05);}}
+  /* === 逐行生长：三角/图形页，外层每转一圈长出一行（进入本页时自动播放） === */
+  @keyframes rowGrow{from{opacity:0;transform:translateX(-18px);}to{opacity:1;transform:none;}}
+  .stars{display:flex;flex-direction:column;gap:5px;margin-top:8px;}
+  .stars-hd{display:grid;grid-template-columns:56px 168px 1fr;gap:12px;padding:0 16px 2px;font-size:22px;font-weight:700;color:#7f8fa0;letter-spacing:.5px;}
+  .grow-row{display:grid;grid-template-columns:56px 168px 1fr;gap:10px;align-items:center;background:#f6fafd;border:1px solid #e2ecf5;border-radius:10px;padding:5px 14px;}
+  .grow-row b{font-size:24px;color:var(--blue-700);}
+  .grow-row i{font-size:22px;font-style:normal;color:#6d7f90;}
+  .grow-row span{font-family:Consolas,"Courier New",monospace;font-size:27px;letter-spacing:3px;color:var(--orange);}
+  .slide.active .grow-row{animation:rowGrow .45s ease both;}
+  .slide.active .grow-row:nth-child(2){animation-delay:.30s;}
+  .slide.active .grow-row:nth-child(3){animation-delay:.62s;}
+  .slide.active .grow-row:nth-child(4){animation-delay:.94s;}
+  .slide.active .grow-row:nth-child(5){animation-delay:1.26s;}
+  .slide.active .grow-row:nth-child(6){animation-delay:1.58s;}
+  /* 分步揭示：.reveal.step 一次只放一条；.col 让整列揭示时不整体下移 */
+  .reveal.step{will-change:max-height,opacity;}
+  .reveal.col,.reveal.col.shown{margin-top:0!important;}
+
+  /* 流程图组件：N-S 图（盒图）与传统流程图通用 */
+  .flow{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;width:100%;gap:6px;}
+  .flow svg{display:block;width:100%;height:auto;}
+  .flow .cap{font-size:23px;font-weight:800;color:var(--blue-700);letter-spacing:1px;text-align:center;line-height:1.3;}
+  .flow svg text{font-family:"Microsoft YaHei","PingFang SC","Hiragino Sans GB","Source Han Sans SC",sans-serif;}
+  .fc-term{fill:var(--blue-700);} .fc-term-t{fill:#fff;font-weight:700;}
+  .fc-proc{fill:#fff;stroke:var(--blue-600);stroke-width:2.5;} .fc-proc-t{fill:var(--ink);}
+  .fc-io{fill:#fff;stroke:var(--purple);stroke-width:2.5;} .fc-io-t{fill:var(--purple);font-weight:700;}
+  .fc-dec{fill:var(--orange-soft);stroke:var(--orange);stroke-width:2.5;} .fc-dec-t{fill:#9a4a00;font-weight:700;}
+  .fc-line{stroke:#5a7a93;stroke-width:2.5;fill:none;stroke-linecap:round;stroke-linejoin:round;}
+  .fc-yes{fill:var(--green);font-weight:800;} .fc-no{fill:var(--red);font-weight:800;}
+  .fc-ns{fill:#fff;stroke:var(--blue-600);stroke-width:2.5;} .fc-ns-line{stroke:var(--blue-600);stroke-width:2.5;}
+  .fc-ns-cond{fill:var(--blue-100);stroke:var(--blue-600);stroke-width:2.5;} .fc-ns-t{fill:var(--ink);}
+
+  /* ===== 页面放大镜 loupe 工具（以光标为中心放大 + 单击锁定 + 滑块面板，2026-10-30 改进） ===== */
+  #btnLoupe{position:fixed;right:18px;bottom:84px;z-index:60;width:54px;height:54px;border:none;border-radius:50%;
+    background:linear-gradient(135deg,#1a6fb5,#0e4f86);color:#fff;font-size:24px;cursor:pointer;
+    box-shadow:0 6px 16px rgba(26,111,181,.4);display:flex;align-items:center;justify-content:center;user-select:none;}
+  #btnLoupe.on{background:linear-gradient(135deg,#e8720c,#c55807);box-shadow:0 6px 16px rgba(232,114,12,.45);}
+  #loupe{position:fixed;width:320px;height:320px;border-radius:14px;background:#fff;
+    overflow:hidden;box-shadow:0 0 0 3px #1a6fb5,0 12px 34px rgba(0,0,0,.35);z-index:70;pointer-events:none;display:none;}
+  #loupe .lens-stage{position:absolute;left:0;top:0;transform-origin:0 0;}
+  #loupe .lens-stage *{animation:none !important;transition:none !important;}
+  /* 中心准星：直观标出“正在放大的是这一点” */
+  #loupe::before,#loupe::after{content:'';position:absolute;z-index:3;pointer-events:none;background:rgba(232,114,12,.8);}
+  #loupe::before{left:50%;top:50%;width:1px;height:20px;margin:-10px 0 0 -0.5px;}
+  #loupe::after{left:50%;top:50%;width:20px;height:1px;margin:-0.5px 0 0 -10px;}
+  #loupe.lock{box-shadow:0 0 0 3px #e8720c,0 12px 34px rgba(0,0,0,.35);}
+  #loupeTip{position:fixed;left:50%;top:14px;transform:translateX(-50%);background:rgba(14,79,134,.92);color:#fff;
+    font-size:18px;padding:8px 18px;border-radius:999px;z-index:70;display:none;pointer-events:none;white-space:nowrap;
+    box-shadow:0 6px 16px rgba(0,0,0,.3);}
+  #loupePanel{position:fixed;left:18px;bottom:18px;z-index:75;background:rgba(20,28,38,.92);color:#e8eef5;
+    border-radius:12px;padding:12px 16px;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,.4);display:none;width:236px;}
+  #loupePanel .ttl{font-size:13px;color:#7fd0ff;margin-bottom:6px;display:flex;align-items:center;gap:6px;}
+  #loupePanel .row{display:flex;align-items:center;gap:10px;margin:7px 0;}
+  #loupePanel label{width:40px;color:#9fb4c8;flex:none;}
+  #loupePanel input[type=range]{flex:1;accent-color:#1a6fb5;cursor:pointer;}
+  #loupePanel .val{width:48px;text-align:right;color:#fff;font-variant-numeric:tabular-nums;}
+  body.loupe-on{cursor:crosshair;}
+
+  /* ===== 正文可选中复制：选中 / 拖选 / 长按都不翻页 ===== */
+  #stage .slide{-webkit-user-select:text;user-select:text;}
+  #stage .slide ::selection{background:rgba(232,114,12,.28);}
+  #stage .nav,#stage .nav *,#stage .keyhint,#stage .pageinfo,#stage .progress,
+  #stage .toc,#stage .toc *,#stage .coll-hd,#stage .reveal-hint,
+  #btnLoupe,#loupePanel{-webkit-user-select:none;user-select:none;}
+  #copyTip{position:fixed;left:50%;bottom:96px;z-index:80;display:flex;align-items:center;gap:8px;
+    padding:8px 10px 8px 18px;border-radius:999px;background:rgba(14,79,134,.95);color:#fff;
+    font-size:17px;line-height:1.2;white-space:nowrap;box-shadow:0 10px 26px rgba(0,0,0,.3);
+    opacity:0;pointer-events:none;transform:translateX(-50%) translateY(10px);
+    transition:opacity .18s ease,transform .18s ease;}
+  #copyTip.on{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0);}
+  #copyTip b{color:#ffd08a;font-weight:700;font-variant-numeric:tabular-nums;}
+  #copyTip .kbd{font-size:14px;color:#bcd8ee;border:1px solid rgba(188,216,238,.45);border-radius:6px;padding:1px 7px;}
+  #copyTip button{border:none;cursor:pointer;font-family:inherit;font-size:16px;font-weight:700;
+    padding:6px 15px;border-radius:999px;background:linear-gradient(135deg,#e8720c,#c55807);color:#fff;}
+  #copyTip button:hover{filter:brightness(1.08);}
+  @media (max-width:720px){
+    #copyTip{font-size:15px;padding:6px 8px 6px 14px;gap:6px;}
+    #copyTip .kbd{display:none;}          /* 手机上不显示 Ctrl C，长按有系统菜单 */
+    #copyTip button{font-size:15px;padding:5px 12px;}
+  }
+
+
+  /* ===== LaTeX 行内公式（零依赖、断网可用） ===== */
+  .tex{font-family:"Cambria Math","Latin Modern Math",Cambria,"Times New Roman",Times,serif;font-style:normal;letter-spacing:0;white-space:nowrap;}
+  .tex i{font-style:italic;padding-right:.02em;}
+  .tex .num,.tex .up{font-style:normal;}
+  .tex .fn{font-style:normal;margin:0 .14em;}
+  .tex .op{padding:0 .1em;}
+  .tex sup{font-size:.62em;vertical-align:.55em;line-height:0;}
+  .tex sub{font-size:.62em;vertical-align:-.25em;line-height:0;}
+  .tex .sq{white-space:nowrap;}
+  /* 根号上划线：必须压在 .radical 字形自带的顶笔上，不能穿过被开方字母。
+     Cambria Math 字面 ascent = 0.778em，√（U+221A）笔画范围 −0.041~0.921em，顶笔在 0.856~0.921em，
+     故 top = 0.778 − 0.921 = −0.143em（负值：顶笔高过 ascent 线）；
+     高度 0.065em 与字形顶笔同厚；left −0.04em 使横线插进顶笔右端（√ advance 0.657em，顶笔 0.571~0.714em）避免接缝。
+     改用 Times New Roman 回退时把 top 改到 −.09em。 */
+  .tex .sq-b{position:relative;padding:0 .06em 0 .04em;}
+  .tex .sq-b::before{content:"";position:absolute;left:-.04em;right:0;top:-.143em;height:.065em;min-height:1.5px;background:currentColor;border-radius:1px;}
+  .tex .fx{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;font-size:.84em;line-height:1.06;margin:0 .14em;}
+  .tex .fx-n{border-bottom:2px solid currentColor;padding:0 .12em;}
+  .tex .fx-d{padding:0 .12em;}
+  </style>
+<style id="__dm_no_drag_style__">* { -webkit-user-drag: none !important; }</style><style id="__dm_bindable_badge_style__">[data-sp-bindable="database"]{outline:1px dashed #0088ff;outline-offset:2px;border-radius:4px;}[data-sp-bindable="database"] *{pointer-events:none !important;transition:none !important;animation:none !important;}[data-sp-bindable="database"]{transition:none !important;animation:none !important;}</style></head>
+<body style="position: relative;">
+  <div id="stage" style="--s: 1.013125;">
+
+  <!-- 全局流程图箭头定义（供各页 SVG 引用，只需一处） -->
+  <svg aria-hidden="true" height="0" width="0" style="position:absolute; width:0; height:0; overflow:hidden"><defs>
+    <marker id="fcArrow" markerHeight="11" markerUnits="userSpaceOnUse" markerWidth="11" orient="auto" refX="8" refY="5.5">
+      <path d="M1,1 L10,5.5 L1,10 Z" fill="#5a7a93"></path>
+    </marker>
+  </defs></svg>
+
+  <!-- 0 封面 -->
+<section class="slide cover active">
+    <div class="cover-inner">
+      <div class="cover-kicker">武汉理工大学 人工智能学院</div>
+      <h1>C程序设计基础</h1>
+      <div class="cover-bar"></div>
+      <div class="cover-sub">第 4 章　循环结构（循环嵌套）</div>
+      <div class="cover-meta">主讲：孙骏</div>
+    </div>
+  </section>
+
+  <!-- 1 回顾：三种循环与两个关键字 -->
+  <section class="slide">
+    <div class="s-title">回顾：三种循环与两个关键字</div>
+    <div class="s-body">
+      <div class="s-sub" style="margin-top:0">学过的三种循环，都是"一层"</div>
+      <div class="grid c3" style="margin-top:8px">
+        <div class="card"><h4><span class="ico">①</span>while</h4><p>"当型"：先判断，条件成立才进循环体</p></div>
+        <div class="card orange"><h4><span class="ico">②</span>do-while</h4><p>"直到型"：先做一次，再看条件</p></div>
+        <div class="card green"><h4><span class="ico">③</span>for</h4><p>"计数型"：初值、条件、步长写在一行</p></div>
+      </div>
+      <div class="box key" style="margin-top:16px"><span class="label">上一节的两个关键字</span><code class="inline">break</code> 立刻结束<b>整个循环</b>；<code class="inline">continue</code> 只结束<b>这一轮</b>，紧接着下一轮。</div>
+      <div class="box tip"><span class="label">今天的问题</span>这三种循环一次只能"扫描一遍"。如果循环体里<strong>还要再做一件需要重复的事</strong>，怎么办？</div>
+      <div class="box warn"><span class="label">先剧透一句</span>办法就是"循环里再套一个循环"——但套进去以后，<b>变量、初值、跳出</b>三处都会多出新的坑。</div>
+    </div>
+  </section>
+
+  <!-- 2 抛一个问题：100 以内的素数全要 -->
+  <section class="slide">
+    <div class="s-title">抛一个问题：100 以内的素数全要</div>
+    <div class="s-body">
+      <div class="two" style="margin-top:0;align-items:start">
+        <div>
+          <div class="box tip" style="margin-top:0"><span class="label">上一节的任务</span>输入一个整数 <code class="inline">x</code>，判断它是不是素数——<b>一个数</b>，使用一层循环遍历。"<b>从 2 试到 <span class="tex"><span class="sq">&radic;<span class="sq-b"><i>x</i></span></span></span></b>"</div>
+          <div class="box key"><span class="label">今天的任务</span>把 <b>2 到 100</b> 之间的素数<strong>全部</strong>打印出来。</div>
+        </div>
+        <div>
+          <div class="card"><h4><span class="ico">📌</span>算一笔账</h4><p>2~100 共 99 个数，每个都要"<b>从 2 试到 <span class="tex"><span class="sq">&radic;<span class="sq-b"><i>x</i></span></span></span></b>"——同一套动作重复 99 遍。</p></div>
+          <div class="box red" style="margin-top:12px"><span class="label">用老办法</span>只能把判断素数的 8 行代码复制 99 遍；哪天要改到 1~1000，还得再写一遍。</div>
+        </div>
+      </div>
+      <p style="margin-top:14px;font-size:34px;line-height:1.55"><br>能不能让"判断素数"这件事 <b>自己再重复 99 遍</b>？<br>　　　　　　　　　——<b>把一段循环，整个放进另一个循环里</b>。</p>
+      <div class="box warn" style="margin-top:10px"><span class="label">先记个账</span>这个办法叫<b>循环嵌套</b>。题目先记着——把<b>规矩</b>、<b>画法</b>、<b>跳转</b>弄清楚，再回来收它。</div>
+    </div>
+  </section>
+
+  <!-- 3 已有的武器：判断一个数 -->
+  <section class="slide">
+    <div class="s-title">已有的武器：判断一个数</div>
+    <div class="s-body">
+      <div class="s-sub" style="margin-top:0">一段能用的代码，但它只解决"一个数"</div>
+      <pre class="code" style="font-size:32px"><span class="kw">int</span> i, flag = <span class="num">1</span>;                           <span class="cmt">/* 先假设 x 是素数 */</span>
+<span class="kw">for</span> (i = <span class="num">2</span>; i &lt;= sqrt(x); i++)             <span class="cmt">/* 只试到 <span class="tex"><span class="sq">&radic;<span class="sq-b"><i>x</i></span></span></span> */</span>
+    <span class="kw">if</span> (x % i == <span class="num">0</span>) { flag = <span class="num">0</span>; <span class="kw">break</span>; }   <span class="cmt">/* 找到因子就定案 */</span>
+<span class="kw">if</span> (flag) <span class="kw">printf</span>(<span class="str">"%d 是素数\n"</span>, x);
+<span class="kw">else</span>      <span class="kw">printf</span>(<span class="str">"%d 不是素数\n"</span>, x);</pre>
+      <div class="box key" style="margin-top:14px"><span class="label">这段代码干三件事</span>① 先假设 flag = 1 → ② 用 i 从 2 试到 <span class="tex"><span class="sq">&radic;<span class="sq-b"><i>x</i></span></span></span>，能整除就把 flag 改成 0 并 break → ③ 看 flag 决定输出哪一句。</div>
+      <div class="box tip"><span class="label">里面已经有一个 break</span>它只会跳出<b>这一层</b>循环。先记住这句话——讲到"break 只跳一层"时它是关键，那时我们也回来把这道题收掉。</div>
+    </div>
+  </section>
+
+  <!-- 4 给它起个名字：循环嵌套 -->
+  <section class="slide">
+    <div class="s-title">给它起个名字：循环嵌套</div>
+    <div class="s-body">
+      <div class="s-sub" style="margin-top:0">"让它自己再重复一遍"的办法，有个正式名字</div>
+      <div class="box key" style="margin-top:8px"><span class="label">循环嵌套</span>一个循环结构的<b>循环体</b>里，又包含了<b>另一个完整的循环结构</b>。</div>
+      <ul class="feat" style="margin-top:14px">
+        <li><span class="k">三种可以互套</span><span class="v">while、do-while、for 可以相互嵌套，层数不限</span></li>
+        <li><span class="k">可以有多个内层</span><span class="v">外层循环体里能并排放两个以上的内层循环，它们按顺序执行</span></li>
+        <li><span class="k">两层以上叫多重</span><span class="v">习惯上把两层及以上的嵌套统称"多重循环"</span></li>
+        <li><span class="k">内外怎么叫</span><span class="v">外面那层叫外层循环，被包住的叫内层循环</span></li>
+      </ul>
+      <div class="box tip" style="margin-top:14px"><span class="label">判断标准</span>看<b>花括号的包含关系</b>：一个 for 的循环体 <code class="inline">{ }</code> 里整段装着另一个 for，就是嵌套。并列是"肩并肩"，嵌套是"包在里面"。</div>
+    </div>
+  </section>
+
+  <!-- 5 两条铁律：外一次、内一遍 -->
+  <section class="slide">
+    <div class="s-title">两条铁律：外一次、内一遍</div>
+    <div class="s-body">
+      <div class="s-sub" style="margin-top:0">记住这两条，任何嵌套都能手推</div>
+      <div class="two" style="margin-top:6px;align-items:start">
+        <div>
+          <div class="box key" style="margin-top:0"><span class="label">铁律一</span>外层每执行 <b>1 次</b>，内层就要从<b>头到尾完整执行 1 遍</b>。</div>
+          <pre class="code" style="font-size:32px;margin-top:12px"><span class="kw">for</span> (i = <span class="num">0</span>; i &lt; <span class="num">3</span>; i++) {
+    <span class="kw">for</span> (j = <span class="num">1</span>; j &lt;= <span class="num">4</span>; j++)
+        <span class="kw">printf</span>(<span class="str">" %d"</span>, j);
+    <span class="kw">printf</span>(<span class="str">"\n"</span>);
+}</pre>
+        </div>
+        <div>
+          <table class="tb" style="font-size:28px;margin-top:0">
+            <thead><tr><th style="width:18%">i</th><th style="width:44%">内层 j 走完 1~4</th><th style="width:38%">这一行输出</th></tr></thead>
+            <tbody>
+              <tr><td>0</td><td>1 2 3 4</td><td>1 2 3 4</td></tr>
+              <tr><td>1</td><td>1 2 3 4</td><td>1 2 3 4</td></tr>
+              <tr><td>2</td><td>1 2 3 4</td><td>1 2 3 4</td></tr>
+            </tbody>
+          </table>
+          <div class="box tip" style="margin-top:12px"><span class="label">铁律二</span>j 从 1 变到 4 的这段时间里，外层的 i <b>一直是同一个值</b>。</div>
+        </div>
+      </div>
+      <div class="box warn" style="margin-top:14px"><span class="label">推论</span>两层各跑 3 次和 4 次，循环体一共执行 <span class="tex"><span class="num">3</span><span class="op">×</span><span class="num">4</span><span class="op">=</span><span class="num">12</span></span> 次——这个乘法就是估算运行量的方法。</div>
+    </div>
+  </section>
+
+  <!-- 6 内外变量不能同名 -->
+  <section class="slide">
+    <div class="s-title">内外变量不能同名</div>
+    <div class="s-body">
+      <div class="two" style="margin-top:0;align-items:start">
+        <div>
+          <div class="s-sub" style="margin-top:0;border-left-color:var(--red);color:var(--red)">✗ 内外都用 i</div>
+          <pre class="code" style="font-size:32px"><span class="kw">for</span> (i = <span class="num">0</span>; i &lt; <span class="num">3</span>; i++) {
+    <span class="kw">for</span> (i = <span class="num">1</span>; i &lt;= <span class="num">4</span>; i++)
+        <span class="kw">printf</span>(<span class="str">" %d"</span>, i);
+    <span class="kw">printf</span>(<span class="str">"\n"</span>);
+}</pre>
+          <div class="box red" style="margin-top: 12px;"><span class="label" style="">实际只输出一行​</span><code class="inline">1 2 3 4</code>——内层修改 i 为 5，外层条件 i &lt; 3 立刻不成立。</div>
+        </div>
+        <div>
+          <div class="s-sub" style="margin-top:0">✓ 内外各用各的</div>
+          <pre class="code" style="font-size:32px"><span class="kw">for</span> (i = <span class="num">0</span>; i &lt; <span class="num">3</span>; i++) {
+    <span class="kw">for</span> (j = <span class="num">1</span>; j &lt;= <span class="num">4</span>; j++)
+        <span class="kw">printf</span>(<span class="str">" %d"</span>, j);
+    <span class="kw">printf</span>(<span class="str">"\n"</span>);
+}</pre>
+          <div class="box tip" style="margin-top:12px"><span class="label" style="">实际输出三行​</span><code class="inline">1 2 3 4</code> 重复三行，符合预期。</div>
+        </div>
+      </div>
+      <div class="box key" style="margin-top:14px"><span class="label">规矩</span>嵌套时内外层变量名<b>必须不同</b>（习惯用 i / j / k）；<b>并列</b>的两个循环可以同名，因为它们先后执行、互不影响。</div>
+    </div>
+  </section>
+
+  <!-- 7 从 printf 到 m 行 n 列 -->
+  <section class="slide">
+    <div class="s-title">从 printf 到 m 行 n 列</div>
+    <div class="s-body">
+      <div class="two" style="margin-top:0;align-items:start;grid-template-columns:0.78fr 1.22fr">
+        <div>
+          <div class="s-sub" style="margin-top:0">要画成这样（m=5，n=5）</div>
+          <div class="out" style="font-size:32px;line-height:1.24;letter-spacing:3px;padding:14px 20px 14px 28px">*****
+*****
+*****
+*****
+*****</div>
+          <div class="box warn" style="margin-top:12px;font-size:27px;line-height:1.5"><span class="label">先想</span>抄 5 遍 <code class="inline" style="font-size:23px">printf("*****\n")</code> 能画出来。可 m、n 由<b>键盘输入</b>呢？</div>
+        </div>
+        <div>
+          <div>
+            <div class="s-sub blue" style="margin-top:0">要重复的其实是两件事：行、列</div>
+            <ul class="feat">
+              <li style="padding:8px 20px"><span class="k" style="width:200px">① 硬写</span><span class="v">抄 5 遍，改行数就得改代码</span></li>
+              <li style="padding:8px 20px"><span class="k" style="width:200px">② 只套外层</span><span class="v">行数变 m，一行的 5 个还写死</span></li>
+              <li style="padding:8px 20px"><span class="k" style="width:200px">③ 再套内层</span><span class="v">内层管一行的个数，行列都成变量</span></li>
+            </ul>
+          </div>
+          <div class="reveal step" style="margin-top:14px">
+            <div class="s-sub orange" style="margin-top:0">于是：外层管行，内层管列</div>
+            <pre class="code" style="font-size:24px;line-height:1.4"><span class="kw">for</span> (i = <span class="num">1</span>; i &lt;= m; i++) {        <span class="cmt">/* 外层：m 行 */</span>
+    <span class="kw">for</span> (j = <span class="num">1</span>; j &lt;= n; j++)    <span class="cmt">/* 内层：一行 n 个 */</span>
+        <span class="kw">printf</span>(<span class="str">"*"</span>);
+    <span class="kw">printf</span>(<span class="str">"\n"</span>);             <span class="cmt">/* 一行打完才换行 */</span>
+}</pre>
+          </div>
+        </div>
+         
+      </div>
+       <div class="reveal step">
+            <div class="box red" style="margin-top:0;font-size:25px;line-height:1.4;padding:10px 22px"><span class="label" style="">初学最常见的错误​</span>把 <code class="inline" style="font-size:24px">printf("\n")</code> 写进内层 → 打一个星号就换行，屏幕上成了一条<b>竖线</b>。</div>
+          </div>
+      <div class="reveal-hint" data-label="点一下看看">点一下看看（2 / 2）</div>
+    </div>
+  </section>
+
+  <!-- 8 递增三角：第 i 行 i 个 -->
+  <section class="slide">
+    <div class="s-title">递增三角：第 i 行打 i 个</div>
+    <div class="s-body">
+      <div class="two" style="margin-top:0;align-items:start;grid-template-columns:0.84fr 1.16fr">
+        <div>
+          <div class="s-sub" style="margin-top:0">要画成这样（m = 5）</div>
+          <div class="out" style="font-size:30px;line-height:1.18;letter-spacing:4px;padding:12px 20px 12px 28px">*
+**
+***
+****
+*****</div>
+          <div class="reveal step" style="margin-top:14px">
+            <div class="s-sub blue" style="margin-top: 0px;">把行号 i 代进去推一推（m = 5）​</div>
+            <div class="stars">
+              <div class="stars-hd"><span>i</span><span>内层 j 跑几次</span><span>这一行</span></div>
+              <div class="grow-row" style=""><b>1</b><i>1 次</i><span>*</span></div>
+              <div class="grow-row" style=""><b>2</b><i>2 次</i><span>**</span></div>
+              <div class="grow-row" style=""><b>3</b><i>3 次</i><span>***</span></div>
+              <div class="grow-row" style=""><b>4</b><i>4 次</i><span>****</span></div>
+              <div class="grow-row" style=""><b>5</b><i>5 次</i><span>*****</span></div>
+            </div>
+            <div style="margin-top:6px;font-size:28px;color:#5d7f90">i 每加 1，内层就多跑一次 —— 行号本身就是这一行的个数</div>
+          </div>
+        </div>
+        <div>
+          <div class="box warn" style="margin-top:0;font-size:26px;line-height:1.4;padding:10px 22px"><span class="label" style="">先分析​</span>第 1 行 1 个、第 5 行 5 个：内层终点写什么，才能"第几行就打几个"？</div>
+          <div class="reveal step col">
+            <div class="box key" style="margin-top:0;font-size:26px;line-height:1.4;padding:10px 22px"><span class="label">所以</span>不是把 n 换成 m，而是把终点换成 <code class="inline">i</code>。</div>
+          </div>
+          <div class="reveal step">
+            <div class="s-sub orange" style="margin-top:0">只改内层的终点</div>
+            <pre class="code" style="font-size:29px;line-height:1.38"><span class="kw">for</span> (i = <span class="num">1</span>; i &lt;= m; i++) {
+    <span class="kw">for</span> (j = <span class="num">1</span>; j &lt;= i; j++)   <span class="cmt">/* 只打 i 个 */</span>
+        <span class="kw">printf</span>(<span class="str">"*"</span>);
+    <span class="kw">printf</span>(<span class="str">"\n"</span>);             <span class="cmt">/* 换行在外层 */</span>
+}</pre>
+          </div>
+          <div class="reveal step">
+            <div class="box tip" style="margin-top:0;font-size:27px;line-height:1.5"><span class="label">抓三处</span>① 外层管<b>行数</b>； 　② 内层终点写 <code class="inline">i</code>；
+            <br> 　　　 ③ 换行留在<b>外层</b>，一行只换一次。</div>
+          </div>
+        </div>
+      </div>
+      <div class="reveal-hint" data-label="点一下，接着看">点一下，接着看</div>
+    </div>
+  </section>
+
+  <!-- 9 递减三角：第 i 行 m+1-i 个 -->
+  <section class="slide">
+    <div class="s-title">递减三角：第 i 行打 m+1−i 个</div>
+    <div class="s-body">
+      <div class="two" style="margin-top:0;align-items:start;grid-template-columns:0.84fr 1.16fr">
+        <div>
+          <div class="s-sub" style="margin-top:0">要画成这样（m = 5）</div>
+          <div class="out" style="font-size:28px;line-height:1.18;letter-spacing:4px;padding:11px 20px 11px 26px">*****
+****
+***
+**
+*</div>
+          <div class="reveal step" style="margin-top:14px">
+            <div class="s-sub blue" style="margin-top:0">把 i 代进去算（m = 5）</div>
+            <div class="stars">
+              <div class="stars-hd"><span>i</span><span>m+1−i</span><span>这一行</span></div>
+              <div class="grow-row" style=""><b>1</b><i>6−1=5</i><span>*****</span></div>
+              <div class="grow-row" style=""><b>2</b><i>6−2=4</i><span>****</span></div>
+              <div class="grow-row" style=""><b>3</b><i>6−3=3</i><span>***</span></div>
+              <div class="grow-row" style=""><b>4</b><i>6−4=2</i><span>**</span></div>
+              <div class="grow-row" style=""><b>5</b><i>6−5=1</i><span>*</span></div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="box warn" style="margin-top:0;font-size:28px;line-height:1.4;padding:10px 22px"><span class="label" style="">分析：​</span>个数要随 <b>i</b> 变小：用一个含  <b>i</b> 的式子，怎么表达？</div>
+          <div class="reveal step col">
+            <div class="box key" style="margin-top: 12px; font-size: 28px; line-height: 1.4; padding: 10px 22px;">端点：　<span class="label">i + j = m + 1</span>　　 <b>端点j</b>为 <code class="inline">m+1-i</code>。</div>
+          </div>
+          <div class="reveal step">
+            <div class="s-sub orange" style="margin-top:0">把内层终点换成 m+1−i</div>
+            <pre class="code" style="font-size:30px;line-height:1.33"><span class="kw">for</span> (i = <span class="num">1</span>; i &lt;= m; i++) {
+    <span class="kw">for</span> (j = <span class="num">1</span>; j &lt;= m+<span class="num">1</span>-i; j++)  <span class="cmt">/* 个数随 i 变小 */</span>
+        <span class="kw">printf</span>(<span class="str">"*"</span>);
+    <span class="kw">printf</span>(<span class="str">"\n"</span>);
+}</pre>
+            <div class="box tip" style="margin-top:6px;font-size:28px;line-height:1.35;padding:9px 20px"><span class="label">等价写法</span>倒着数也行：<code class="inline">for (j = m; j &gt;= i; j--)</code>，每行同样少一个。</div>
+          </div>
+         
+        </div>
+      </div>
+      <div class="reveal-hint" data-label="点一下，接着看">点一下，接着看</div>
+    </div>
+  </section>
+
+  <!-- 10 九九乘法表 -->
+  <section class="slide">
+    <div class="s-title">九九乘法表</div>
+    <div class="s-body">
+      <div class="two" style="margin-top:0;align-items:start;grid-template-columns:1fr 1.2fr">
+        <div>
+          <div class="s-sub" style="margin-top:0">先看清要画的样子（前 4 行，共 9 行）</div>
+          <div class="out" style="font-size:27px;line-height:1.35;padding:10px 22px">1*1=1
+1*2=2  2*2=4
+1*3=3  2*3=6  3*3=9
+1*4=4  2*4=8  3*4=12 4*4=16
+……</div>
+          <div class="box warn" style="margin-top:12px;font-size:27px;line-height:1.5"><span class="label">想想看：</span>第 4 行有几项？<br>每行比上一行多几项？<br>和<b>递增三角形</b>比一比，有没有什么相似？</div>
+        </div>
+        <div>
+          <div class="reveal step col">
+            <div class="s-sub blue" style="margin-top:0">与递增三角形同一个骨架</div>
+            <div class="box key" style="margin-top:0;font-size:26px;line-height:1.55;padding:11px 24px"><span class="label">三看</span>① 一共 <b>9 行</b>；　② 第 i 行有 <b>i 项</b>；<br>　　 ③ 每项是 <b>j × i</b>，j 从 1 数到 i。</div>
+          </div>
+          <div class="reveal step">
+            <div class="s-sub orange" style="margin-top:0">把星号换成一个算式</div>
+            <pre class="code" style="font-size:32px;line-height:1.4"><span class="kw">for</span> (i = <span class="num">1</span>; i &lt;= <span class="num">9</span>; i++) {
+  <span class="kw">for</span> (j = <span class="num">1</span>; j &lt;= i; j++)  <span class="cmt">/* 每行 i 项 */</span>
+    <span class="kw">printf</span>(<span class="str">"%d*%d=%-3d"</span>, j, i, i*j);
+  <span class="kw">printf</span>(<span class="str">"\n"</span>);
+}</pre>
+          </div>
+          <div class="reveal step">
+            <div class="box tip" style="margin-top:0;font-size:28px;line-height:1.45;padding:11px 24px"><span class="label">Tips：</span> <code class="inline">%-3d</code> 表示左对齐，域宽 3 列。</div>
+          </div>
+        </div>
+      </div>
+      <div class="reveal-hint" data-label="点一下，接着看">点一下，接着看</div>
+    </div>
+  </section>
+
+  <!-- 11 空格加星号：金字塔① -->
+  <section class="slide">
+    <div class="s-title">空格加星号 · 图一：右移的倒三角</div>
+    <div class="s-body">
+      <div class="two" style="margin-top:0;align-items:start;grid-template-columns:0.84fr 1.16fr">
+        <div>
+          <div class="s-sub" style="margin-top:0">先看图案（m = 5）：每行少一个，整体右移一格</div>
+          <div class="out" style="font-size:32px;line-height:1.25;letter-spacing:2px;padding:12px 22px">*****
+ ****
+  ***
+   **
+    *</div>
+          <div class="box warn" style="margin-top:12px"><span class="label">先想</span>第 i 行：先空几格、再打几个？</div>
+          <div class="reveal step">
+            <div class="box key" style="margin-top:0"><span class="label">拆成两组</span>第 i 行 ＝ 先空 <span class="tex"><i>i</i><span class="op">−</span><span class="num">1</span></span> 格，再打 <span class="tex"><i>m</i><span class="op">+</span><span class="num">1</span><span class="op">−</span><i>i</i></span> 个星号；<b>两个内循环并列</b>，先空后星。</div>
+          </div>
+        </div>
+        <div>
+          <div class="reveal step col">
+            <div class="s-sub orange" style="margin-top:0">把两组写成两个并列的内循环</div>
+            <pre class="code" style="font-size:32px"><span class="kw">for</span> (i = <span class="num">1</span>; i &lt;= m; i++) {
+    <span class="kw">for</span> (j = <span class="num">1</span>; j &lt; i; j++)
+        <span class="kw">printf</span>(<span class="str">" "</span>);      <span class="cmt">/* 空 */</span>
+    <span class="kw">for</span> (j = i; j &lt;= m; j++)
+        <span class="kw">printf</span>(<span class="str">"*"</span>);      <span class="cmt">/* 星 */</span>
+    <span class="kw">printf</span>(<span class="str">"\n"</span>);
+}</pre>
+          </div>
+          <div class="reveal step col">
+            <div class="box tip" style="margin-top:0"><span class="label">别漏</span>换行留在外层，一行只换一次；两个内循环都用 j，互不干扰。</div>
+          </div>
+        </div>
+      </div>
+      <div class="reveal-hint" data-label="点一下，接着看">点一下，接着看</div>
+    </div>
+  </section>
+
+  <!-- 12 空格加星号：金字塔② -->
+  <section class="slide">
+    <div class="s-title">空格加星号 · 图二：左右各多一个</div>
+    <div class="s-body">
+      <div class="two" style="margin-top:0;align-items:start;grid-template-columns:0.84fr 1.16fr">
+        <div>
+          <div class="s-sub" style="margin-top:0">再看图案（n = 5）：每往下一行，两边各多一个</div>
+          <div class="out" style="font-size:32px;line-height:1.15;letter-spacing:2px;padding:8px 22px">    *
+   ***
+  *****
+ *******
+*********</div>
+          <div class="box warn" style="margin-top:12px"><span class="label">先想</span>第 i 行：空几组空格？打几个星号？</div>
+          <div class="reveal step">
+            <div class="box key" style="margin-top:0"><span class="label">拆成两组</span>第 i 行 ＝ 先空 <span class="tex"><i>n</i><span class="op">−</span><i>i</i></span> 组空格，再打 <span class="tex"><span class="num">2</span><i>i</i><span class="op">−</span><span class="num">1</span></span> 个星号；<b>两个内循环并列</b>。</div>
+          </div>
+        </div>
+        <div>
+          <div class="reveal step col">
+            <div class="s-sub orange" style="margin-top:0">空格组 2 格一组，星号组连着打</div>
+            <pre class="code" style="font-size:32px"><span class="kw">for</span> (i = <span class="num">1</span>; i &lt;= n; i++) {
+    <span class="kw">for</span> (j = n; j &gt; i; j--)
+        <span class="kw">printf</span>(<span class="str">"  "</span>);     <span class="cmt">/* 空 */</span>
+    <span class="kw">for</span> (j = <span class="num">1</span>; j &lt;= <span class="num">2</span>*i-<span class="num">1</span>; j++)
+        <span class="kw">printf</span>(<span class="str">"* "</span>);     <span class="cmt">/* 星 */</span>
+    <span class="kw">printf</span>(<span class="str">"\n"</span>);
+}</pre>
+          </div>
+          <div class="reveal step col">
+            <div class="box tip" style="margin-top:0"><span class="label">为什么 <span class="tex"><span class="num">2</span><i>i</i><span class="op">−</span><span class="num">1</span></span></span>每往下一行左右各多 1 个：i=1 得 1 个、i=5 得 9 个，底边正好 <span class="tex"><span class="num">2</span><span class="op">×</span><span class="num">5</span><span class="op">−</span><span class="num">1</span></span>。</div>
+          </div>
+        </div>
+      </div>
+      <div class="reveal-hint" data-label="点一下，接着看">点一下，接着看</div>
+    </div>
+  </section>
+
+  <!-- 13 作业：四个图案 -->
+  <section class="slide">
+    <div class="s-title">作业：四个图案</div>
+    <div class="s-body">
+      <div class="s-sub" style="margin-top:0">用嵌套循环画出来（m 由键盘输入，先按 m=5 想）</div>
+      <div class="grid c4" style="margin-top:8px;align-items:stretch">
+        <div class="card"><h4><span class="ico">①</span>平行四边形</h4><pre style="font-family:Consolas,'Courier New',monospace;font-size:24px;line-height:1.22;margin:0;color:var(--blue-700)">*****
+ *****
+  *****
+   *****
+    *****</pre></div>
+        <div class="card orange"><h4><span class="ico">②</span>金字塔</h4><pre style="font-family:Consolas,'Courier New',monospace;font-size:24px;line-height:1.22;margin:0;color:var(--blue-700)">    *
+   ***
+  *****
+ *******
+*********</pre></div>
+        <div class="card green"><h4><span class="ico">③</span>菱形</h4><pre style="font-family:Consolas,'Courier New',monospace;font-size:24px;line-height:1.22;margin:0;color:var(--blue-700)">   *
+  ***
+ *****
+*******
+ *****
+  ***
+   *</pre></div>
+        <div class="card purple"><h4><span class="ico">④</span>空心塔</h4><pre style="font-family:Consolas,'Courier New',monospace;font-size:24px;line-height:1.22;margin:0;color:var(--blue-700)">    *
+   * *
+  *   *
+ *     *
+*       *</pre></div>
+      </div>
+      <div class="box key" style="margin-top:14px"><span class="label">分析三步</span>① 一共几行（外层次数）→ ② 第 i 行前面几个空格 → ③ 这一行几个星号。把 ② ③ 写成内层循环，就完事了。</div>
+      <div class="box tip" style="margin-top:10px"><span class="label">提示</span>图一每行整体右移一格：先空 i−1 格，再打固定个数；图三 = 图二的上半段 + 图二的倒影；图四每行只有边框两个星号，中间全打空格。</div>
+    </div>
+  </section>
+
+  <!-- 14 不许跳的两种跳转 -->
+  <section class="slide">
+    <div class="s-title">不许跳的两种跳转</div>
+    <div class="s-body">
+      <div class="s-sub" style="margin-top:0">层与层之间，有两条红线</div>
+      <div class="grid c2" style="margin-top:8px">
+        <div class="card red"><h4><span class="ico">✗</span>从外层跳进内层</h4><p>内层的初值和条件判断一次都没执行过，循环变量是个"脏值"——内层从哪儿开始算，谁也说不清。</p></div>
+        <div class="card red"><h4><span class="ico">✗</span>跳到同层的另一个循环</h4><p>并列的两个循环各有自己的入口和出口。跳过去等于中途插队，谁回到谁全乱套。</p></div>
+      </div>
+      <div class="box key" style="margin-top:14px"><span class="label">为什么禁</span>循环能正常工作，靠的是"从入口进、从出口出"。跳进去或横着跳，都绕过了入口：初值没赋、条件没判，后面的判断就失去意义。</div>
+      <div class="box tip" style="margin-top:10px"><span class="label">允许的方向</span>从内层<b>往外</b>跳不算违规——break、goto 都是"提前离场"，不是"中途插入"。</div>
+    </div>
+  </section>
+
+  <!-- 15 break 只跳一层，goto 跳全部 -->
+  <section class="slide">
+    <div class="s-title">break 只跳一层，goto 跳全部</div>
+    <div class="s-body">
+      <div class="two" style="margin-top:0;align-items:start">
+        <div>
+          <div class="s-sub" style="margin-top:0">break：只结束内层（三行都是 1 2 3）</div>
+          <pre class="code" style="font-size:32px"><span class="kw">for</span> (i = <span class="num">0</span>; i &lt; <span class="num">3</span>; i++) {
+    <span class="kw">for</span> (j = <span class="num">1</span>; j &lt;= <span class="num">4</span>; j++) {
+        <span class="kw">printf</span>(<span class="str">" %d"</span>, j);
+        <span class="kw">if</span> (j % <span class="num">3</span> == <span class="num">0</span>) <span class="kw">break</span>;
+    }
+    <span class="kw">printf</span>(<span class="str">"\n"</span>);
+}</pre>
+          <div class="out">1 2 3</div>
+        </div>
+        <div>
+          <div class="s-sub" style="margin-top:0">goto：一次跳出全部</div>
+          <pre class="code" style="font-size:32px"><span class="kw">for</span> (i = <span class="num">0</span>; i &lt; <span class="num">3</span>; i++) {
+    <span class="kw">for</span> (j = <span class="num">1</span>; j &lt;= <span class="num">4</span>; j++) {
+        <span class="kw">printf</span>(<span class="str">" %d"</span>, j);
+        <span class="kw">if</span> (j % <span class="num">3</span> == <span class="num">0</span>) <span class="kw">goto</span> out;
+    }
+}
+out: ;</pre>
+          <div class="out">1 2 3</div>
+        </div>
+      </div>
+      <div class="box warn" style="margin-top:14px"><span class="label">goto 不是首选</span>它能一次跳出全部，但把路径"剪断"了。<b>规范写法</b>：设标志逐层 break，或把内层包成函数用 return。</div>
+    </div>
+  </section>
+
+  <!-- 16 不用 goto：标志变量 -->
+  <section class="slide">
+    <div class="s-title">不用 goto：设个标志，让外层也停下</div>
+    <div class="s-body">
+      <div class="s-sub" style="margin-top:0">承接上一页：还是同一道题——不用 goto，怎么让外层也停下来？</div>
+      <div class="box warn" style="margin-top:8px;font-size:28px;line-height:1.45;padding:9px 22px"><span class="label">先想</span>内层 break 只能出内层；外层怎么知道该收工了？给两层之间传个信号。</div>
+      <div class="reveal step col">
+        <pre class="code" style="font-size:32px"><span class="kw">int</span> done;
+<span class="kw">for</span> (i = <span class="num">0</span>, done = <span class="num">0</span>; i &lt; <span class="num">3</span> &amp;&amp; !done; i++) {
+    <span class="kw">for</span> (j = <span class="num">1</span>; j &lt;= <span class="num">4</span>; j++) {
+        <span class="kw">printf</span>(<span class="str">" %d"</span>, j);
+        <span class="kw">if</span> (j % <span class="num">3</span> == <span class="num">0</span>) { done = <span class="num">1</span>; <span class="kw">break</span>; }
+    }
+}</pre>
+      </div>
+      <div class="reveal step col">
+        <div class="two" style="margin-top:0;align-items:start">
+          <div class="box key" style="margin-top:0;font-size:28px;line-height:1.45;padding:10px 22px"><span class="label">信号怎么传</span>内层 break 前置 <code class="inline">done = 1</code>，外层条件随即不成立；输出仍是 <b>1 2 3</b>。</div>
+          <div class="box tip" style="margin-top:0;font-size:28px;line-height:1.45;padding:10px 22px"><span class="label">等价写法</span>也可在外层末尾写 <code class="inline">if (done) break;</code>。层再深，就包成函数用 <code class="inline">return</code>。</div>
+        </div>
+      </div>
+      <div class="reveal-hint" data-label="点一下，接着看">点一下，接着看</div>
+    </div>
+  </section>
+
+  <!-- 17 回收引例：把它塞进外层循环 -->
+  <section class="slide">
+    <div class="s-title">回收引例：塞进外层循环</div>
+    <div class="s-body">
+      <div class="s-sub" style="margin-top:0">回到开头那道题：外层换数、内层判断——把"判断一个数"整段包进去</div>
+      <pre class="code" style="font-size:32px"><span class="kw">int</span> x, i, flag;
+<span class="kw">for</span> (x = <span class="num">2</span>; x &lt;= <span class="num">100</span>; x++) {                    <span class="cmt">/* 外层：换一个数 */</span>
+    flag = <span class="num">1</span>;                                   <span class="cmt">/* 每个数都要重新假设 */</span>
+    <span class="kw">for</span> (i = <span class="num">2</span>; i &lt;= sqrt(x); i++)              <span class="cmt">/* 内层：判断这个数 */</span>
+        <span class="kw">if</span> (x % i == <span class="num">0</span>) { flag = <span class="num">0</span>; <span class="kw">break</span>; }
+    <span class="kw">if</span> (flag) <span class="kw">printf</span>(<span class="str">"%d "</span>, x);                 <span class="cmt">/* 是素数就打印 */</span>
+}</pre>
+      <div class="two" style="margin-top:14px;align-items:start">
+        <div class="box key" style="margin-top:0"><span class="label">外层</span>管"现在轮到判定哪个数"——　x 从 2 走到 100。</div>
+        <div class="box warn" style="margin-top:0"><span class="label">内层</span>管"这个数能不能被整除"——　i 从 2 走到 <span class="tex"><span class="sq">&radic;<span class="sq-b"><i>x</i></span></span></span>。</div>
+      </div>
+      <div class="out" style="margin-top:12px">2 3 5 7 11 13 17 19 23 29 31 37 41 43 47 53 59 61 67 71 73 79 83 89 97</div>
+    </div>
+  </section>
+
+  <!-- 18 结构一眼看清：N-S 图 -->
+  <section class="slide">
+    <div class="s-title">结构一眼看清：N-S 图</div>
+    <div class="s-body">
+      <div style="display:grid;grid-template-columns:470px 1fr;gap:34px;align-items:start">
+        <div class="flow">
+          <div class="cap">外层转一圈，内层跑一遍</div>
+          <svg viewBox="0 0 320 400" style="max-width:440px">
+            <rect class="fc-ns" height="384" rx="10" width="304" x="8" y="8"></rect>
+            <path class="fc-ns-cond" d="M8,18 a10,10 0 0 1 10,-10 h284 a10,10 0 0 1 10,10 v48 h-226 v326 h-68 a10,10 0 0 1 -10,-10 v-364 z"></path>
+            <path class="fc-ns-cond" d="M86,150 H312 V202 H128 V324 H86 Z"></path>
+            <line class="fc-ns-line" x1="128" x2="312" y1="262" y2="262"></line>
+            <line class="fc-ns-line" x1="128" x2="312" y1="324" y2="324"></line>
+            <text class="fc-ns-t" font-size="24" font-weight="700" text-anchor="middle" x="160" y="45">当 x ≤ 100</text>
+            <text class="fc-ns-t" font-size="24" text-anchor="middle" x="199" y="100">flag = 1</text>
+            <text class="fc-ns-t" font-size="24" text-anchor="middle" x="199" y="134">i = 2</text>
+            <text class="fc-ns-t" font-size="24" font-weight="700" text-anchor="middle" x="199" y="184">当 i ≤ √<tspan font-style="italic">x</tspan></text>
+            <text class="fc-ns-t" font-size="24" text-anchor="middle" x="220" y="240">x % i == 0</text>
+            <text class="fc-ns-t" font-size="24" text-anchor="middle" x="220" y="301">flag=0; break</text>
+            <text class="fc-ns-t" font-size="24" text-anchor="middle" x="199" y="366">x++</text>
+          </svg>
+        </div>
+        <div>
+          <div class="box key" style="margin-top:0"><span class="label">读图顺序</span>从最外层往里读：x 每取一个新值，才轮到内层把 i 从 2 试到 <span class="tex"><span class="sq">&radic;<span class="sq-b"><i>x</i></span></span></span>。</div>
+          <div class="box tip"><span class="label">内层跑的时候</span>x <b>不动</b>——它只在自己那一层转完一圈后才加 1。</div>
+          <div class="box warn"><span class="label">嵌套的代价</span>外层的 99 圈 × 内层每圈十几次 ≈ 上千次判断，而代码只有 8 行。</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 19 内层变量必须重置 -->
+  <section class="slide">
+    <div class="s-title">内层变量必须重置</div>
+    <div class="s-body">
+      <div class="two" style="margin-top:0;align-items:start">
+        <div>
+          <div class="s-sub" style="margin-top:0;border-left-color:var(--red);color:var(--red)">✗ 内层变量只初始化一次</div>
+          <pre class="code" style="font-size:32px"><span class="kw">int</span> i = <span class="num">2</span>;
+<span class="kw">for</span> (x = <span class="num">2</span>; x &lt;= <span class="num">100</span>; x++) {
+    <span class="kw">for</span> ( ; i &lt;= sqrt(x); i++)
+        ...
+}</pre>
+        </div>
+        <div>
+          <div class="s-sub" style="margin-top:0">✓ 内层每一轮都从 2 开始</div>
+          <pre class="code" style="font-size:32px"><span class="kw">for</span> (x = <span class="num">2</span>; x &lt;= <span class="num">100</span>; x++) {
+    <span class="kw">for</span> (i = <span class="num">2</span>; i &lt;= sqrt(x); i++)
+        ...
+}</pre>
+        </div>
+      </div>
+      <div class="box red" style="margin-top:18px"><span class="label">后果</span>左边那种写法，i 判完前面的数已经走远了。轮到 6 时 <span class="tex"><i>i</i></span> 已经是 3，而 <span class="tex"><span class="num">3</span><span class="op">≤</span><span class="sq">&radic;<span class="sq-b"><span class="num">6</span></span></span><span class="op">≈</span><span class="num">2.4</span></span> 不成立——内层一次都没试，6 被当成素数。</div>
+      <div class="box tip" style="margin-top:10px"><span class="label">一句话</span>内层的初值必须写在<b>内层自己的 for 里</b>；写到外层外面，内层就只有第一次是对的。</div>
+    </div>
+  </section>
+
+  <!-- 20 运行追踪：9 到 12 -->
+  <section class="slide">
+    <div class="s-title">运行追踪：9 到 12</div>
+    <div class="s-body">
+      <div class="s-sub" style="margin-top:0">x 走一步，内层 i 就从 2 重新试一遍</div>
+      <table class="tb" style="font-size:28px;margin-top:8px">
+        <thead><tr><th style="width:10%">x</th><th style="width:42%">内层的 i 试了哪些</th><th style="width:26%">怎么离开内层</th><th style="width:22%">结论</th></tr></thead>
+        <tbody>
+          <tr><td>9</td><td>2、3（9 % 3 == 0）</td><td class="c-red">break</td><td>不是素数，不输出</td></tr>
+          <tr><td>10</td><td>2（10 % 2 == 0）</td><td class="c-red">break</td><td>不是素数，不输出</td></tr>
+          <tr><td>11</td><td>2、3，4 &gt; <span class="tex"><span class="sq">&radic;<span class="sq-b"><span class="num">11</span></span></span><span class="op">≈</span><span class="num">3.3</span></span> 停止</td><td class="c-blue">条件不成立</td><td class="c-green">是素数，输出 11</td></tr>
+          <tr><td>12</td><td>2（12 % 2 == 0）</td><td class="c-red">break</td><td>不是素数，不输出</td></tr>
+        </tbody>
+      </table>
+      <div class="box key" style="margin-top:14px"><span class="label">两种离开方式</span>break 是被"抓到因子"提前赶出来的；条件不成立是自己走完的。<b>只有后者</b>才说明"没有因子"。</div>
+      <div class="box tip" style="margin-top:10px"><span class="label">接上上一节</span>内层的 break 只跳出内层，外层的 x++ 照常执行——这正是前面"break 只跳一层"的直接应用。</div>
+    </div>
+  </section>
+
+  <!-- 21 枚举法：百钱百鸡 -->
+  <section class="slide">
+    <div class="s-title">枚举法：百钱百鸡</div>
+    <div class="s-body">
+      <div class="s-sub" style="margin-top:0">《张丘建算经》里的老问题：百钱买百鸡</div>
+      <div class="box key" style="margin-top:6px"><span class="label">题</span>公鸡一只 5 钱，母鸡一只 3 钱，小鸡 3 只 1 钱。用 <b>100 钱</b>买 <b>100 只鸡</b>，三种鸡各多少只？</div>
+      <table class="tb" style="font-size:28px;margin-top:12px">
+        <thead><tr><th style="width:14%">对象</th><th style="width:12%">设为</th><th style="width:32%">可能取值</th><th style="width:42%">范围怎么来的</th></tr></thead>
+        <tbody>
+          <tr><td>公鸡</td><td>x</td><td>1 ~ 20</td><td>100 钱全买公鸡，最多 20 只</td></tr>
+          <tr><td>母鸡</td><td>y</td><td>1 ~ 33</td><td>100 钱全买母鸡，最多 33 只</td></tr>
+          <tr><td>小鸡</td><td>z</td><td>3、6、9 … 100</td><td>3 只 1 钱，只能是 3 的倍数</td></tr>
+        </tbody>
+      </table>
+      <div class="box tip" style="margin-top:12px"><span class="label">枚举法</span>也叫穷举、遍历：把每个未知数能取的整数<b>逐个试一遍</b>，同时满足 <span class="tex"><i>x</i><span class="op">+</span><i>y</i><span class="op">+</span><i>z</i><span class="op">=</span><span class="num">100</span></span> 和 <span class="tex"><span class="num">5</span><i>x</i><span class="op">+</span><span class="num">3</span><i>y</i><span class="op">+</span><i>z</i><span class="op">/</span><span class="num">3</span><span class="op">=</span><span class="num">100</span></span> 的就是一组解。</div>
+    </div>
+  </section>
+
+  <!-- 22 三重遍历与 21780 次 -->
+  <section class="slide">
+    <div class="s-title">三重遍历与 21780 次</div>
+    <div class="s-body">
+      <div class="s-sub" style="margin-top:0">三个未知数 → 三层循环，一层管一个</div>
+      <pre class="code" style="font-size:32px"><span class="kw">for</span> (x = <span class="num">1</span>; x &lt;= <span class="num">20</span>; x++)
+  <span class="kw">for</span> (y = <span class="num">1</span>; y &lt;= <span class="num">33</span>; y++)
+    <span class="kw">for</span> (z = <span class="num">3</span>; z &lt;= <span class="num">100</span>; z += <span class="num">3</span>)
+      <span class="kw">if</span> (x + y + z == <span class="num">100</span> &amp;&amp; <span class="num">5</span> * x + <span class="num">3</span> * y + z / <span class="num">3</span> == <span class="num">100</span>)
+        <span class="kw">printf</span>(<span class="str">"x=%d, y=%d, z=%d\n"</span>, x, y, z);</pre>
+      <div class="two" style="margin-top:12px;align-items:start">
+        <div class="out" style="margin-top:0">x=4, y=18, z=78
+x=8, y=11, z=81
+x=12, y=4, z=84</div>
+        <div class="box red" style="margin-top:0"><span class="label">代价</span><span class="tex"><span class="num">20</span><span class="op">×</span><span class="num">33</span><span class="op">×</span><span class="num">33</span><span class="op">≈</span></span> <b>21780</b> 次判断。电脑一秒就跑完，但每次判断都有成本——思路值不值？</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 23 优化：二重遍历 660 次 -->
+  <section class="slide">
+    <div class="s-title">优化：二重遍历 660 次</div>
+    <div class="s-body">
+      <div class="s-sub" style="margin-top:0">能算出来的量，不必再枚举</div>
+      <div class="box key" style="margin-top:6px"><span class="label">关键一步</span>三个数加起来必须是 100：<b><span class="tex"><i>z</i><span class="op">=</span><span class="num">100</span><span class="op">−</span><i>x</i><span class="op">−</span><i>y</i></span></b>。z 一旦能用 x、y 直接算出来，第三层循环就多余了。</div>
+      <pre class="code" style="font-size:32px;margin-top:12px"><span class="kw">for</span> (x = <span class="num">1</span>; x &lt;= <span class="num">20</span>; x++)
+  <span class="kw">for</span> (y = <span class="num">1</span>; y &lt;= <span class="num">33</span>; y++) {
+    z = <span class="num">100</span> - x - y;                        <span class="cmt">/* 直接算，不循环 */</span>
+    <span class="kw">if</span> (z % <span class="num">3</span> == <span class="num">0</span> &amp;&amp; <span class="num">5</span> * x + <span class="num">3</span> * y + z / <span class="num">3</span> == <span class="num">100</span>)
+        <span class="kw">printf</span>(<span class="str">"x=%d, y=%d, z=%d\n"</span>, x, y, z);
+  }</pre>
+      <div class="two" style="margin-top:12px;align-items:start">
+        <div class="box tip" style="margin-top:0"><span class="label">结果一模一样</span>还是那三组解，判断次数从 21780 降到 <b>660</b>（<span class="tex"><span class="num">20</span><span class="op">×</span><span class="num">33</span></span>）。</div>
+        <div class="box warn" style="margin-top:0"><span class="label">别忘了 3 的倍数</span>先判 <code class="inline">z % 3 == 0</code> 再除，否则 <code class="inline">z/3</code> 会把小数截掉，算出假解。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 24 爱因斯坦阶梯 -->
+  <section class="slide">
+    <div class="s-title">爱因斯坦阶梯</div>
+    <div class="s-body">
+      <div class="s-sub" style="margin-top:0">条件越多，能试的范围就越窄</div>
+      <div class="grid c3" style="margin-top:6px">
+        <div class="card"><h4><span class="ico">①</span>2 阶余 1</h4><p>n % 2 == 1</p></div>
+        <div class="card orange"><h4><span class="ico">②</span>3 阶余 2</h4><p>n % 3 == 2</p></div>
+        <div class="card green"><h4><span class="ico">③</span>5 阶余 4、6 阶余 5</h4><p>n%5==4 且 n%6==5</p></div>
+      </div>
+      <div class="box key" style="margin-top:12px"><span class="label">还有一条</span>每步 7 阶正好到顶 → n 是 7 的倍数，<b>只让 n 取 7 的倍数</b>，一层循环就够。</div>
+      <pre class="code" style="font-size:32px;margin-top:12px"><span class="kw">for</span> (n = <span class="num">7</span>; ; n += <span class="num">7</span>)              <span class="cmt">/* 只试 7 的倍数 */</span>
+    <span class="kw">if</span> (n % <span class="num">2</span> == <span class="num">1</span> &amp;&amp; n % <span class="num">3</span> == <span class="num">2</span> &amp;&amp; n % <span class="num">5</span> == <span class="num">4</span> &amp;&amp; n % <span class="num">6</span> == <span class="num">5</span>) {
+        <span class="kw">printf</span>(<span class="str">"%d\n"</span>, n);
+        <span class="kw">break</span>;                        <span class="cmt">/* 要的是最小解，找到就停 */</span>
+    }</pre>
+      <div class="box tip" style="margin-top:12px"><span class="label">答案</span>119 级。这和上一页是同一个思想：<b>先用条件把范围缩小，再枚举</b>。</div>
+    </div>
+  </section>
+
+  <!-- 25 填空：XYZ + YZZ = 532 -->
+  <section class="slide">
+    <div class="s-title">填空：XYZ + YZZ = 532</div>
+    <div class="s-body">
+      <div class="s-sub" style="margin-top:0">三层循环也能拿来"解方程"</div>
+      <pre class="code" style="font-size:32px"><span class="kw">int</span> x, y, z, k, result = <span class="num">532</span>;
+<span class="kw">for</span> (x = <span class="num">1</span>; x &lt; <span class="num">10</span>; x++)
+<span class="kw">for</span> (y = <span class="num">1</span>; y &lt; <span class="num">10</span>; y++)
+<span class="kw">for</span> (z = ___①___; ___②___; z++) {
+    k = ___③___ + (<span class="num">100</span> * y + <span class="num">10</span> * z + z);
+    <span class="kw">if</span> (k == result) <span class="kw">printf</span>(<span class="str">"X=%d, Y=%d, Z=%d\n"</span>, x, y, z);
+}</pre>
+      <div class="reveal-hint" style="margin-top:10px">👉 点击看答案</div>
+      <div class="reveal">
+        <div class="box key"><span class="label">答案</span>① <code class="inline">0</code>　② <code class="inline">z &lt; 10</code>　③ <code class="inline">100 * x + 10 * y + z</code>
+          <br>z 是个位数字，最小 0、最大 9；结果是 321 + 211 = 532，所以 X=3、Y=2、Z=1。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 26 循环设计五问 -->
+  <section class="slide">
+    <div class="s-title">循环设计五问</div>
+    <div class="s-body">
+      <div class="s-sub" style="margin-top:0">动手写循环之前，先回答这五个问题</div>
+      <ul class="feat" style="margin-top:6px">
+        <li><span class="k">① 涉及哪些变量</span><span class="v">谁是"数数的"，谁是"存结果的"</span></li>
+        <li><span class="k">② 初值给什么</span><span class="v">从几开始？累加器置 0、标志置 1</span></li>
+        <li><span class="k">③ 怎么变</span><span class="v">每轮加多少：i++ / z += 3 / n += 7</span></li>
+        <li><span class="k">④ 何时继续</span><span class="v">条件要写成"还应该继续"的样子，别按"何时停"来写</span></li>
+        <li><span class="k">⑤ 结束后怎么用</span><span class="v">循环停下时变量的值，就是你要的结果吗？</span></li>
+      </ul>
+      <div class="box key" style="margin-top:16px"><span class="label">拿百钱百鸡对一遍</span>变量 x、y；初值都从 1；每轮加 1；条件是"还没试完"；结束后不用收尾——解在循环里就打印了。</div>
+    </div>
+  </section>
+
+  <!-- 27 易错点清单 -->
+  <section class="slide">
+    <div class="s-title">易错点清单</div>
+    <div class="s-body">
+      <ul class="feat" style="margin-top:0">
+        <li><span class="k">内层忘了重置</span><span class="v">内层变量写在外层外面，只有第一个数是对的</span></li>
+        <li><span class="k">内外层同名</span><span class="v">内层把外层的计数变量改掉，循环次数直接错</span></li>
+        <li><span class="k">大括号漏了</span><span class="v">内层只管住一句，<code class="inline">printf("\n")</code> 掉进内层，结果变成一列</span></li>
+        <li><span class="k">换行写在内层</span><span class="v">每个星号后都换行，图形立起来变成竖线</span></li>
+        <li><span class="k">想用 break 跳两层</span><span class="v">break 只跳一层；要跳全部得设标志逐层 break 或用 goto</span></li>
+        <li><span class="k">循环写反了</span><span class="v">外层管行、内层管列——反过来写，图形就转 90°</span></li>
+      </ul>
+      <div class="box tip" style="margin-top:14px"><span class="label">自查方法</span>把 m、n 取成 2 或 3，用手指在纸上走一遍循环，比盯着屏幕看快得多。</div>
+    </div>
+  </section>
+
+  <!-- 28 小结：四句话 -->
+  <section class="slide">
+    <div class="s-title">小结：四句话</div>
+    <div class="s-body">
+      <div class="grid c2" style="margin-top:0;align-items:stretch">
+        <div class="card"><h4><span class="ico">①</span>结构</h4><p>循环体里再放一个完整循环，就是嵌套；外层管"第几轮"，内层管"每轮做什么"。</p></div>
+        <div class="card orange"><h4><span class="ico">②</span>节奏</h4><p>外层 1 次 = 内层 1 整遍；内层跑的时候外层变量不动。总次数 = 外 × 内。</p></div>
+        <div class="card green"><h4><span class="ico">③</span>三条纪律</h4><p>内外变量不同名；内层初值写在里层；break 只跳一层（跳出全部用 goto 或标志）。</p></div>
+        <div class="card purple"><h4><span class="ico">④</span>两个用途</h4><p>画图形（行 × 列）与枚举（每个未知数一层，能算的不枚举）。</p></div>
+      </div>
+      <div class="box key" style="margin-top:16px"><span class="label">什么时候该想到嵌套</span>只要出现"<b>对每一个 A，都要做一遍关于 B 的事</b>"——素数、乘法表、图形、不定方程，都是这一句话。</div>
+    </div>
+  </section>
+
+  <!-- 29 分层练习 -->
+  <section class="slide">
+    <div class="s-title">分层练习</div>
+    <div class="s-body">
+      <div class="grid c3" style="margin-top:0;align-items:stretch">
+        <div class="card"><h4><span class="ico">A</span>基础</h4><p>① 输出 1~1000 的所有素数，每行 10 个。<br>② 打印 m 行 n 列矩形（m、n 键盘输入）。<br>③ 求 1! + 2! + … + n!。</p></div>
+        <div class="card orange"><h4><span class="ico">B</span>提高</h4><p>① 输出 1000 以内的完全数（因子和等于自身）。<br>② 打印九九乘法表的下三角，列对齐。<br>③ 用二重循环求 1 + (1+2) + … + (1+…+n)。</p></div>
+        <div class="card green"><h4><span class="ico">C</span>挑战</h4><p>① 百钱百鸡再优化：只遍历 x、z，比较次数。<br>② 空心菱形与沙漏（m 行）。<br>③ 爱因斯坦阶梯：若要求台阶在 1000 以内，共有几个解？</p></div>
+      </div>
+      <div class="box tip" style="margin-top:16px"><span class="label">作业要求</span>每题先写清"外层做什么、内层做什么"，再动手敲代码；交作业时把这两句话写在注释里。</div>
+    </div>
+  </section>
+
+  <!-- 30 结束页 -->
+<section class="slide end">
+    <div class="end-inner">
+      <h2>谢　谢</h2>
+      <p>下一讲：循环中的输入问题与"解决问题的方法"</p>
+    </div>
+  </section>
+
+
+
+  <!-- 导航 UI（无需改动） -->
+  <div class="pageinfo"><b id="cur">1</b> / <span id="total">31</span></div>
+  <div class="nav">
+    <button class="tocbtn" id="btnToc" title="目录（按 O 键）">目录</button>
+    <button id="btnPrev" title="上一页（←）">‹</button>
+    <button id="btnNext" title="下一页（→ / 空格）">›</button>
+  </div>
+  <div class="keyhint" id="keyhint">← → 翻页　·　空格下一页　·　拖动选中文字可直接复制　·　B 黑屏　·　O 目录　·　Esc 关闭</div>
+  <div class="progress" id="progress"></div>
+  <div class="toc" id="toc">
+    <button class="toc-close" id="btnTocClose">关闭 ✕</button>
+    <h3>目录</h3>
+    <div class="toc-bar"></div>
+    <div class="toc-list" id="tocList"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+/* 极简 LaTeX 子集渲染：\(\sqrt{x}\)、x^2、a_{i}、\frac、希腊字母与常见运算符
+   零依赖，断网可用。转成 HTML 片段（.tex 命名空间内）。 */
+function texToHtml(src){
+  var SYM = {
+    le:'<=', leq:'<=', ge:'>=', geq:'>=', ne:'!=', neq:'!=', approx:'~',
+    times:'*', div:'/', cdot:'.', pm:'+-', mp:'-+', infty:'oo', pi:'pi',
+    alpha:'a', beta:'b', gamma:'c', theta:'t', lambda:'l', mu:'m', omega:'w',
+    to:'->', rightarrow:'->', Rightarrow:'=>', bmod:' mod ', '%':'%',
+    sin:'sin', cos:'cos', tan:'tan', log:'log', ln:'ln', max:'max', min:'min', exp:'exp'
+  };
+  var HTML = {
+    le:'&le;', leq:'&le;', ge:'&ge;', geq:'&ge;', ne:'&ne;', neq:'&ne;',
+    approx:'&asymp;', times:'&times;', div:'&divide;', cdot:'&middot;',
+    pm:'&plusmn;', mp:'&#8723;', infty:'&infin;', pi:'&pi;', alpha:'&alpha;',
+    beta:'&beta;', gamma:'&gamma;', theta:'&theta;', lambda:'&lambda;',
+    mu:'&mu;', omega:'&omega;', to:'&rarr;', rightarrow:'&rarr;',
+    Rightarrow:'&rArr;', bmod:'<span class="fn">mod</span>', '%':'%'
+  };
+  var FN = {sin:1,cos:1,tan:1,log:1,ln:1,max:1,min:1,exp:1};
+
+  var s = String(src), i = 0;
+
+  function esc(t){ return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  function macro(){
+    var m = /^\\([a-zA-Z]+|[\s\S])/.exec(s.slice(i));
+    if(!m){ i++; return ''; }
+    var name = m[1]; i += m[0].length;
+    if(name === 'frac'){
+      var a = arg(), b = arg();
+      return '<span class="fx"><span class="fx-n">'+a+'</span><span class="fx-d">'+b+'</span></span>';
+    }
+    if(name === 'sqrt'){ return '<span class="sq">&radic;<span class="sq-b">'+arg()+'</span></span>'; }
+    if(name === 'text' || name === 'mathrm'){ return '<span class="up">'+esc(rawArg())+'</span>'; }
+    if(HTML[name] !== undefined){
+      return FN[name] ? '<span class="fn">'+name+'</span>' : '<span class="op">'+HTML[name]+'</span>';
+    }
+    if(name === '\\'){ return '<br>'; }
+    return esc(name);
+  }
+
+  function arg(){
+    if(s[i] === '{'){
+      i++;
+      var r = parse();
+      if(s[i] === '}') i++;
+      return r;
+    }
+    if(s[i] === '\\'){
+      var m = /^\\([a-zA-Z]+|[\s\S])/.exec(s.slice(i));
+      var nm = m[1]; i += m[0].length;
+      if(HTML[nm] !== undefined) return FN[nm] ? '<span class="fn">'+nm+'</span>' : '<span class="op">'+HTML[nm]+'</span>';
+      return '<i>'+esc(nm)+'</i>';
+    }
+    var c = s[i]; i++;
+    if(c === undefined) return '';
+    if(/[0-9a-zA-Z]/.test(c)) return '<i>'+c+'</i>';
+    return '<span class="op">'+esc(c)+'</span>';
+  }
+
+  function rawArg(){
+    if(s[i] === '{'){
+      var d = 0, st = i + 1;
+      for(var k = i; k < s.length; k++){
+        if(s[k] === '{') d++;
+        else if(s[k] === '}'){ d--; if(d === 0){ var out = s.slice(st, k); i = k + 1; return out; } }
+      }
+      i = s.length; return s.slice(st);
+    }
+    var c2 = s[i]; i++;
+    return c2 || '';
+  }
+
+  function parse(){
+    var out = '';
+    while(i < s.length){
+      var c = s[i];
+      if(c === '}') break;
+      if(c === '\\'){ out += macro(); continue; }
+      if(c === '^' || c === '_'){
+        i++;
+        var a2 = arg();
+        out += (c === '^') ? '<sup>'+a2+'</sup>' : '<sub>'+a2+'</sub>';
+        continue;
+      }
+      if(c === '{'){ i++; out += parse(); if(s[i] === '}') i++; continue; }
+      if(c === ' '){ i++; out += ' '; continue; }
+      if(c === '-'){ i++; out += '<span class="op">&minus;</span>'; continue; }
+      if(/[0-9.]/.test(c)){
+        var n = /^[0-9.]+/.exec(s.slice(i))[0]; i += n.length;
+        out += '<span class="num">'+n+'</span>'; continue;
+      }
+      if(/[a-zA-Z]/.test(c)){ i++; out += '<i>'+c+'</i>'; continue; }
+      i++;
+      out += '<span class="op">'+esc(c)+'</span>';
+    }
+    return out;
+  }
+
+  return parse();
+}
+
+/* 浏览器端：把文档里 \( ... \) 的文本节点转成 .tex 片段 */
+function texScan(root){
+  if(!root) root = document.body;
+  var it = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null, false);
+  var nodes = [], n;
+  while((n = it.nextNode())) nodes.push(n);
+  for(var k = 0; k < nodes.length; k++){
+    var node = nodes[k];
+    var t = node.nodeValue;
+    if(t.indexOf('\\(') < 0 || t.indexOf('\\)') < 0) continue;
+    var host = node.parentNode;
+    if(!host || /^(SCRIPT|STYLE|PRE|CODE)$/.test(host.tagName)) continue;
+    var parts = t.split(/(\\\([\s\S]*?\\\))/);
+    if(parts.length < 2) continue;
+    var frag = document.createDocumentFragment();
+    for(var p = 0; p < parts.length; p++){
+      var seg = parts[p];
+      if(!seg) continue;
+      if(seg.slice(0,2) === '\\(' && seg.slice(-2) === '\\)'){
+        var sp = document.createElement('span');
+        sp.className = 'tex';
+        sp.innerHTML = texToHtml(seg.slice(2, -2));
+        frag.appendChild(sp);
+      } else {
+        frag.appendChild(document.createTextNode(seg));
+      }
+    }
+    host.replaceChild(frag, node);
+  }
+}
+
+
+  try { texScan(document.body); } catch(e){ console.warn('texScan', e); }
+})();
+</script>
+
+<script>
+(function(){
+  var stage   = document.getElementById('stage');
+  var slides  = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var total   = slides.length;
+  var cur     = 0;
+  var curEl   = document.getElementById('cur');
+  var pageinfo = document.querySelector('.pageinfo');
+  var bar     = document.getElementById('progress');
+  var btnPrev = document.getElementById('btnPrev');
+  var btnNext = document.getElementById('btnNext');
+  var toc     = document.getElementById('toc');
+  var tocList = document.getElementById('tocList');
+  var keyhint = document.getElementById('keyhint');
+
+  document.getElementById('total').textContent = total;
+
+  // 将每页正文内容包裹进 .fit，便于按高度自动等比缩放，彻底杜绝溢出被裁切
+  slides.forEach(function(slide){
+    var body = slide.querySelector('.s-body');
+    if(!body) return;
+    var fit = document.createElement('div');
+    fit.className = 'fit';
+    while(body.firstChild){ fit.appendChild(body.firstChild); }
+    body.appendChild(fit);
+  });
+
+  // 若正文高度超出可视区，则整体等比缩放至恰好放得下（仅在当前页测量）
+  // 若正文高度超出可视区，则整体等比缩放至恰好放得下（仅在当前页测量）
+  // 补丁（2026-10-27）：缩放时把 .fit 宽度按 1/s 加宽再整体缩回（origin 左上），
+  // 使缩小后仍占满整行宽，避免“内容挤在中间、左右两侧大片留白”。
+  function fitSlide(slide){
+    if(!slide) return;
+    var body = slide.querySelector('.s-body');
+    var fit  = slide.querySelector('.fit');
+    if(!body || !fit) return;
+    fit.style.transform = 'none';
+    fit.style.width = '';
+    var avail = body.clientHeight;
+    var s = 1;
+    for(var i = 0; i < 3; i++){
+      var natural = fit.scrollHeight;
+      if(natural <= avail + 1) break;
+      var s2 = Math.min(1, avail / natural);
+      if(Math.abs(s2 - s) < 0.004) break;
+      s = s2;
+      fit.style.width = (100 / s) + '%';
+    }
+    if(s < 1){
+      fit.style.transform = 'scale(' + s + ')';
+      fit.style.transformOrigin = 'top left';
+    } else {
+      fit.style.width = '';
+    }
+  }
+
+  // 分步揭示：本页有 .reveal.step 就一次放一条（先想→再看→最后提醒），
+  // 没有 .step 的页面维持原来的"一次全放"
+  function hasPendingReveal(){
+    var s = slides[cur];
+    return !!(s && s.querySelector('.reveal:not(.shown)'));
+  }
+  // 逐行对照表：被揭示时才播放"一行行长出来"，避免藏在折叠里先播完
+  function restartRows(el){
+    if(!el) return;
+    el.querySelectorAll('.grow-row').forEach(function(r){
+      r.style.animation = 'none';
+      void r.offsetWidth;
+      r.style.animation = '';
+    });
+  }
+  function updateRevealHint(s){
+    var h = s.querySelector('.reveal-hint');
+    if(!h) return;
+    if(!h.hasAttribute('data-label')) h.setAttribute('data-label', h.textContent.replace(/（\d+ \/ \d+）$/, '').trim());
+    var base = h.getAttribute('data-label');
+    var steps = s.querySelectorAll('.reveal.step');
+    var done = s.querySelectorAll('.reveal.step.shown');
+    var pend = s.querySelectorAll('.reveal:not(.shown)').length;
+    if(!pend){ h.classList.add('gone'); return; }
+    h.classList.remove('gone');
+    h.textContent = steps.length ? base + '（' + (done.length + 1) + ' / ' + steps.length + '）' : base;
+  }
+  function revealAnswers(){
+    var s = slides[cur];
+    if(!s) return false;
+    var pending = s.querySelectorAll('.reveal:not(.shown)');
+    if(!pending.length) return false;
+    var steps = s.querySelectorAll('.reveal.step:not(.shown)');
+    if(steps.length){
+      steps[0].classList.add('shown');
+      restartRows(steps[0]);
+    } else {
+      pending.forEach(function(el){ el.classList.add('shown'); restartRows(el); });
+    }
+    updateRevealHint(s);
+    fitSlide(s);
+    setTimeout(function(){ fitSlide(s); }, 560);
+    return true;
+  }
+
+  // 目录：按“页面索引 i : 目录文字 t”维护，分组数量任意（CSS 默认 5 列）
+  var tocGroups = [
+    {
+      title: '开场',
+      items: [
+        { i: 0, t: '封面' },
+        { i: 1, t: '三种循环回顾' }
+      ]
+    },
+    {
+      title: '引例：素数',
+      items: [
+        { i: 2, t: '100 以内的素数' },
+        { i: 3, t: '判断一个数' }
+      ]
+    },
+    {
+      title: '嵌套入门',
+      items: [
+        { i: 4, t: '循环嵌套' },
+        { i: 5, t: '两条铁律' },
+        { i: 6, t: '变量不同名' }
+      ]
+    },
+    {
+      title: '画图形',
+      items: [
+        { i: 7, t: 'm 行 n 列' },
+        { i: 8, t: '递增三角' },
+        { i: 9, t: '递减三角' },
+        { i: 10, t: '九九乘法表' },
+        { i: 11, t: '金字塔① 倒三角' },
+        { i: 12, t: '金字塔② 等腰塔' },
+        { i: 13, t: '作业四图' }
+      ]
+    },
+    {
+      title: '两种跳转',
+      items: [
+        { i: 14, t: '禁止的跳转' },
+        { i: 15, t: 'break 与 goto' },
+        { i: 16, t: '规范写法：标志变量' }
+      ]
+    },
+    {
+      title: '回收引例：素数',
+      items: [
+        { i: 17, t: '塞进外层循环' },
+        { i: 18, t: 'N-S 结构图' },
+        { i: 19, t: '内层要重置' },
+        { i: 20, t: '运行追踪' }
+      ]
+    },
+    {
+      title: '枚举',
+      items: [
+        { i: 21, t: '百钱百鸡' },
+        { i: 22, t: '三重遍历' },
+        { i: 23, t: '优化到二重' },
+        { i: 24, t: '爱因斯坦阶梯' }
+      ]
+    },
+    {
+      title: '收束',
+      items: [
+        { i: 25, t: '填空练习' },
+        { i: 26, t: '设计五问' },
+        { i: 27, t: '易错点' },
+        { i: 28, t: '小结' },
+        { i: 29, t: '分层练习' },
+        { i: 30, t: '结束页' }
+      ]
+    }
+  ];
+
+  tocGroups.forEach(function(group){
+    var g = document.createElement('div');
+    g.className = 'toc-group';
+    var h = document.createElement('div');
+    h.className = 'toc-group-title';
+    h.textContent = group.title;
+    g.appendChild(h);
+    group.items.forEach(function(item){
+      var a = document.createElement('a');
+      a.textContent = item.t;
+      a.onclick = function(){ go(item.i); closeToc(); };
+      g.appendChild(a);
+    });
+    tocList.appendChild(g);
+  });
+
+  function resize(){
+    var s = Math.min(window.innerWidth / 1600, window.innerHeight / 900);
+    stage.style.setProperty('--s', s);
+    fitSlide(slides[cur]);
+  }
+  window.addEventListener('resize', resize);
+
+  function go(i){
+    cur = Math.max(0, Math.min(total - 1, i));
+    hideCopyTip();
+    if (window.getSelection) window.getSelection().removeAllRanges();  // 翻页后清掉上一页的选中，避免误复制
+    slides.forEach(function(s, k){ s.classList.toggle('active', k === cur); });
+    curEl.textContent = cur + 1;
+    // 封面与结束页不显示页码徽标
+    var isCover = slides[cur].classList.contains('cover') || slides[cur].classList.contains('end');
+    pageinfo.style.visibility = isCover ? 'hidden' : 'visible';
+    bar.style.width = ((cur + 1) / total * 100) + '%';
+    btnPrev.disabled = (cur === 0);
+    btnNext.disabled = (cur === total - 1);
+    fitSlide(slides[cur]);
+    updateRevealHint(slides[cur]);
+  }
+
+  btnPrev.onclick = function(){ go(cur - 1); this.blur(); hideHint(); };
+  btnNext.onclick = function(){ if(hasPendingReveal()){ revealAnswers(); this.blur(); hideHint(); return; } go(cur + 1); this.blur(); hideHint(); };
+
+  function openToc(){ toc.classList.add('show'); }
+  function closeToc(){ toc.classList.remove('show'); }
+  document.getElementById('btnToc').onclick = function(){
+    toc.classList.contains('show') ? closeToc() : openToc();
+    this.blur();
+  };
+  document.getElementById('btnTocClose').onclick = function(){
+    closeToc(); this.blur();
+  };
+
+  document.addEventListener('keydown', function(e){
+    var k = e.key;
+
+    // 放大镜开启期间屏蔽全部全局快捷键，避免调整滑块（←/↑/PageUp/Backspace）时误翻页
+    if (document.body.classList.contains('loupe-on')) return;
+
+    // Ctrl/Cmd + A：一键选中本页正文（方便整页复制），不翻页
+    if ((e.ctrlKey || e.metaKey) && (k === 'a' || k === 'A')) {
+      e.preventDefault();
+      var bodyEl = slides[cur].querySelector('.s-body');
+      if (bodyEl && window.getSelection) {
+        var rng = document.createRange();
+        rng.selectNodeContents(bodyEl);
+        var sel = window.getSelection();
+        sel.removeAllRanges(); sel.addRange(rng);
+        setTimeout(showCopyTip, 30);
+      }
+      return;
+    }
+
+    if (toc.classList.contains('show')) {
+      if (k === 'Escape' || k === 'o' || k === 'O') { e.preventDefault(); closeToc(); }
+      return;
+    }
+
+    if (k === 'ArrowRight' || k === 'ArrowDown' || k === 'PageDown' ||
+        k === ' ' || k === 'Enter') {
+      e.preventDefault();
+      if (hasPendingReveal()) { revealAnswers(); hideHint(); return; }
+      go(cur + 1); hideHint();
+    } else if (k === 'ArrowLeft' || k === 'ArrowUp' || k === 'PageUp' ||
+               k === 'Backspace') {
+      e.preventDefault(); go(cur - 1); hideHint();
+    } else if (k === 'Home') {
+      e.preventDefault(); go(0); hideHint();
+    } else if (k === 'End') {
+      e.preventDefault(); go(total - 1); hideHint();
+    } else if (k === 'o' || k === 'O') {
+      e.preventDefault(); openToc();
+    } else if (k === 'b' || k === 'B' || k === '.') {
+      e.preventDefault();
+      document.body.classList.toggle('blackout');
+    }
+  });
+
+  var wheelLock = false;
+  document.addEventListener('wheel', function(e){
+    // 放大镜开启期间屏蔽滚轮翻页，避免滚轮落在设置面板上时误翻页
+    if (document.body.classList.contains('loupe-on')) return;
+    if (toc.classList.contains('show')) return;
+    if (wheelLock) return;
+    wheelLock = true;
+    setTimeout(function(){ wheelLock = false; }, 420);
+    if (e.deltaY > 0) go(cur + 1); else go(cur - 1);
+    hideHint();
+  }, { passive: true });
+
+  /* ===== 文本选中 / 复制：选中、拖选、长按一律不翻页 ===== */
+  var press = { x: 0, y: 0, t: 0, moved: false, hadSel: false };
+  var copyTip = document.createElement('div');
+  copyTip.id = 'copyTip';
+  copyTip.innerHTML = '<span id="copyTipTx">已选中 0 字</span>'
+    + '<span class="kbd">Ctrl</span><span class="kbd">C</span>'
+    + '<button type="button" id="copyTipBtn">复制</button>';
+  document.body.appendChild(copyTip);
+  var copyTipTx  = document.getElementById('copyTipTx');
+  var copyTipBtn = document.getElementById('copyTipBtn');
+  var copyTimer  = null;
+
+  function selText(){
+    var s = window.getSelection ? window.getSelection() : null;
+    return s ? String(s).replace(/\s+$/, '') : '';
+  }
+  function hideCopyTip(){ clearTimeout(copyTimer); if (copyTip) copyTip.classList.remove('on'); }
+  function showCopyTip(){
+    var t = selText();
+    if (!t || document.body.classList.contains('loupe-on')) { hideCopyTip(); return; }
+    copyTipTx.innerHTML = '已选中 <b>' + t.length + '</b> 字';
+    copyTipBtn.textContent = '复制';
+    copyTip.classList.add('on');
+    clearTimeout(copyTimer);
+    copyTimer = setTimeout(hideCopyTip, 4000);
+  }
+  function copySel(){
+    var t = selText();
+    if (!t) return;
+    var done = function(){
+      copyTipBtn.textContent = '已复制 ✓';
+      clearTimeout(copyTimer);
+      copyTimer = setTimeout(hideCopyTip, 900);
+    };
+    function fallback(){
+      var ta = document.createElement('textarea');
+      ta.value = t; ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0;';
+      document.body.appendChild(ta);
+      ta.select();
+      try { if (document.execCommand('copy')) done(); } catch (err) {}
+      document.body.removeChild(ta);
+    }
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(t).then(done, fallback);
+    } else {
+      fallback();
+    }
+  }
+  copyTipBtn.addEventListener('mousedown', function(e){ e.preventDefault(); e.stopPropagation(); });
+  copyTipBtn.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); copySel(); });
+  copyTip.addEventListener('click', function(e){ e.stopPropagation(); });
+
+  document.addEventListener('mousedown', function(e){
+    if (e.button !== 0) return;
+    if (copyTip.contains(e.target)) return;   // 点"复制"按钮：不当作翻页动作
+    press.x = e.clientX; press.y = e.clientY; press.t = Date.now();
+    press.moved = false;
+    press.hadSel = !!selText();          // 按下前已有选中内容 → 这一下是"取消选中"，不是翻页
+    hideCopyTip();
+  });
+  document.addEventListener('mousemove', function(e){
+    if (!press.t || press.moved) return;
+    if (Math.abs(e.clientX - press.x) > 6 || Math.abs(e.clientY - press.y) > 6) press.moved = true;
+  });
+  document.addEventListener('mouseup', function(e){
+    if (e.button !== 0) return;
+    if (!copyTip.contains(e.target)) setTimeout(showCopyTip, 30);
+  });
+
+  document.addEventListener('click', function(e){
+    // 放大镜开启期间屏蔽点击翻页，避免点击设置面板（滑块）时误翻页
+    if (document.body.classList.contains('loupe-on')) return;
+    if (e.button !== 0) return;                       // 右键 / 中键不翻页，保留原生菜单（右键可复制）
+    // 可折叠区块：点击标题开合，不触发翻页
+    var hd = e.target.closest('.coll-hd');
+    if (hd) {
+      var box = hd.parentElement;
+      box.classList.toggle('open');
+      fitSlide(slides[cur]);
+      setTimeout(function(){ fitSlide(slides[cur]); }, 520);
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+    if (toc.classList.contains('show')) return;
+    if (e.target.closest('.nav')) return;
+    if (e.target.closest('.toc')) return;
+    if (e.target.closest('a')) return;
+    if (e.target.closest('#copyTip')) return;
+    if (e.target.closest('.code, .out, pre, table, .reveal, .coll')) return;
+    if (selText()) { hideHint(); return; }             // ① 当前有选中文字：只算选中，不翻页
+    if (press.hadSel) { press.hadSel = false; return; } // ② 按下前有选中：这一下只取消选中，不翻页
+    if (press.moved) return;                           // ③ 拖动过（拖选）：不翻页
+    if (press.t && Date.now() - press.t > 600) { press.t = 0; return; } // ④ 长按（触屏取词）：不翻页
+    if (hasPendingReveal()) { revealAnswers(); hideHint(); return; }
+    if (e.clientX > window.innerWidth / 2) go(cur + 1);
+    else go(cur - 1);
+    hideHint();
+  });
+
+  var tx = 0, ty = 0;
+  document.addEventListener('touchstart', function(e){
+    if (copyTip.contains(e.target)) return;   // 落在复制提示条上：保持提示条可见
+    tx = e.changedTouches[0].clientX;
+    ty = e.changedTouches[0].clientY;
+    press.x = tx; press.y = ty; press.t = Date.now();
+    press.moved = false;
+    press.hadSel = !!selText();
+    hideCopyTip();
+  }, { passive: true });
+  document.addEventListener('touchmove', function(e){
+    if (!press.t || press.moved) return;
+    if (Math.abs(e.changedTouches[0].clientX - press.x) > 6 ||
+        Math.abs(e.changedTouches[0].clientY - press.y) > 6) press.moved = true;
+  }, { passive: true });
+  document.addEventListener('touchend', function(e){
+    if (copyTip.contains(e.target)) return;
+    var dx = e.changedTouches[0].clientX - tx;
+    var dy = e.changedTouches[0].clientY - ty;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) {
+      if (hasPendingReveal()) { revealAnswers(); hideHint(); return; }
+      go(dx < 0 ? cur + 1 : cur - 1);
+      hideHint();
+      return;
+    }
+    setTimeout(showCopyTip, 60);   // 长按取词 / 点选后给出"复制"提示
+  }, { passive: true });
+
+  var hintTimer = null;
+  function hideHint(){
+    if (keyhint.classList.contains('hide')) return;
+    clearTimeout(hintTimer);
+    hintTimer = setTimeout(function(){ keyhint.classList.add('hide'); }, 500);
+  }
+  hintTimer = setTimeout(function(){ keyhint.classList.add('hide'); }, 6000);
+
+  resize();
+  go(0);
+})();
+</script><div id="copyTip" class=""><span id="copyTipTx">已选中 <b>1</b> 字</span><span class="kbd">Ctrl</span><span class="kbd">C</span><button type="button" id="copyTipBtn">复制</button></div>
+<script>
+
+(function(){
+  var stage=document.getElementById('stage'); if(!stage) return;
+  var L=320, Z=2.5, on=false, lens=null, tip=null, panel=null, clone=null, btn=null;
+  var last=[innerWidth/2, innerHeight/2];
+  var lock=false;
+
+  btn=document.createElement('button'); btn.id='btnLoupe';
+  btn.title='放大镜：移动鼠标查看细节，Esc 退出'; btn.textContent='\uD83D\uDD0D';
+  document.body.appendChild(btn);
+
+  tip=document.createElement('div'); tip.id='loupeTip';
+  tip.textContent='\uD83D\uDD0D 放大镜：鼠标移到哪儿，就以那儿为中心放大 · 单击锁定位置 · 滚轮调倍数 · Esc 退出';
+  document.body.appendChild(tip);
+
+  lens=document.createElement('div'); lens.id='loupe'; document.body.appendChild(lens);
+
+  panel=document.createElement('div'); panel.id='loupePanel';
+  panel.innerHTML='<div class="ttl">\uD83D\uDD0D 放大镜设置</div>'
+    +'<div class="row"><label>缩放</label><input id="lpZoom" type="range" min="1.5" max="8" step="0.1" value="2.5"><span class="val" id="lpZoomV">2.5×</span></div>'
+    +'<div class="row"><label>尺寸</label><input id="lpSize" type="range" min="180" max="520" step="10" value="320"><span class="val" id="lpSizeV">320</span></div>';
+  document.body.appendChild(panel);
+  var lpZoom=panel.querySelector('#lpZoom'), lpZoomV=panel.querySelector('#lpZoomV');
+  var lpSize=panel.querySelector('#lpSize'), lpSizeV=panel.querySelector('#lpSizeV');
+
+  function build(){
+    clone=stage.cloneNode(true); clone.removeAttribute('id');
+    var ids=clone.querySelectorAll('[id]'); for(var i=0;i<ids.length;i++) ids[i].removeAttribute('id');
+    clone.style.transform=''; clone.style.width=''; clone.style.height='';
+    clone.style.position='absolute'; clone.classList.add('lens-stage');
+    lens.innerHTML=''; lens.appendChild(clone);
+  }
+  function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+  function refreshTip(){
+    tip.textContent = lock
+      ? '🔒 已锁定该位置 · 单击任意处解除锁定 · Esc 退出'
+      : '🔍 放大镜：鼠标移到哪儿，就以那儿为中心放大 · 单击锁定位置 · 滚轮调倍数 · Esc 退出';
+  }
+
+  // 把光标处的幻灯片内容放到透镜中心，并按 Z 放大（translate+scale，origin 0 0，避免 border 偏移）
+  function update(cx,cy){
+    var r=stage.getBoundingClientRect();
+    var iw=stage.offsetWidth, ih=stage.offsetHeight;
+    // 克隆体去掉了 #stage 的 id，需显式给定固有尺寸，否则 .slide(inset:0) 会塌成 0
+    clone.style.width=iw+'px'; clone.style.height=ih+'px';
+    var s=parseFloat(getComputedStyle(stage).getPropertyValue('--s'))||1;
+    var fx=clamp((cx-r.left)/r.width,0,1), fy=clamp((cy-r.top)/r.height,0,1);
+    var k=s*Z;
+    var px=fx*iw, py=fy*ih;
+    var q=position(cx,cy), ox=q[0], oy=q[1];
+    clone.style.transformOrigin='0 0';
+    // 点 (px,py) 经 scale(k) 后到 (k*px,k*py)，再 translate 让它落在透镜内的光标位置
+    clone.style.transform='translate('+(ox - k*px)+'px,'+(oy - k*py)+'px) scale('+k+')';
+  }
+  // 透镜定位：以鼠标所在点为中心；靠近视口边缘时贴边，光标处内容仍精确对齐
+  function position(cx,cy){
+    var lx=clamp(cx-L/2, 8, Math.max(8, innerWidth-L-8));
+    var ly=clamp(cy-L/2, 8, Math.max(8, innerHeight-L-8));
+    lens.style.left=lx+'px'; lens.style.top=ly+'px';
+    return [cx-lx, cy-ly];   // 光标在透镜内的局部坐标（未贴边时就是 L/2）
+  }
+  // 常驻记录鼠标位置：进入放大镜时直接从当前光标处开始，不再从屏幕中心跳一下
+  var pt=[innerWidth/2, innerHeight/2];
+  document.addEventListener('mousemove',function(e){ pt=[e.clientX,e.clientY]; },true);
+  // 起点：就在光标处；但若是刚点了放大镜按钮（光标压在按钮上），改用页面中心，免得一开就盖住按钮
+  function startPt(){
+    var b=btn.getBoundingClientRect();
+    if(pt[0]>b.left-60 && pt[0]<b.right+60 && pt[1]>b.top-60 && pt[1]<b.bottom+60) return [innerWidth/2, innerHeight/2];
+    return [pt[0],pt[1]];
+  }
+  function enter(){
+    if(on) return; on=true; lock=false; btn.classList.add('on'); document.body.classList.add('loupe-on');
+    build(); lens.style.display='block'; tip.style.display='block'; panel.style.display='block';
+    lens.classList.remove('lock'); refreshTip();
+    last=startPt(); update(last[0],last[1]);
+    document.addEventListener('mousemove',onMove,true); addI();
+  }
+  function exit(){
+    if(!on) return; on=false; lock=false; btn.classList.remove('on'); document.body.classList.remove('loupe-on');
+    lens.classList.remove('lock');
+    lens.style.display='none'; tip.style.display='none'; panel.style.display='none';
+    document.removeEventListener('mousemove',onMove,true); remI();
+    lens.innerHTML=''; clone=null;
+  }
+  function onMove(e){ if(!on) return; last=[e.clientX,e.clientY]; if(lock) return; update(e.clientX,e.clientY); }
+  function setZ(z){ Z=clamp(z,1.5,8); lpZoom.value=Z; lpZoomV.textContent=Z.toFixed(1)+'×'; update(last[0],last[1]); }
+  function setL(l){ L=clamp(l,180,520); lpSize.value=L; lpSizeV.textContent=L; lens.style.width=L+'px'; lens.style.height=L+'px'; update(last[0],last[1]); }
+  btn.addEventListener('click',function(e){ e.stopPropagation(); on?exit():enter(); });
+  lpZoom.addEventListener('input',function(){ setZ(parseFloat(this.value)); });
+  lpSize.addEventListener('input',function(){ setL(parseFloat(this.value)); });
+
+  function inCtrl(e){ return e.target===btn||btn.contains(e.target)||panel.contains(e.target); }
+  var inter=[
+    ['wheel',function(e){ if(inCtrl(e)) return; if(!on) return; e.stopImmediatePropagation(); e.preventDefault(); setZ(Z+(e.deltaY<0?0.3:-0.3)); },true],
+    ['click',function(e){ if(inCtrl(e)) return; if(!on) return; e.stopImmediatePropagation(); e.preventDefault();
+      lock=!lock; lens.classList.toggle('lock',lock); if(!lock) update(last[0],last[1]); refreshTip(); },true],
+    ['contextmenu',function(e){ if(inCtrl(e)) return; if(!on) return; e.stopImmediatePropagation(); e.preventDefault(); },true],
+    ['keydown',function(e){ if(!on) return; if(e.key==='Escape'){ exit(); return; } if(inCtrl(e)){ e.stopPropagation(); return; } e.stopImmediatePropagation(); e.preventDefault(); },true],
+    ['touchstart',function(e){ if(inCtrl(e)) return; if(!on) return; e.stopImmediatePropagation(); e.preventDefault(); },true],
+    ['touchend',function(e){ if(inCtrl(e)) return; if(!on) return; e.stopImmediatePropagation(); e.preventDefault(); },true]
+  ];
+  function addI(){ for(var i=0;i<inter.length;i++) document.addEventListener(inter[i][0],inter[i][1],true); }
+  function remI(){ for(var i=0;i<inter.length;i++) document.removeEventListener(inter[i][0],inter[i][1],true); }
+  window.__loupe={enter:enter,exit:exit,setZ:setZ,setL:setL,getZ:function(){return Z;},getL:function(){return L;},isOn:function(){return on;},isLock:function(){return lock;}};
+})();
+
+  </script><button id="btnLoupe" title="放大镜：移动鼠标查看细节，Esc 退出">🔍</button><div id="loupeTip">🔍 放大镜：鼠标移到哪儿，就以那儿为中心放大 · 单击锁定位置 · 滚轮调倍数 · Esc 退出</div><div id="loupe"></div><div id="loupePanel"><div class="ttl">🔍 放大镜设置</div><div class="row"><label>缩放</label><input id="lpZoom" type="range" min="1.5" max="8" step="0.1" value="2.5"><span class="val" id="lpZoomV">2.5×</span></div><div class="row"><label>尺寸</label><input id="lpSize" type="range" min="180" max="520" step="10" value="320"><span class="val" id="lpSizeV">320</span></div></div>
+  
+
+
+</body></html>

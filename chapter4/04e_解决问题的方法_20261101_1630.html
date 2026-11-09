@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<!--
+  ============================================================================
+  C 语言课件 · 通用模板（参考用）
+  ----------------------------------------------------------------------------
+  本模板已内置“设计系统 + 演示引擎”，做其他主题的课件时：
+    1. 复制本文件，改 <title> 与封面文案；
+    2. 按需增删 <section class="slide"> 页面；
+    3. 底部脚本里的 tocGroups 数组按“页面索引 i : 目录文字 t”改写；
+    4. 其余 CSS / JS 引擎无需改动即可直接使用。
+
+  ★ 制作规则（2026-10-27 与任课教师沟通后定稿，做新课件时逐条遵守）
+    ① 版本化：不在原稿上改。每次改动前先复制为 原名_YYYYMMDD_HHMM.html，原稿保持不动，
+       最新成果＝时间戳最新的那一份。
+    ② 满宽不居中：正文交给 .fit 自动缩放（fitSlide 已内置补丁——按 1/s 加宽再整体缩回、
+       origin 左上），缩小后仍占满整行宽，绝不出现“内容挤在中间、左右两侧大片留白”。
+       版心需要更宽时给 .slide 加 .tightL（左右各 22px）。
+    ③ 字号：在“不溢出”前提下尽量大。代码块估算 最长行宽 ≈ ASCII 字符数×0.6×字号
+       ＋ 中文字数×1.0×字号，须 ≤ 列宽 − 左右 padding；整页高度上限约 709px
+       （900 − 标题区 − 上下留白），超过即被自动缩放，字号反而变小。
+    ④ 每页必验：Edge 无头截图逐页看（无裁切、无重叠、无溢出）；量化可把
+       fit.scrollHeight / transform 写进 document.title 后 --dump-dom 读出。
+    ⑤ 图一律内嵌：截图、流程图用 <img src="data:image/png;base64,...">，
+       不引外部文件、不做“点击上传”，换电脑不丢图。
+    ⑥ 先题后析用 .coll 可折叠块（默认收起，点标题展开并自动重算 .fit）；
+       需要一次性全展示的内容不要用 .reveal。
+    ⑦ 流程图只用 .fc-* 图元类（配色/线宽/箭头见元件库），不自创形态；
+       已审定的图形不擅自改。嵌套 if 的 N-S 图：内层 if 不画独立外框、与外层无间距，
+       共用外层左边界与中央竖线，只加“倒三角＋分割横线＋分隔竖线”。
+    ⑧ 封面与结束页不显示页码徽标（引擎已处理）；目录 tocGroups 的索引必须与实际页序一致。
+    ⑨ 交付前校验：页数、每页 div/table/svg/pre/g/text 标签平衡、data:image 张数。
+
+  组件速查（详见各示例页）：
+    · 标题  .s-title
+    · 副标题 .s-sub / .s-sub.blue
+    · 提示框 .box + .tip(绿)/.warn(橙)/.key(紫)/.red(红)，内含 <span class="label">
+    · 代码  pre.code（.kw/.str/.cmt/.num 高亮）；行内 code.inline；结果 .out
+    · 表格  table.tb（单元格 .c-red/.c-green/.c-blue）
+    · 卡片  .card + .orange/.green/.purple/.red（含 .ico + h4）
+    · 布局  .grid.c2 / .grid.c3；.two / .two.wide；.feat 特性列表
+    · 流程图  .flow 容器 + .fc-* 图元类（fc-term/fc-proc/fc-io/fc-dec/fc-ns/fc-ns-cond/fc-line/fc-yes/fc-no）；N-S 用三角分割（顺序/双分支/单分支/多分支嵌套三角/前测试·后测试循环），传统用菱形判断（单/双分支·多分支公共汇合线·前测试·后测试循环·switch），任意新图复用同类即风格一致
+    · 习题  .reveal（默认隐藏）+ .reveal-hint（脉冲按钮）：先题后析
+    · 封面  .slide.cover ；结束 .slide.end
+  交互：← → ↑ ↓ / 空格 / Enter 翻页；Home/End 首尾；O 目录；B/. 黑屏；
+        Esc 关目录；滚轮/触屏滑动翻页；点击左右半屏翻页（代码区可复制）。
+  ============================================================================
+-->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>解决问题的方法</title>
+<style>
+  :root{
+    --fs-title: 48px; --fs-body: 32px; --fs-other: 30px; --fs-list: 29px;
+    --blue-900:#0a3d63; --blue-700:#124f83; --blue-600:#1a6fb5; --blue-400:#4a97d4; --blue-100:#e8f2fb;
+    --orange:#e8720c; --orange-soft:#fdf1e4;
+    --green:#2e8b57; --green-soft:#eaf7ef;
+    --purple:#8e44ad; --purple-soft:#f5ecfa;
+    --red:#c0392b; --red-soft:#fdeceb;
+    --ink:#1d2b36; --muted:#4d6376; --line:#d6e2ee;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;overflow:hidden;background:var(--blue-900);font-family:"Microsoft YaHei","PingFang SC","Hiragino Sans GB","Source Han Sans SC",sans-serif;-webkit-font-smoothing:antialiased;}
+  #stage{position:fixed;left:50%;top:50%;width:1600px;height:900px;transform:translate(-50%,-50%) scale(var(--s,1));transform-origin:center center;background:#fff;overflow:hidden;transition:opacity .22s ease;}
+  body.blackout #stage{opacity:0;}
+  .slide{position:absolute;inset:0;display:none;flex-direction:column;padding:30px 64px 60px;background:linear-gradient(180deg,#ffffff 0%,#f4faff 100%);}
+  .slide.active{display:flex;animation:fadeUp .26s ease;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+  @keyframes itemIn{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:none;}}
+  .slide.active .s-title{animation:itemIn .42s ease both;}
+  .slide.active .fit > *:not(.reveal):not(.reveal-hint){animation:itemIn .42s ease both;}
+  .slide.active .fit > *:not(.reveal):not(.reveal-hint):nth-child(1){animation-delay:.08s;}
+  .slide.active .fit > *:not(.reveal):not(.reveal-hint):nth-child(2){animation-delay:.16s;}
+  .slide.active .fit > *:not(.reveal):not(.reveal-hint):nth-child(3){animation-delay:.24s;}
+  .slide.active .fit > *:not(.reveal):not(.reveal-hint):nth-child(4){animation-delay:.32s;}
+  .slide.active .fit > *:not(.reveal):not(.reveal-hint):nth-child(5){animation-delay:.40s;}
+  .slide.active .fit > *:not(.reveal):not(.reveal-hint):nth-child(6){animation-delay:.48s;}
+  .slide.cover.active .s-title,.slide.end.active .s-title{animation:none;}
+  .slide::after{content:"";position:absolute;right:-90px;bottom:-90px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(26,111,181,.10) 0%,rgba(26,111,181,0) 70%);pointer-events:none;}
+  .s-title{flex:0 0 auto;align-self:flex-start;background:linear-gradient(135deg,#1a6fb5 0%,#124f83 100%);color:#fff;font-size:48px;font-weight:700;letter-spacing:1.5px;line-height:1.15;padding:14px 30px 14px 24px;border-left:10px solid var(--orange);border-radius:0 12px 12px 0;margin-bottom:18px;box-shadow:0 6px 16px rgba(18,79,131,.18);}
+  .s-sub{font-size:var(--fs-body);font-weight:700;color:var(--blue-700);border-left:7px solid var(--orange);padding:2px 0 2px 14px;margin:14px 0 10px;}
+  .s-sub:first-child{margin-top:0;}
+  .s-sub.blue{border-left-color:var(--blue-600);}
+  .s-body{flex:1 1 auto;min-height:0;overflow:hidden;font-size:32px;line-height:1.5;color:var(--ink);}
+  .fit{overflow:hidden;}
+  /* 版心临时加宽（左右 22px）——需要贴边排版时给 .slide 加 .tightL */
+  .slide.tightL{padding-left:22px;padding-right:22px;} .slide.tightL .code{padding-left:18px;}
+  /* 可折叠块（先题后析 / 解析 / 运行结果）：默认收起，点标题展开 */
+  .coll{margin-top:12px;}
+  .coll-hd{display:inline-flex;align-items:center;gap:10px;background:linear-gradient(135deg,#e8720c,#c55807);color:#fff;font-size:24px;padding:9px 22px;border-radius:999px;cursor:pointer;box-shadow:0 5px 12px rgba(232,114,12,.3);user-select:none;transition:filter .2s,box-shadow .2s;}
+  .coll-hd:hover{filter:brightness(1.07);box-shadow:0 7px 16px rgba(232,114,12,.4);}
+  .coll-hd::after{content:"▾";font-size:19px;line-height:1;}
+  .coll.open .coll-hd{background:linear-gradient(135deg,#1a6fb5,#124f83);box-shadow:0 5px 12px rgba(18,79,131,.28);}
+  .coll.open .coll-hd::after{content:"▴";}
+  .coll-bd{max-height:0;opacity:0;overflow:hidden;transition:max-height .5s ease,opacity .4s ease;}
+  .coll.open .coll-bd{max-height:3200px;opacity:1;margin-top:12px;}
+  .s-body p{margin:8px 0;}
+  .s-body p:first-child{margin-top:0;}
+  .s-body ul,.s-body ol{padding-left:1.5em;margin:8px 0;}
+  .s-body li{margin:4px 0;}
+  .s-body ul>li::marker{color:var(--blue-600);}
+  .s-body ol>li::marker{color:var(--orange);font-weight:800;}
+  b,strong{color:var(--blue-700);}
+  table.tb{width:100%;border-collapse:separate;border-spacing:0;font-size:var(--fs-other);line-height:1.45;margin:6px 0;border-radius:12px;overflow:hidden;box-shadow:0 4px 14px rgba(18,79,131,.08);}
+  table.tb thead th{background:linear-gradient(135deg,#1a6fb5,#124f83);color:#fff;font-weight:600;font-size:var(--fs-other);padding:12px 18px;text-align:left;}
+  table.tb td,table.tb tbody th{padding:11px 18px;background:#fff;border-bottom:1px solid var(--line);vertical-align:top;}
+  table.tb tbody tr:last-child td,table.tb tbody tr:last-child th{border-bottom:none;}
+  table.tb tbody th{background:#eaf3fb;color:var(--blue-700);font-weight:600;text-align:left;white-space:nowrap;}
+  table.tb tbody tr:nth-child(even) td{background:#f7fafd;}
+  .c-red{color:var(--red);font-weight:600;} .c-green{color:var(--green);font-weight:700;} .c-blue{color:var(--blue-600);font-weight:700;}
+  .box{border-left:7px solid var(--blue-600);background:var(--blue-100);border-radius:0 10px 10px 0;padding:16px 28px;margin:10px 0;font-size:30px;line-height:1.7;}
+  .box .label{display:inline-block;font-weight:800;color:var(--blue-700);margin-right:10px;}
+  .box.tip{border-left-color:var(--green);background:var(--green-soft);} .box.tip .label{color:var(--green);}
+  .box.warn{border-left-color:var(--orange);background:var(--orange-soft);} .box.warn .label{color:#b95a05;}
+  .box.key{border-left-color:var(--purple);background:var(--purple-soft);} .box.key .label{color:var(--purple);}
+  .box.red{border-left-color:var(--red);background:var(--red-soft);} .box.red .label{color:var(--red);}
+  pre.code{background:#0d2b45;color:#d8e9f5;border-left:6px solid var(--orange);border-radius:0 12px 12px 0;padding:14px 22px;margin:8px 0;font-family:Consolas,"Courier New",monospace;font-size:28px;line-height:1.55;white-space:pre;overflow:hidden;box-shadow:0 8px 22px rgba(13,43,69,.22);}
+  pre.code .kw{color:#6ec1ff;} pre.code .str{color:#ffc17a;} pre.code .cmt{color:#7fa5c0;font-style:italic;} pre.code .num{color:#ff9d6b;}
+  code.inline{font-family:Consolas,"Courier New",monospace;background:var(--blue-100);color:#c0392b;padding:2px 8px;font-size:28px;border-radius:5px;}
+  .out{background:#0d2b45;color:#bfe4ff;border-left:6px solid var(--blue-400);border-radius:0 12px 12px 0;padding:12px 22px;margin:8px 0;font-family:Consolas,"Courier New",monospace;font-size:28px;line-height:1.5;white-space:pre;}
+  .grid{display:grid;gap:14px;} .grid.c2{grid-template-columns:1fr 1fr;} .grid.c3{grid-template-columns:repeat(3,1fr);} .grid.c4{grid-template-columns:repeat(4,1fr);} .grid{ gap:26px 14px; }
+  .card{background:#fff;border:1px solid var(--line);border-top:7px solid var(--blue-600);border-radius:0 0 16px 16px;padding:22px 28px;box-shadow:0 6px 16px rgba(18,79,131,.08);} .card.orange{border-top-color:var(--orange);} .card.green{border-top-color:var(--green);} .card.purple{border-top-color:var(--purple);} .card.red{border-top-color:var(--red);} .card h4{font-size:30px;color:var(--blue-700);margin-bottom:8px;display:flex;align-items:center;gap:10px;line-height:1.2;} .card.orange h4{color:#b95a05;} .card.green h4{color:var(--green);} .card.purple h4{color:var(--purple);} .card.red h4{color:var(--red);} .card p{font-size:27px;color:var(--muted);line-height:1.7;margin:0;} .card .ico{font-size:30px;line-height:1;}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start;} .two.wide{grid-template-columns:1.15fr 1fr;}
+  .feat{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px;} .feat li{display:flex;align-items:center;gap:22px;background:#fff;border:1px solid var(--line);border-left:7px solid var(--blue-600);border-radius:0 12px 12px 0;padding:12px 24px;box-shadow:0 4px 10px rgba(18,79,131,.06);} .feat li:nth-child(even){border-left-color:var(--orange);} .feat .k{flex:0 0 auto;width:270px;font-size:30px;font-weight:700;color:var(--blue-700);line-height:1.25;} .feat .v{font-size:27px;color:var(--muted);line-height:1.5;}
+  .slide.cover{background:linear-gradient(135deg,#1a6fb5 0%,#0d4a7a 58%,#0a3d63 100%);padding:0 110px 60px;justify-content:center;} .slide.cover::before{content:"";position:absolute;right:-100px;top:-100px;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(232,114,12,.18) 0%,rgba(232,114,12,0) 70%);} .slide.cover::after{content:"";position:absolute;left:-100px;bottom:-120px;width:440px;height:440px;border-radius:50%;background:radial-gradient(circle,rgba(74,151,212,.18) 0%,rgba(74,151,212,0) 70%);} .cover-inner{position:relative;z-index:2;} .cover-kicker{display:inline-block;font-size:var(--fs-other);letter-spacing:3px;color:#ffd9b3;border:1px solid rgba(255,217,179,.55);padding:8px 24px;margin-bottom:28px;border-radius:999px;} .cover h1{font-size:82px;font-weight:800;color:#fff;letter-spacing:5px;line-height:1.15;margin-bottom:16px;} .cover-bar{width:650px;height:8px;border-radius:4px;background:linear-gradient(90deg,#e8720c,#ffb26b);margin-bottom:22px;} .cover-sub{font-size:40px;color:#a9d8f5;letter-spacing:3px;margin-bottom:36px;} .cover-meta{font-size:var(--fs-other);color:#7fb2dd;letter-spacing:2px;}
+  .slide.end{background:linear-gradient(135deg,#1a6fb5 0%,#0d4a7a 58%,#0a3d63 100%);padding:0 110px 60px;justify-content:center;} .slide.end::before{content:"";position:absolute;right:-100px;bottom:-120px;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(232,114,12,.16) 0%,rgba(232,114,12,0) 70%);} .end-inner{position:relative;z-index:2;} .end h2{font-size:82px;font-weight:800;color:#fff;letter-spacing:10px;margin-bottom:22px;} .end p{font-size:var(--fs-body);color:#a9d8f5;letter-spacing:2px;}
+  .pageinfo{position:absolute;right:40px;top:22px;z-index:20;font-size:var(--fs-other);color:var(--blue-600);letter-spacing:1px;background:rgba(255,255,255,.95);border:1px solid var(--line);border-radius:999px;padding:5px 20px;box-shadow:0 4px 10px rgba(18,79,131,.08);} .pageinfo b{font-size:var(--fs-other);color:var(--orange);}
+  .nav{position:absolute;right:36px;bottom:14px;z-index:20;display:flex;align-items:center;gap:10px;} .nav button{height:50px;border:none;cursor:pointer;background:linear-gradient(135deg,#1a6fb5,#124f83);color:#fff;font-size:var(--fs-other);line-height:1;display:flex;align-items:center;justify-content:center;transition:all .18s;font-family:inherit;border-radius:12px;width:50px;box-shadow:0 5px 12px rgba(18,79,131,.28);} .nav button:hover{background:linear-gradient(135deg,#e8720c,#c55807);transform:translateY(-2px);} .nav button:disabled{background:#b9cfe4;cursor:not-allowed;box-shadow:none;transform:none;} .nav .tocbtn{width:auto;padding:0 22px;font-weight:700;letter-spacing:1px;}
+  .progress{position:absolute;left:0;bottom:0;height:6px;width:0;z-index:20;background:linear-gradient(90deg,#1a6fb5,#e8720c);transition:width .3s ease;}
+  .keyhint{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);z-index:20;font-size:20px;color:#7fa8c4;letter-spacing:1px;background:rgba(255,255,255,.85);border:1px solid var(--line);border-radius:999px;padding:4px 16px;transition:opacity .6s ease;} .keyhint.hide{opacity:0;}
+  .toc{position:absolute;inset:0;z-index:40;background:rgba(10,61,99,.96);display:none;padding:44px 60px 60px;overflow:auto;} .toc.show{display:block;} .toc h3{font-size:40px;color:#fff;letter-spacing:4px;margin-bottom:6px;} .toc .toc-bar{width:110px;height:6px;border-radius:3px;background:linear-gradient(90deg,#e8720c,#ffb26b);margin-bottom:20px;} .toc-list{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;align-items:start;} .toc-group{background:rgba(255,255,255,.05);border-radius:14px;padding:14px 14px 16px;border-top:5px solid var(--blue-400);} .toc-group:nth-child(2){border-top-color:var(--orange);} .toc-group:nth-child(3){border-top-color:var(--green);} .toc-group:nth-child(4){border-top-color:var(--purple);} .toc-group:nth-child(5){border-top-color:var(--red);} .toc-group-title{font-size:22px;color:#ffc17a;font-weight:800;letter-spacing:1px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px dashed rgba(255,255,255,.18);line-height:1.25;} .toc-group a{display:block;color:#cfe6f7;font-size:20px;padding:8px 12px;border-radius:8px;cursor:pointer;margin-bottom:4px;text-decoration:none;line-height:1.35;transition:all .16s;} .toc-group a:hover{background:linear-gradient(90deg,#e8720c,#c55807);color:#fff;} .toc-close{position:absolute;right:40px;top:22px;background:none;border:1px solid #7fb2dd;color:#cfe6f7;font-size:var(--fs-other);padding:7px 22px;cursor:pointer;font-family:inherit;border-radius:12px;} .toc-close:hover{background:#e8720c;border-color:#e8720c;color:#fff;}
+  /* 习题解析：先隐藏，点击后动画揭示，避免答案与题目同时出现 */
+  .reveal{max-height:0;opacity:0;overflow:hidden;margin-top:0!important;transition:max-height .55s ease, opacity .45s ease;}
+  .reveal.shown{max-height:3000px;opacity:1;margin-top:14px!important;}
+  .reveal.shown .box{box-shadow:0 0 0 2px rgba(232,114,12,.35), 0 6px 16px rgba(18,79,131,.08);}
+  .reveal-hint{display:inline-flex;align-items:center;gap:8px;margin-top:14px;background:linear-gradient(135deg,#e8720c,#c55807);color:#fff;font-size:24px;padding:8px 18px;border-radius:999px;cursor:pointer;box-shadow:0 5px 12px rgba(232,114,12,.3);animation:pulse 1.5s ease-in-out infinite;user-select:none;}
+  .reveal-hint.gone{display:none;}
+  @keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.05);}}
+
+  /* 流程图组件：N-S 图（盒图）与传统流程图通用 */
+  .flow{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;width:100%;gap:6px;}
+  .flow svg{display:block;width:100%;height:auto;}
+  .flow .cap{font-size:23px;font-weight:800;color:var(--blue-700);letter-spacing:1px;text-align:center;line-height:1.3;}
+  .flow svg text{font-family:"Microsoft YaHei","PingFang SC","Hiragino Sans GB","Source Han Sans SC",sans-serif;}
+  .fc-term{fill:var(--blue-700);} .fc-term-t{fill:#fff;font-weight:700;}
+  .fc-proc{fill:#fff;stroke:var(--blue-600);stroke-width:2.5;} .fc-proc-t{fill:var(--ink);}
+  .fc-io{fill:#fff;stroke:var(--purple);stroke-width:2.5;} .fc-io-t{fill:var(--purple);font-weight:700;}
+  .fc-dec{fill:var(--orange-soft);stroke:var(--orange);stroke-width:2.5;} .fc-dec-t{fill:#9a4a00;font-weight:700;}
+  .fc-line{stroke:#5a7a93;stroke-width:2.5;fill:none;stroke-linecap:round;stroke-linejoin:round;}
+  .fc-yes{fill:var(--green);font-weight:800;} .fc-no{fill:var(--red);font-weight:800;}
+  .fc-ns{fill:#fff;stroke:var(--blue-600);stroke-width:2.5;} .fc-ns-line{stroke:var(--blue-600);stroke-width:2.5;}
+  .fc-ns-cond{fill:var(--blue-100);stroke:var(--blue-600);stroke-width:2.5;} .fc-ns-t{fill:var(--ink);}
+
+  /* ===== 页面放大镜 loupe 工具（以光标为中心放大 + 单击锁定 + 滑块面板，2026-10-30 改进） ===== */
+  #btnLoupe{position:fixed;right:18px;bottom:84px;z-index:60;width:54px;height:54px;border:none;border-radius:50%;
+    background:linear-gradient(135deg,#1a6fb5,#0e4f86);color:#fff;font-size:24px;cursor:pointer;
+    box-shadow:0 6px 16px rgba(26,111,181,.4);display:flex;align-items:center;justify-content:center;user-select:none;}
+  #btnLoupe.on{background:linear-gradient(135deg,#e8720c,#c55807);box-shadow:0 6px 16px rgba(232,114,12,.45);}
+  #loupe{position:fixed;width:320px;height:320px;border-radius:14px;background:#fff;
+    overflow:hidden;box-shadow:0 0 0 3px #1a6fb5,0 12px 34px rgba(0,0,0,.35);z-index:70;pointer-events:none;display:none;}
+  #loupe .lens-stage{position:absolute;left:0;top:0;transform-origin:0 0;}
+  #loupe .lens-stage *{animation:none !important;transition:none !important;}
+  /* 中心准星：直观标出“正在放大的是这一点” */
+  #loupe::before,#loupe::after{content:'';position:absolute;z-index:3;pointer-events:none;background:rgba(232,114,12,.8);}
+  #loupe::before{left:50%;top:50%;width:1px;height:20px;margin:-10px 0 0 -0.5px;}
+  #loupe::after{left:50%;top:50%;width:20px;height:1px;margin:-0.5px 0 0 -10px;}
+  #loupe.lock{box-shadow:0 0 0 3px #e8720c,0 12px 34px rgba(0,0,0,.35);}
+  #loupeTip{position:fixed;left:50%;top:14px;transform:translateX(-50%);background:rgba(14,79,134,.92);color:#fff;
+    font-size:18px;padding:8px 18px;border-radius:999px;z-index:70;display:none;pointer-events:none;white-space:nowrap;
+    box-shadow:0 6px 16px rgba(0,0,0,.3);}
+  #loupePanel{position:fixed;left:18px;bottom:18px;z-index:75;background:rgba(20,28,38,.92);color:#e8eef5;
+    border-radius:12px;padding:12px 16px;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,.4);display:none;width:236px;}
+  #loupePanel .ttl{font-size:13px;color:#7fd0ff;margin-bottom:6px;display:flex;align-items:center;gap:6px;}
+  #loupePanel .row{display:flex;align-items:center;gap:10px;margin:7px 0;}
+  #loupePanel label{width:40px;color:#9fb4c8;flex:none;}
+  #loupePanel input[type=range]{flex:1;accent-color:#1a6fb5;cursor:pointer;}
+  #loupePanel .val{width:48px;text-align:right;color:#fff;font-variant-numeric:tabular-nums;}
+  body.loupe-on{cursor:crosshair;}
+
+  </style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- 全局流程图箭头定义（供各页 SVG 引用，只需一处） -->
+  <svg aria-hidden="true" height="0" width="0" style="position:absolute; width:0; height:0; overflow:hidden"><defs>
+    <marker id="fcArrow" markerHeight="11" markerUnits="userSpaceOnUse" markerWidth="11" orient="auto" refX="8" refY="5.5">
+      <path d="M1,1 L10,5.5 L1,10 Z" fill="#5a7a93"/>
+    </marker>
+  </defs></svg>
+
+  <!-- 0 封面 -->
+<section class="slide cover active">
+    <div class="cover-inner">
+      <div class="cover-kicker">武汉理工大学 人工智能学院</div>
+      <h1>解决问题的方法</h1>
+      <div class="cover-bar"></div>
+      <div class="cover-sub">自顶向下，逐步求精</div>
+      <div class="cover-meta">主讲：孙骏</div>
+    </div>
+  </section>
+  <!-- 1 核心思想：自顶向下，逐步求精 -->
+  <section class="slide">
+    <div class="s-title">核心思想：自顶向下，逐步求精</div>
+    <div class="s-body">
+      <div class="s-sub">一句话</div>
+<div class="box key" style="margin-top:10px"><span class="label">核心</span>把要解决的大问题，从最上层（整体目标）出发，一层层往下拆成更小、更容易解决的小问题，直到每个小问题都能直接用代码实现。</div>
+<div class="grid c3" style="margin-top:14px">
+  <div class="card"><h4><span class="ico">①</span>自顶向下</h4><p>先想整体框架，再填细节，不急着写第一行代码。</p></div>
+  <div class="card orange"><h4><span class="ico">②</span>逐步求精</h4><p>每一步都把“还太粗”的步骤继续细化，直到可编码。</p></div>
+  <div class="card green"><h4><span class="ico">③</span>模块化</h4><p>每个细化出的小功能，对应一两个语句或一段循环。</p></div>
+</div>
+<div class="box tip" style="margin-top:14px"><span class="label">本课</span>下面用【例 4-17】走完“细化 → 回溯 → 实现 → 调试 → 优化”五步，再用【习题 7-1】练手。</div>
+    </div>
+  </section>
+
+  <!-- 2 方法路线图：五步法 -->
+  <section class="slide">
+    <div class="s-title">方法路线图：五步法</div>
+    <div class="s-body">
+      <div class="s-sub">从“想清楚”到“跑对跑快”</div>
+<div style="display:flex;gap:12px;align-items:stretch;margin-top:14px">
+  <div class="card" style="flex:1"><h4><span class="ico">1</span>细化</h4><p>把问题拆成顶层步骤。</p></div>
+  <div class="card orange" style="flex:1"><h4><span class="ico">2</span>回溯</h4><p>把每个步骤展开成可编码结构。</p></div>
+  <div class="card green" style="flex:1"><h4><span class="ico">3</span>实现</h4><p>写成 C 代码并运行。</p></div>
+  <div class="card purple" style="flex:1"><h4><span class="ico">4</span>调试</h4><p>对比预期，找出逻辑漏洞。</p></div>
+  <div class="card red" style="flex:1"><h4><span class="ico">5</span>优化</h4><p>找内在规律，减少冗余计算。</p></div>
+</div>
+<div class="box key" style="margin-top:18px"><span class="label">主线</span>【例 4-17】完整演示这五步；【习题 7-1】由你独立用同一套方法完成。</div>
+    </div>
+  </section>
+
+  <!-- 3 例 4-17·题目 -->
+  <section class="slide">
+    <div class="s-title">例 4-17·题目</div>
+    <div class="s-body">
+      <div class="s-sub">先理解要算什么</div>
+<p style="font-size:32px;margin-top:10px">求前 <code class="inline">n</code> 个“三角形数”之和：</p>
+<p style="font-size:34px;margin:16px 0;font-weight:700">s = 1 + (1+2) + (1+2+3) + … + (1+2+…+n)</p>
+<div class="box tip" style="margin-top:10px"><span class="label">示例</span>当 n = 7 时，s = 1 + 3 + 6 + 10 + 15 + 21 + 28 = <b>84</b>。</div>
+<div class="box warn" style="margin-top:12px"><span class="label">思考</span>别急着写循环——先想清楚“每一层在算什么”，下一页开始细化。</div>
+    </div>
+  </section>
+
+  <!-- 4 例 4-17·细化（N-S 图·一） -->
+  <section class="slide">
+    <div class="s-title">例 4-17·细化（N-S 图·一）</div>
+    <div class="s-body">
+      <div class="s-sub">第 1 步：把“计算 s”展开为 i 循环（计算 p、s 累加）</div>
+<div class="flow"><div class="flow"><svg viewBox="0 0 400 315" style="max-width:420px;height:auto;display:block;margin:0 auto">
+  <rect class="fc-ns" x="10" y="10" width="380" height="295" rx="8"/>
+  <text class="fc-ns-t" x="200" y="40" font-size="17" text-anchor="middle">s = 0</text>
+  <line class="fc-ns-line" x1="10" x2="390" y1="54" y2="54"/>
+  <text class="fc-ns-t" x="200" y="82" font-size="17" text-anchor="middle">输入 n</text>
+  <path class="fc-ns-cond" d="M10,104 a8,8 0 0 1 8,-8 h362 a8,8 0 0 1 8,8 v26 h-328 v113 h-38 a8,8 0 0 1 -8,-8 v-123 z"/>
+  <text class="fc-ns-t" x="200" y="114" font-size="16" text-anchor="middle" font-weight="700">i = 1 ~ n</text>
+  <text class="fc-ns-t" x="225" y="152" font-size="17" text-anchor="middle">计算 p</text>
+  <line class="fc-ns-line" x1="60" x2="390" y1="164" y2="164"/>
+  <text class="fc-ns-t" x="225" y="205" font-size="17" text-anchor="middle">s += p</text>
+  <line class="fc-ns-line" x1="60" x2="390" y1="235" y2="235"/>
+  <text class="fc-ns-t" x="200" y="275" font-size="17" text-anchor="middle">输出 s</text>
+</svg></div></div>
+<div class="box tip" style="margin-top:12px"><span class="label">说明</span>“计算 p”先作为待细化子块，下一步再展开成 j 循环。</div>
+    </div>
+  </section>
+
+  <!-- 5 例 4-17·回溯（N-S 图·二） -->
+  <section class="slide">
+    <div class="s-title">例 4-17·回溯（N-S 图·二）</div>
+    <div class="s-body">
+      <div class="s-sub">第 2 步：回溯展开“计算 p” → p=0 与 j 循环</div>
+<div class="flow"><div class="flow"><svg viewBox="0 0 420 440" style="max-width:470px;height:auto;display:block;margin:0 auto">
+  <rect class="fc-ns" x="10" y="10" width="400" height="420" rx="8"/>
+  <text class="fc-ns-t" x="210" y="40" font-size="17" text-anchor="middle">s = 0</text>
+  <line class="fc-ns-line" x1="10" x2="410" y1="54" y2="54"/>
+  <text class="fc-ns-t" x="210" y="82" font-size="17" text-anchor="middle">输入 n</text>
+  <path class="fc-ns-cond" d="M10,104 a8,8 0 0 1 8,-8 h382 a8,8 0 0 1 8,8 v26 h-342 v178 h-48 a8,8 0 0 1 -8,-8 v-188 z"/>
+  <text class="fc-ns-t" x="210" y="114" font-size="16" text-anchor="middle" font-weight="700">i = 1 ~ n</text>
+  <text class="fc-ns-t" x="238" y="150" font-size="17" text-anchor="middle">p = 0</text>
+  <path class="fc-ns-cond" d="M66,170 a8,8 0 0 1 8,-8 h326 a8,8 0 0 1 8,8 v22 h-292 v52 h-42 a8,8 0 0 1 -8,-8 v-58 z"/>
+  <text class="fc-ns-t" x="263" y="176" font-size="15" text-anchor="middle" font-weight="700">j = 1 ~ i</text>
+  <text class="fc-ns-t" x="263" y="212" font-size="17" text-anchor="middle">p += j</text>
+  <line class="fc-ns-line" x1="116" x2="410" y1="236" y2="236"/>
+  <text class="fc-ns-t" x="238" y="274" font-size="17" text-anchor="middle">s += p</text>
+  <line class="fc-ns-line" x1="66" x2="410" y1="300" y2="300"/>
+  <text class="fc-ns-t" x="210" y="340" font-size="17" text-anchor="middle">输出 s</text>
+</svg></div></div>
+<div class="box tip" style="margin-top:12px"><span class="label">要点</span>每轮 i：先 p=0 清零，j 从 1 累加到 i 得到 1+2+…+i，再把 p 累加到 s。两个循环（i 控制层数、j 在每层累加）就是回溯得到的可编码结构。</div>
+    </div>
+  </section>
+
+  <!-- 6 例 4-17·实现（C 代码·三） -->
+  <section class="slide">
+    <div class="s-title">例 4-17·实现（C 代码·三）</div>
+    <div class="s-body">
+      <div class="s-sub">第 3 步：照上一页结构写出 C 代码（外层 i / 内层 j / s 累加）</div>
+<pre class="code" style="font-size:22px">#include &lt;stdio.h&gt;
+int main(){
+    int i, j, p, s=0, n;
+    printf("Enter n! \n");
+    scanf("%d", &amp;n);
+    for(i=1;i&lt;=n;i++){
+        p=0;
+        for(j=1;j&lt;=i;j++)
+            p+=j;
+        s+=p;
+    }
+    printf("s = %d\n", s);
+    return 0;
+}</pre>
+<div class="out">Enter n! 7
+s = 84</div>
+    </div>
+  </section>
+
+  <!-- 7 例 4-17·调试（四） -->
+  <section class="slide">
+    <div class="s-title">例 4-17·调试（四）</div>
+    <div class="s-body">
+      <div class="s-sub">第 4 步：调试——下面代码故意留坑：p 只在循环外初始化一次</div>
+<pre class="code" style="font-size:22px">#include &lt;stdio.h&gt;
+int main(){
+    int i, j, p=0, s=0, n;
+    printf("Enter n! \n");
+    scanf("%d", &amp;n);
+    for(i=1;i&lt;=n;i++){
+        for(j=1;j&lt;=i;j++)
+            p+=j;
+        s+=p;
+    }
+    printf("s = %d\n", s);
+    return 0;
+}</pre>
+<div class="box red" style="margin-top:10px"><span class="label">易错</span><code class="inline">p</code> 只在循环外初始化一次，内层累加的 <code class="inline">p</code> 会跨 i 一直累积、没有在每层重新归零 → 结果偏大。正确写法应在 <code class="inline">for(i…)</code> 内先把 <code class="inline">p=0</code>。</div>
+    </div>
+  </section>
+
+  <!-- 8 例 4-17·优化（五） -->
+  <section class="slide">
+    <div class="s-title">例 4-17·优化（五）</div>
+    <div class="s-body">
+      <div class="s-sub">第 5 步：优化——用 p = p + i 递推，省掉整个内层循环</div>
+<pre class="code" style="font-size:22px">#include &lt;stdio.h&gt;
+int main(){
+    int i, p, s, n;
+    printf("Enter n!\n");
+    scanf("%d", &amp;n);
+    for(i=1,p=s=0;i&lt;=n;i++){
+        p=p+i;   // 不需内层循环
+        s=s+p;
+    }
+    printf("s = %d\n", s);
+    return 0;
+}</pre>
+<div class="box key" style="margin-top:10px"><span class="label">优化点</span>第 i 层的累加和 = 上一层累加和 + i，即 <code class="inline">p = p + i</code>，于是内层循环可以整个删掉。</div>
+    </div>
+  </section>
+
+  <!-- 9 小结：例 4-17 教给我们什么 -->
+  <section class="slide">
+    <div class="s-title">小结：例 4-17 教给我们什么</div>
+    <div class="s-body">
+      <div class="s-sub">同一道题，五种收获</div>
+<div class="grid c2" style="margin-top:12px">
+  <div class="card"><h4>先想后写</h4><p>细化让代码结构在动笔前就清晰。</p></div>
+  <div class="card orange"><h4>结构即图表</h4><p>N-S 图与代码是一一对应的。</p></div>
+  <div class="card green"><h4>调试靠对比</h4><p>把“预期逻辑”和“实际代码”并排看，坑立刻现形。</p></div>
+  <div class="card purple"><h4>优化靠规律</h4><p>找到递推关系，能砍掉整层循环。</p></div>
+</div>
+<div class="box tip" style="margin-top:14px"><span class="label">迁移</span>这套五步法不只用于求和，任何“先分解、再实现”的问题都适用。</div>
+    </div>
+  </section>
+
+  <!-- 10 过渡：把方法用在新题上 -->
+  <section class="slide">
+    <div class="s-title">过渡：把方法用在新题上</div>
+    <div class="s-body">
+      <div class="box key" style="margin-top:40px;font-size:34px"><span class="label">现在轮到你</span>用同一套“五步法”，独立完成下面这道题。</div>
+<div class="box tip" style="margin-top:18px"><span class="label">题目</span>习题 7-1：求 cos x 的近似值（下页给出完整要求）。</div>
+    </div>
+  </section>
+
+  <!-- 11 习题 7-1·题目 -->
+  <section class="slide">
+    <div class="s-title">习题 7-1·题目</div>
+    <div class="s-body">
+      <div class="s-sub">习题 7-1：求 cos x 的近似值</div>
+<p style="font-size:30px;margin-top:10px">已知 cos x 的泰勒展开：</p>
+<p style="font-size:32px;margin:14px 0;font-weight:700">cos x = 1 − x<sup>2</sup>/2! + x<sup>4</sup>/4! − x<sup>6</sup>/6! + … + (−1)<sup>n</sup> x<sup>2n</sup>/(2n)!</p>
+<div class="box tip" style="margin-top:10px"><span class="label">输入</span>实数 x（弧度）与整数 n（0≤n≤100）。<span class="label" style="margin-left:14px">输出</span>cos(x) 保留小数点后 6 位。</div>
+<div class="box warn" style="margin-top:12px"><span class="label">样例</span>输入 <code class="inline">1.5 3</code> → 输出 <code class="inline">cos(1.500000)=0.070117</code>。用双精度以保证精度。</div>
+    </div>
+  </section>
+
+  <!-- 12 习题 7-1·初版与缺陷 -->
+  <section class="slide">
+    <div class="s-title">习题 7-1·初版与缺陷</div>
+    <div class="s-body">
+      <div class="s-sub">初版代码：阶乘用循环逐项相乘</div>
+<pre class="code" style="font-size:22px">#include &lt;stdio.h&gt;
+#include &lt;math.h&gt;
+int main(){
+    double x,s;
+    int i,n,b;
+    s=1; b=1;
+    scanf("%lf%d",&amp;x,&amp;n);
+    for(i=1;i&lt;=n;i++){
+        b=1;
+        for(j=1;j&lt;=2*i;j++)
+            b*=j;
+        s=s+pow(-1,i)*pow(x,2*i)/b;
+    }
+    printf("cos(%.6lf)=%.6lf",x,s);
+    return 0;
+}</pre>
+<div class="box red" style="margin-top:10px"><span class="label">缺陷</span>① <code class="inline">b</code> 用 <code class="inline">int</code>，200! 远超 int 范围（±2<sup>31</sup>），溢出得错值；② 直接 <code class="inline">pow(x,2*n)</code> 在 x、n 较大时同样会超出表示范围。</div>
+    </div>
+  </section>
+
+  <!-- 13 习题 7-1·解决办法 -->
+  <section class="slide">
+    <div class="s-title">习题 7-1·解决办法</div>
+    <div class="s-body">
+      <div class="s-sub">解决办法：换类型 + 用递推</div>
+<pre class="code" style="font-size:22px">#include &lt;stdio.h&gt;
+#include &lt;math.h&gt;
+int main(){
+    double x,s,b;
+    int i,n;
+    s=1; b=1;
+    scanf("%lf%d",&amp;x,&amp;n);
+    for(i=1;i&lt;=n;i++){
+        b=b*2*i*(2*i-1);
+        s=s+pow(-1,i)*pow(x,2*i)/b;
+    }
+    printf("cos(%.6lf)=%.6lf",x,s);
+    return 0;
+}</pre>
+<div class="box key" style="margin-top:10px"><span class="label">修复</span>① <code class="inline">b</code> 改为 <code class="inline">double</code>，阶乘不再溢出；② 更好的是用递推：第 i 项 t<sub>i</sub> = t<sub>i-1</sub> · (−1)·x² / ((2i−1)·2i)，连 <code class="inline">pow</code> 都省掉，最稳。</div>
+    </div>
+  </section>
+
+  <!-- 14 结束页 -->
+<section class="slide end">
+    <div class="end-inner">
+      <h2>谢　谢</h2>
+      <p>下一部分：……</p>
+    </div>
+  </section>
+
+
+  <!-- 导航 UI（无需改动） -->
+  <div class="pageinfo"><b id="cur">1</b> / <span id="total">25</span></div>
+  <div class="nav">
+    <button class="tocbtn" id="btnToc" title="目录（按 O 键）">目录</button>
+    <button id="btnPrev" title="上一页（←）">‹</button>
+    <button id="btnNext" title="下一页（→ / 空格）">›</button>
+  </div>
+  <div class="keyhint" id="keyhint">← → 翻页　·　空格下一页　·　B 黑屏　·　O 目录　·　Esc 关闭</div>
+  <div class="progress" id="progress"></div>
+  <div class="toc" id="toc">
+    <button class="toc-close" id="btnTocClose">关闭 ✕</button>
+    <h3>目录</h3>
+    <div class="toc-bar"></div>
+    <div class="toc-list" id="tocList"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var stage   = document.getElementById('stage');
+  var slides  = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var total   = slides.length;
+  var cur     = 0;
+  var curEl   = document.getElementById('cur');
+  var pageinfo = document.querySelector('.pageinfo');
+  var bar     = document.getElementById('progress');
+  var btnPrev = document.getElementById('btnPrev');
+  var btnNext = document.getElementById('btnNext');
+  var toc     = document.getElementById('toc');
+  var tocList = document.getElementById('tocList');
+  var keyhint = document.getElementById('keyhint');
+
+  document.getElementById('total').textContent = total;
+
+  // 将每页正文内容包裹进 .fit，便于按高度自动等比缩放，彻底杜绝溢出被裁切
+  slides.forEach(function(slide){
+    var body = slide.querySelector('.s-body');
+    if(!body) return;
+    var fit = document.createElement('div');
+    fit.className = 'fit';
+    while(body.firstChild){ fit.appendChild(body.firstChild); }
+    body.appendChild(fit);
+  });
+
+  // 若正文高度超出可视区，则整体等比缩放至恰好放得下（仅在当前页测量）
+  // 若正文高度超出可视区，则整体等比缩放至恰好放得下（仅在当前页测量）
+  // 补丁（2026-10-27）：缩放时把 .fit 宽度按 1/s 加宽再整体缩回（origin 左上），
+  // 使缩小后仍占满整行宽，避免“内容挤在中间、左右两侧大片留白”。
+  function fitSlide(slide){
+    if(!slide) return;
+    var body = slide.querySelector('.s-body');
+    var fit  = slide.querySelector('.fit');
+    if(!body || !fit) return;
+    fit.style.transform = 'none';
+    fit.style.width = '';
+    var avail = body.clientHeight;
+    var s = 1;
+    for(var i = 0; i < 3; i++){
+      var natural = fit.scrollHeight;
+      if(natural <= avail + 1) break;
+      var s2 = Math.min(1, avail / natural);
+      if(Math.abs(s2 - s) < 0.004) break;
+      s = s2;
+      fit.style.width = (100 / s) + '%';
+    }
+    if(s < 1){
+      fit.style.transform = 'scale(' + s + ')';
+      fit.style.transformOrigin = 'top left';
+    } else {
+      fit.style.width = '';
+    }
+  }
+
+  // 习题揭示：先看题目，点击/→/空格后解析才滑出
+  function hasPendingReveal(){
+    var s = slides[cur];
+    return !!(s && s.querySelector('.reveal:not(.shown)'));
+  }
+  function revealAnswers(){
+    var s = slides[cur];
+    if(!s) return false;
+    var pending = s.querySelectorAll('.reveal:not(.shown)');
+    if(!pending.length) return false;
+    pending.forEach(function(el){ el.classList.add('shown'); });
+    var hint = s.querySelector('.reveal-hint');
+    if(hint) hint.classList.add('gone');
+    fitSlide(s);
+    setTimeout(function(){ fitSlide(s); }, 560);
+    return true;
+  }
+
+  // 目录：按“页面索引 i : 目录文字 t”维护，分组数量任意（CSS 默认 5 列）
+  var tocGroups = [
+    {
+      title: '开场',
+      items: [
+        { i: 0, t: '封面' }
+      ]
+    },
+    {
+      title: '核心思想：自顶向下，逐…',
+      items: [
+        { i: 1, t: '核心思想：自顶向下，逐步求精' },
+        { i: 2, t: '方法路线图：五步法' },
+        { i: 3, t: '例 4-17·题目' },
+        { i: 4, t: '例 4-17·细化（N-S 图·一）' }
+      ]
+    },
+    {
+      title: '例 4-17·回溯（N…',
+      items: [
+        { i: 5, t: '例 4-17·回溯（N-S 图·二）' },
+        { i: 6, t: '例 4-17·实现（C 代码·三）' },
+        { i: 7, t: '例 4-17·调试（四）' },
+        { i: 8, t: '例 4-17·优化（五）' }
+      ]
+    },
+    {
+      title: '小结：例 4-17 教…',
+      items: [
+        { i: 9, t: '小结：例 4-17 教给我们什么' },
+        { i: 10, t: '过渡：把方法用在新题上' },
+        { i: 11, t: '习题 7-1·题目' },
+        { i: 12, t: '习题 7-1·初版与缺陷' }
+      ]
+    },
+    {
+      title: '习题 7-1·解决办法',
+      items: [
+        { i: 13, t: '习题 7-1·解决办法' }
+      ]
+    },
+    {
+      title: '收尾',
+      items: [
+        { i: 14, t: '结束页' }
+      ]
+    }
+  ];
+
+  tocGroups.forEach(function(group){
+    var g = document.createElement('div');
+    g.className = 'toc-group';
+    var h = document.createElement('div');
+    h.className = 'toc-group-title';
+    h.textContent = group.title;
+    g.appendChild(h);
+    group.items.forEach(function(item){
+      var a = document.createElement('a');
+      a.textContent = item.t;
+      a.onclick = function(){ go(item.i); closeToc(); };
+      g.appendChild(a);
+    });
+    tocList.appendChild(g);
+  });
+
+  function resize(){
+    var s = Math.min(window.innerWidth / 1600, window.innerHeight / 900);
+    stage.style.setProperty('--s', s);
+    fitSlide(slides[cur]);
+  }
+  window.addEventListener('resize', resize);
+
+  function go(i){
+    cur = Math.max(0, Math.min(total - 1, i));
+    slides.forEach(function(s, k){ s.classList.toggle('active', k === cur); });
+    curEl.textContent = cur + 1;
+    // 封面与结束页不显示页码徽标
+    var isCover = slides[cur].classList.contains('cover') || slides[cur].classList.contains('end');
+    pageinfo.style.visibility = isCover ? 'hidden' : 'visible';
+    bar.style.width = ((cur + 1) / total * 100) + '%';
+    btnPrev.disabled = (cur === 0);
+    btnNext.disabled = (cur === total - 1);
+    fitSlide(slides[cur]);
+  }
+
+  btnPrev.onclick = function(){ go(cur - 1); this.blur(); hideHint(); };
+  btnNext.onclick = function(){ if(hasPendingReveal()){ revealAnswers(); this.blur(); hideHint(); return; } go(cur + 1); this.blur(); hideHint(); };
+
+  function openToc(){ toc.classList.add('show'); }
+  function closeToc(){ toc.classList.remove('show'); }
+  document.getElementById('btnToc').onclick = function(){
+    toc.classList.contains('show') ? closeToc() : openToc();
+    this.blur();
+  };
+  document.getElementById('btnTocClose').onclick = function(){
+    closeToc(); this.blur();
+  };
+
+  document.addEventListener('keydown', function(e){
+    var k = e.key;
+
+    if (toc.classList.contains('show')) {
+      if (k === 'Escape' || k === 'o' || k === 'O') { e.preventDefault(); closeToc(); }
+      return;
+    }
+
+    if (k === 'ArrowRight' || k === 'ArrowDown' || k === 'PageDown' ||
+        k === ' ' || k === 'Enter') {
+      e.preventDefault();
+      if (hasPendingReveal()) { revealAnswers(); hideHint(); return; }
+      go(cur + 1); hideHint();
+    } else if (k === 'ArrowLeft' || k === 'ArrowUp' || k === 'PageUp' ||
+               k === 'Backspace') {
+      e.preventDefault(); go(cur - 1); hideHint();
+    } else if (k === 'Home') {
+      e.preventDefault(); go(0); hideHint();
+    } else if (k === 'End') {
+      e.preventDefault(); go(total - 1); hideHint();
+    } else if (k === 'o' || k === 'O') {
+      e.preventDefault(); openToc();
+    } else if (k === 'b' || k === 'B' || k === '.') {
+      e.preventDefault();
+      document.body.classList.toggle('blackout');
+    }
+  });
+
+  var wheelLock = false;
+  document.addEventListener('wheel', function(e){
+    if (toc.classList.contains('show')) return;
+    if (wheelLock) return;
+    wheelLock = true;
+    setTimeout(function(){ wheelLock = false; }, 420);
+    if (e.deltaY > 0) go(cur + 1); else go(cur - 1);
+    hideHint();
+  }, { passive: true });
+
+  document.addEventListener('click', function(e){
+    // 可折叠区块：点击标题开合，不触发翻页
+    var hd = e.target.closest('.coll-hd');
+    if (hd) {
+      var box = hd.parentElement;
+      box.classList.toggle('open');
+      fitSlide(slides[cur]);
+      setTimeout(function(){ fitSlide(slides[cur]); }, 520);
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+    if (toc.classList.contains('show')) return;
+    if (e.target.closest('.nav')) return;
+    if (e.target.closest('.toc')) return;
+    if (e.target.closest('a')) return;
+    if (e.target.closest('.code, .out, pre, table, .reveal, .coll')) return;
+    if (hasPendingReveal()) { revealAnswers(); hideHint(); return; }
+    if (e.clientX > window.innerWidth / 2) go(cur + 1);
+    else go(cur - 1);
+    hideHint();
+  });
+
+  var tx = 0, ty = 0;
+  document.addEventListener('touchstart', function(e){
+    tx = e.changedTouches[0].clientX;
+    ty = e.changedTouches[0].clientY;
+  }, { passive: true });
+  document.addEventListener('touchend', function(e){
+    var dx = e.changedTouches[0].clientX - tx;
+    var dy = e.changedTouches[0].clientY - ty;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) {
+      if (hasPendingReveal()) { revealAnswers(); hideHint(); return; }
+      go(dx < 0 ? cur + 1 : cur - 1);
+      hideHint();
+    }
+  }, { passive: true });
+
+  var hintTimer = null;
+  function hideHint(){
+    if (keyhint.classList.contains('hide')) return;
+    clearTimeout(hintTimer);
+    hintTimer = setTimeout(function(){ keyhint.classList.add('hide'); }, 500);
+  }
+  hintTimer = setTimeout(function(){ keyhint.classList.add('hide'); }, 6000);
+
+  resize();
+  go(0);
+})();
+</script>
+<script>
+
+(function(){
+  var stage=document.getElementById('stage'); if(!stage) return;
+  var L=320, Z=2.5, on=false, lens=null, tip=null, panel=null, clone=null, btn=null;
+  var last=[innerWidth/2, innerHeight/2];
+  var lock=false;
+
+  btn=document.createElement('button'); btn.id='btnLoupe';
+  btn.title='放大镜：移动鼠标查看细节，Esc 退出'; btn.textContent='\uD83D\uDD0D';
+  document.body.appendChild(btn);
+
+  tip=document.createElement('div'); tip.id='loupeTip';
+  tip.textContent='\uD83D\uDD0D 放大镜：鼠标移到哪儿，就以那儿为中心放大 · 单击锁定位置 · 滚轮调倍数 · Esc 退出';
+  document.body.appendChild(tip);
+
+  lens=document.createElement('div'); lens.id='loupe'; document.body.appendChild(lens);
+
+  panel=document.createElement('div'); panel.id='loupePanel';
+  panel.innerHTML='<div class="ttl">\uD83D\uDD0D 放大镜设置</div>'
+    +'<div class="row"><label>缩放</label><input id="lpZoom" type="range" min="1.5" max="8" step="0.1" value="2.5"><span class="val" id="lpZoomV">2.5×</span></div>'
+    +'<div class="row"><label>尺寸</label><input id="lpSize" type="range" min="180" max="520" step="10" value="320"><span class="val" id="lpSizeV">320</span></div>';
+  document.body.appendChild(panel);
+  var lpZoom=panel.querySelector('#lpZoom'), lpZoomV=panel.querySelector('#lpZoomV');
+  var lpSize=panel.querySelector('#lpSize'), lpSizeV=panel.querySelector('#lpSizeV');
+
+  function build(){
+    clone=stage.cloneNode(true); clone.removeAttribute('id');
+    var ids=clone.querySelectorAll('[id]'); for(var i=0;i<ids.length;i++) ids[i].removeAttribute('id');
+    clone.style.transform=''; clone.style.width=''; clone.style.height='';
+    clone.style.position='absolute'; clone.classList.add('lens-stage');
+    lens.innerHTML=''; lens.appendChild(clone);
+  }
+  function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+  function refreshTip(){
+    tip.textContent = lock
+      ? '🔒 已锁定该位置 · 单击任意处解除锁定 · Esc 退出'
+      : '🔍 放大镜：鼠标移到哪儿，就以那儿为中心放大 · 单击锁定位置 · 滚轮调倍数 · Esc 退出';
+  }
+
+  // 把光标处的幻灯片内容放到透镜中心，并按 Z 放大（translate+scale，origin 0 0，避免 border 偏移）
+  function update(cx,cy){
+    var r=stage.getBoundingClientRect();
+    var iw=stage.offsetWidth, ih=stage.offsetHeight;
+    // 克隆体去掉了 #stage 的 id，需显式给定固有尺寸，否则 .slide(inset:0) 会塌成 0
+    clone.style.width=iw+'px'; clone.style.height=ih+'px';
+    var s=parseFloat(getComputedStyle(stage).getPropertyValue('--s'))||1;
+    var fx=clamp((cx-r.left)/r.width,0,1), fy=clamp((cy-r.top)/r.height,0,1);
+    var k=s*Z;
+    var px=fx*iw, py=fy*ih;
+    var q=position(cx,cy), ox=q[0], oy=q[1];
+    clone.style.transformOrigin='0 0';
+    // 点 (px,py) 经 scale(k) 后到 (k*px,k*py)，再 translate 让它落在透镜内的光标位置
+    clone.style.transform='translate('+(ox - k*px)+'px,'+(oy - k*py)+'px) scale('+k+')';
+  }
+  // 透镜定位：以鼠标所在点为中心；靠近视口边缘时贴边，光标处内容仍精确对齐
+  function position(cx,cy){
+    var lx=clamp(cx-L/2, 8, Math.max(8, innerWidth-L-8));
+    var ly=clamp(cy-L/2, 8, Math.max(8, innerHeight-L-8));
+    lens.style.left=lx+'px'; lens.style.top=ly+'px';
+    return [cx-lx, cy-ly];   // 光标在透镜内的局部坐标（未贴边时就是 L/2）
+  }
+  // 常驻记录鼠标位置：进入放大镜时直接从当前光标处开始，不再从屏幕中心跳一下
+  var pt=[innerWidth/2, innerHeight/2];
+  document.addEventListener('mousemove',function(e){ pt=[e.clientX,e.clientY]; },true);
+  // 起点：就在光标处；但若是刚点了放大镜按钮（光标压在按钮上），改用页面中心，免得一开就盖住按钮
+  function startPt(){
+    var b=btn.getBoundingClientRect();
+    if(pt[0]>b.left-60 && pt[0]<b.right+60 && pt[1]>b.top-60 && pt[1]<b.bottom+60) return [innerWidth/2, innerHeight/2];
+    return [pt[0],pt[1]];
+  }
+  function enter(){
+    if(on) return; on=true; lock=false; btn.classList.add('on'); document.body.classList.add('loupe-on');
+    build(); lens.style.display='block'; tip.style.display='block'; panel.style.display='block';
+    lens.classList.remove('lock'); refreshTip();
+    last=startPt(); update(last[0],last[1]);
+    document.addEventListener('mousemove',onMove,true); addI();
+  }
+  function exit(){
+    if(!on) return; on=false; lock=false; btn.classList.remove('on'); document.body.classList.remove('loupe-on');
+    lens.classList.remove('lock');
+    lens.style.display='none'; tip.style.display='none'; panel.style.display='none';
+    document.removeEventListener('mousemove',onMove,true); remI();
+    lens.innerHTML=''; clone=null;
+  }
+  function onMove(e){ if(!on) return; last=[e.clientX,e.clientY]; if(lock) return; update(e.clientX,e.clientY); }
+  function setZ(z){ Z=clamp(z,1.5,8); lpZoom.value=Z; lpZoomV.textContent=Z.toFixed(1)+'×'; update(last[0],last[1]); }
+  function setL(l){ L=clamp(l,180,520); lpSize.value=L; lpSizeV.textContent=L; lens.style.width=L+'px'; lens.style.height=L+'px'; update(last[0],last[1]); }
+  btn.addEventListener('click',function(e){ e.stopPropagation(); on?exit():enter(); });
+  lpZoom.addEventListener('input',function(){ setZ(parseFloat(this.value)); });
+  lpSize.addEventListener('input',function(){ setL(parseFloat(this.value)); });
+
+  function inCtrl(e){ return e.target===btn||btn.contains(e.target)||panel.contains(e.target); }
+  var inter=[
+    ['wheel',function(e){ if(inCtrl(e)) return; if(!on) return; e.stopImmediatePropagation(); e.preventDefault(); setZ(Z+(e.deltaY<0?0.3:-0.3)); },true],
+    ['click',function(e){ if(inCtrl(e)) return; if(!on) return; e.stopImmediatePropagation(); e.preventDefault();
+      lock=!lock; lens.classList.toggle('lock',lock); if(!lock) update(last[0],last[1]); refreshTip(); },true],
+    ['contextmenu',function(e){ if(inCtrl(e)) return; if(!on) return; e.stopImmediatePropagation(); e.preventDefault(); },true],
+    ['keydown',function(e){ if(inCtrl(e)) return; if(!on) return; if(e.key==='Escape') exit(); else { e.stopImmediatePropagation(); e.preventDefault(); } },true],
+    ['touchstart',function(e){ if(inCtrl(e)) return; if(!on) return; e.stopImmediatePropagation(); e.preventDefault(); },true],
+    ['touchend',function(e){ if(inCtrl(e)) return; if(!on) return; e.stopImmediatePropagation(); e.preventDefault(); },true]
+  ];
+  function addI(){ for(var i=0;i<inter.length;i++) document.addEventListener(inter[i][0],inter[i][1],true); }
+  function remI(){ for(var i=0;i<inter.length;i++) document.removeEventListener(inter[i][0],inter[i][1],true); }
+  window.__loupe={enter:enter,exit:exit,setZ:setZ,setL:setL,getZ:function(){return Z;},getL:function(){return L;},isOn:function(){return on;},isLock:function(){return lock;}};
+})();
+
+  </script>
+  </body>
+</html>
