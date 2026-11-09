@@ -326,6 +326,46 @@
 }
 </style>
 
+<!-- MOBILE PATCH 03e — 章节专属手机端修正（独立样式块） -->
+<style id="mLayerPatchCss">
+/* MOBILE PATCH 03e — 第 4 周《分支语句示例》章节专属手机端修正。
+   例3-9 分段函数：桌面为投影设计了 .math.big（y 88px / 表达式 64px / 条件 37px），
+   手机 430px 下被撑到 485×736px，条件文字被挤成竖排单字列，整页高达 1311px。
+   这里重排为紧凑的「分段卡」：三行上下分隔、表达式 20px、条件 13px 横排右对齐；
+   大括号 SVG 由同名 .js 等比缩小到与三行等高。教学文字与公式内容一字未改。 */
+@media (max-width:720px){
+  .math.big.m-math{
+    display:flex!important;align-items:stretch!important;gap:8px!important;
+    width:100%!important;max-width:100%!important;box-sizing:border-box!important;
+    background:#fff;border:1px solid #dce7f1;border-radius:14px;
+    padding:12px 12px!important;margin:10px 0 4px!important;
+    box-shadow:0 2px 8px rgba(13,43,69,.06);line-height:1.2!important;
+  }
+  .math.big.m-math .v{font-size:26px!important;align-self:center!important;flex:0 0 auto!important;}
+  .math.big.m-math .eq{font-size:24px!important;margin:0 2px!important;
+    align-self:center!important;flex:0 0 auto!important;}
+  .math.big.m-math .brace{flex:0 0 auto!important;align-self:center!important;margin:0!important;}
+  .math.big.m-math .rows{
+    display:flex!important;flex-direction:column!important;justify-content:space-between!important;
+    flex:1 1 auto!important;min-width:0!important;gap:0!important;
+  }
+  .math.big.m-math .row{
+    display:flex!important;align-items:baseline!important;gap:8px!important;
+    min-width:0!important;padding:7px 0!important;border-bottom:1px dashed #dce7f1;
+  }
+  .math.big.m-math .row:last-child{border-bottom:none!important;}
+  .math.big.m-math .f{
+    font-size:20px!important;font-style:italic!important;color:#1d2b36;
+    width:auto!important;min-width:0!important;flex:0 0 42%!important;white-space:nowrap!important;
+  }
+  .math.big.m-math .c{
+    font-size:13px!important;line-height:1.4!important;font-style:normal!important;
+    color:#5b6b7b;text-align:right;white-space:nowrap!important;
+    flex:1 1 auto!important;min-width:0!important;
+  }
+}
+</style>
+
 </head>
 <body>
   <div id="stage">  <!-- 全局流程图箭头定义（供各页 SVG 引用，只需一处） -->
@@ -1907,6 +1947,60 @@ Exceed 12%. Ticket 200</div>
       if(e.key==="Escape" && !view.classList.contains("hidden")) closeImg();
     });
   }
+})();
+</script>
+
+<script>
+/* MOBILE PATCH 03e — 章节专属「仅手机端」分段函数重排。
+   桌面视口直接 return，桌面 DOM 与分页零改动。
+   自检结果写在 documentElement 的 data-mpatch 上，供 verify_mobile.py 核对：
+   [分段卡高度 < 250px, 条件文字已横排（宽 > 高的 2 倍）]，期望 1,1 */
+(function(){
+  if(!window.matchMedia("(max-width:720px)").matches) return;
+  var ok=[0,0];
+
+  function slideByTitle(key){
+    var ss=document.querySelectorAll('.slide');
+    for(var i=0;i<ss.length;i++){
+      var t=ss[i].querySelector('.s-title');
+      if(t && (t.textContent||'').indexOf(key)>=0) return ss[i];
+    }
+    return null;
+  }
+
+  var s=slideByTitle('分段函数');
+  if(s){
+    var m=s.querySelector('.math.big');
+    if(m){
+      m.classList.add('m-math');
+      var rows=m.querySelector('.rows'), brace=m.querySelector('.brace');
+      if(rows&&brace){
+        /* 原 SVG 自带 width=34 height=318，作为 flex 子项会把 .rows 也 stretch 到 318px，
+           直接测 rows 会量回 318、缩小等于没做。先让括号退出高度计算，
+           量出三行内容的自然高度，再按 34:318 等比缩回，括号形状不走样；
+           描边同步加粗，避免等比缩小后线太细 */
+        brace.style.setProperty('width','0px','important');
+        brace.style.setProperty('height','0px','important');
+        var h=Math.round(rows.getBoundingClientRect().height);
+        if(h>40){
+          var w=Math.max(10,Math.round(h*34/318));
+          brace.setAttribute('width',w);
+          brace.setAttribute('height',h);
+          brace.style.setProperty('width',w+'px','important');
+          brace.style.setProperty('height',h+'px','important');
+          var path=brace.querySelector('path');
+          if(path) path.setAttribute('stroke-width','7');
+        }
+      }
+      ok[0]=(m.getBoundingClientRect().height<250)?1:0;
+      var c=m.querySelector('.c');
+      if(c){
+        var r=c.getBoundingClientRect();
+        ok[1]=(r.width>r.height*2)?1:0;
+      }
+    }
+  }
+  document.documentElement.setAttribute('data-mpatch',ok.join(','));
 })();
 </script>
 

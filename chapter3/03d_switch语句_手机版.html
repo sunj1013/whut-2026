@@ -310,6 +310,26 @@
 }
 </style>
 
+<!-- MOBILE PATCH 03d — 章节专属手机端修正（独立样式块） -->
+<style id="mLayerPatchCss">
+/* MOBILE PATCH 03d — 第 4 周《switch 语句》章节专属手机端修正。
+   自带 @media 包裹，作为独立 style 块注入，桌面端完全不受影响。
+   由 build_mobile.py --patch 03d 注入；字号自检见同名 .js。 */
+@media (max-width:720px){
+  /* 桌面模板为「折叠块尚未点开、需要放大代码讲解」写了
+     .two.w5:has(> .coll:not(.open)) pre.code{font-size:40px!important}。
+     手机 expand 模式只用 CSS 展开、不会给 .coll 加 open 类，
+     于是手机端仍命中 40px，且特异性高于手机层 pre.code 的 13px，
+     代码被放大并横向裁切。此处用同等特异性 + 后置样式块压回 13px，
+     与下一页「改进：每个分支末尾加上 break」的代码字号完全一致。 */
+  .two.w5:has(> .coll:not(.open)) pre.code,
+  .two.w5 pre.code{
+    font-size:13px!important;
+    line-height:1.5!important;
+  }
+}
+</style>
+
 </head>
 <body>
   <div id="stage">
@@ -1481,6 +1501,40 @@ error: case label does not
       if(e.key==="Escape" && !view.classList.contains("hidden")) closeImg();
     });
   }
+})();
+</script>
+
+<script>
+/* MOBILE PATCH 03d — 章节专属「仅手机端」字号自检。
+   桌面视口直接 return，桌面 DOM / 分页零改动。
+   自检结果写在 documentElement 的 data-mpatch 上，供 verify_mobile.py 核对：
+   [照原样改写的代码字号 = 改进页代码字号, 代码块未超视口]，期望 1,1 */
+(function(){
+  if(!window.matchMedia("(max-width:720px)").matches) return;
+  var ok=[0,0];
+
+  function slideByTitle(key){
+    var ss=document.querySelectorAll('.slide');
+    for(var i=0;i<ss.length;i++){
+      var t=ss[i].querySelector('.s-title');
+      if(t && (t.textContent||'').indexOf(key)>=0) return ss[i];
+    }
+    return null;
+  }
+
+  var a=slideByTitle('直接把 if 改成 switch');
+  var b=slideByTitle('改进：每个分支末尾加上 break');
+  if(a&&b){
+    var p=a.querySelector('pre.code'), q=b.querySelector('pre.code');
+    if(p&&q){
+      var f1=parseFloat(getComputedStyle(p).fontSize);
+      var f2=parseFloat(getComputedStyle(q).fontSize);
+      ok[0]=(f1>0 && Math.abs(f1-f2)<0.6)?1:0;
+      var r=p.getBoundingClientRect();
+      ok[1]=(r.width>0 && r.right<=window.innerWidth+1)?1:0;
+    }
+  }
+  document.documentElement.setAttribute('data-mpatch',ok.join(','));
 })();
 </script>
 
