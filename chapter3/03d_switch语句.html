@@ -126,7 +126,34 @@
   .sc{background:#fff;border:1px solid var(--line);border-radius:10px;padding:6px;box-shadow:0 6px 16px rgba(18,79,131,.10);}
   .sc img{display:block;width:100%;height:auto;border-radius:6px;}
   .sc .cap{font-size:20px;color:var(--muted);text-align:center;padding:6px 0 2px;letter-spacing:.5px;}
-</style>
+
+  /* ===== 页面放大镜 loupe 工具（以光标为中心放大 + 单击锁定 + 滑块面板，2026-10-30 改进） ===== */
+  #btnLoupe{position:fixed;right:18px;bottom:84px;z-index:60;width:54px;height:54px;border:none;border-radius:50%;
+    background:linear-gradient(135deg,#1a6fb5,#0e4f86);color:#fff;font-size:24px;cursor:pointer;
+    box-shadow:0 6px 16px rgba(26,111,181,.4);display:flex;align-items:center;justify-content:center;user-select:none;}
+  #btnLoupe.on{background:linear-gradient(135deg,#e8720c,#c55807);box-shadow:0 6px 16px rgba(232,114,12,.45);}
+  #loupe{position:fixed;width:320px;height:320px;border-radius:14px;background:#fff;
+    overflow:hidden;box-shadow:0 0 0 3px #1a6fb5,0 12px 34px rgba(0,0,0,.35);z-index:70;pointer-events:none;display:none;}
+  #loupe .lens-stage{position:absolute;left:0;top:0;transform-origin:0 0;}
+  #loupe .lens-stage *{animation:none !important;transition:none !important;}
+  /* 中心准星：直观标出“正在放大的是这一点” */
+  #loupe::before,#loupe::after{content:'';position:absolute;z-index:3;pointer-events:none;background:rgba(232,114,12,.8);}
+  #loupe::before{left:50%;top:50%;width:1px;height:20px;margin:-10px 0 0 -0.5px;}
+  #loupe::after{left:50%;top:50%;width:20px;height:1px;margin:-0.5px 0 0 -10px;}
+  #loupe.lock{box-shadow:0 0 0 3px #e8720c,0 12px 34px rgba(0,0,0,.35);}
+  #loupeTip{position:fixed;left:50%;top:14px;transform:translateX(-50%);background:rgba(14,79,134,.92);color:#fff;
+    font-size:18px;padding:8px 18px;border-radius:999px;z-index:70;display:none;pointer-events:none;white-space:nowrap;
+    box-shadow:0 6px 16px rgba(0,0,0,.3);}
+  #loupePanel{position:fixed;left:18px;bottom:18px;z-index:75;background:rgba(20,28,38,.92);color:#e8eef5;
+    border-radius:12px;padding:12px 16px;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,.4);display:none;width:236px;}
+  #loupePanel .ttl{font-size:13px;color:#7fd0ff;margin-bottom:6px;display:flex;align-items:center;gap:6px;}
+  #loupePanel .row{display:flex;align-items:center;gap:10px;margin:7px 0;}
+  #loupePanel label{width:40px;color:#9fb4c8;flex:none;}
+  #loupePanel input[type=range]{flex:1;accent-color:#1a6fb5;cursor:pointer;}
+  #loupePanel .val{width:48px;text-align:right;color:#fff;font-variant-numeric:tabular-nums;}
+  body.loupe-on{cursor:crosshair;}
+
+  </style>
 </head>
 <body>
   <div id="stage">
@@ -559,8 +586,8 @@ Error</div>
           <pre class="code" style="font-size:27px;line-height:1.48;"><span class="kw">switch</span>(month)
 {
     <span class="kw">case</span> <span class="num">12</span>: <span class="kw">case</span> <span class="num">1</span>: <span class="kw">case</span> <span class="num">2</span>: printf(<span class="str">"冬季\n"</span>);
-    <span class="kw">case</span> <span class="num">3</span>:  <span class="kw">case</span> <span class="num">4</span>: <span class="kw">case</span> <span class="num">5</span>: printf(<span class="str">"春季\n"</span>); <span class="kw">break</span>;
-    <span class="kw">case</span> <span class="num">6</span>:  <span class="kw">case</span> <span class="num">7</span>: <span class="kw">case</span> <span class="num">8</span>: printf(<span class="str">"夏季\n"</span>); <span class="kw">break</span>;
+    <span class="kw">case</span> <span class="num">3</span>:  <span class="kw">case</span> <span class="num">4</span>: <span class="kw">case</span> <span class="num">5</span>: printf(<span class="str">"春季\n"</span>); 
+    <span class="kw">case</span> <span class="num">6</span>:  <span class="kw">case</span> <span class="num">7</span>: <span class="kw">case</span> <span class="num">8</span>: printf(<span class="str">"夏季\n"</span>); 
     <span class="kw">case</span> <span class="num">9</span>:  <span class="kw">case</span> <span class="num">10</span>: <span class="kw">case</span> <span class="num">11</span>: printf(<span class="str">"秋季\n"</span>); <span class="kw">break</span>;
     <span class="kw">default</span>: printf(<span class="str">"输入错误\n"</span>);
 }</pre>
@@ -1058,5 +1085,113 @@ error: case label does not
   go(0);
 })();
 </script>
-</body>
+<script>
+
+(function(){
+  var stage=document.getElementById('stage'); if(!stage) return;
+  var L=320, Z=2.5, on=false, lens=null, tip=null, panel=null, clone=null, btn=null;
+  var last=[innerWidth/2, innerHeight/2];
+  var lock=false;
+
+  btn=document.createElement('button'); btn.id='btnLoupe';
+  btn.title='放大镜：移动鼠标查看细节，Esc 退出'; btn.textContent='\uD83D\uDD0D';
+  document.body.appendChild(btn);
+
+  tip=document.createElement('div'); tip.id='loupeTip';
+  tip.textContent='\uD83D\uDD0D 放大镜：鼠标移到哪儿，就以那儿为中心放大 · 单击锁定位置 · 滚轮调倍数 · Esc 退出';
+  document.body.appendChild(tip);
+
+  lens=document.createElement('div'); lens.id='loupe'; document.body.appendChild(lens);
+
+  panel=document.createElement('div'); panel.id='loupePanel';
+  panel.innerHTML='<div class="ttl">\uD83D\uDD0D 放大镜设置</div>'
+    +'<div class="row"><label>缩放</label><input id="lpZoom" type="range" min="1.5" max="8" step="0.1" value="2.5"><span class="val" id="lpZoomV">2.5×</span></div>'
+    +'<div class="row"><label>尺寸</label><input id="lpSize" type="range" min="180" max="520" step="10" value="320"><span class="val" id="lpSizeV">320</span></div>';
+  document.body.appendChild(panel);
+  var lpZoom=panel.querySelector('#lpZoom'), lpZoomV=panel.querySelector('#lpZoomV');
+  var lpSize=panel.querySelector('#lpSize'), lpSizeV=panel.querySelector('#lpSizeV');
+
+  function build(){
+    clone=stage.cloneNode(true); clone.removeAttribute('id');
+    var ids=clone.querySelectorAll('[id]'); for(var i=0;i<ids.length;i++) ids[i].removeAttribute('id');
+    clone.style.transform=''; clone.style.width=''; clone.style.height='';
+    clone.style.position='absolute'; clone.classList.add('lens-stage');
+    lens.innerHTML=''; lens.appendChild(clone);
+  }
+  function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+  function refreshTip(){
+    tip.textContent = lock
+      ? '🔒 已锁定该位置 · 单击任意处解除锁定 · Esc 退出'
+      : '🔍 放大镜：鼠标移到哪儿，就以那儿为中心放大 · 单击锁定位置 · 滚轮调倍数 · Esc 退出';
+  }
+
+  // 把光标处的幻灯片内容放到透镜中心，并按 Z 放大（translate+scale，origin 0 0，避免 border 偏移）
+  function update(cx,cy){
+    var r=stage.getBoundingClientRect();
+    var iw=stage.offsetWidth, ih=stage.offsetHeight;
+    // 克隆体去掉了 #stage 的 id，需显式给定固有尺寸，否则 .slide(inset:0) 会塌成 0
+    clone.style.width=iw+'px'; clone.style.height=ih+'px';
+    var s=parseFloat(getComputedStyle(stage).getPropertyValue('--s'))||1;
+    var fx=clamp((cx-r.left)/r.width,0,1), fy=clamp((cy-r.top)/r.height,0,1);
+    var k=s*Z;
+    var px=fx*iw, py=fy*ih;
+    var q=position(cx,cy), ox=q[0], oy=q[1];
+    clone.style.transformOrigin='0 0';
+    // 点 (px,py) 经 scale(k) 后到 (k*px,k*py)，再 translate 让它落在透镜内的光标位置
+    clone.style.transform='translate('+(ox - k*px)+'px,'+(oy - k*py)+'px) scale('+k+')';
+  }
+  // 透镜定位：以鼠标所在点为中心；靠近视口边缘时贴边，光标处内容仍精确对齐
+  function position(cx,cy){
+    var lx=clamp(cx-L/2, 8, Math.max(8, innerWidth-L-8));
+    var ly=clamp(cy-L/2, 8, Math.max(8, innerHeight-L-8));
+    lens.style.left=lx+'px'; lens.style.top=ly+'px';
+    return [cx-lx, cy-ly];   // 光标在透镜内的局部坐标（未贴边时就是 L/2）
+  }
+  // 常驻记录鼠标位置：进入放大镜时直接从当前光标处开始，不再从屏幕中心跳一下
+  var pt=[innerWidth/2, innerHeight/2];
+  document.addEventListener('mousemove',function(e){ pt=[e.clientX,e.clientY]; },true);
+  // 起点：就在光标处；但若是刚点了放大镜按钮（光标压在按钮上），改用页面中心，免得一开就盖住按钮
+  function startPt(){
+    var b=btn.getBoundingClientRect();
+    if(pt[0]>b.left-60 && pt[0]<b.right+60 && pt[1]>b.top-60 && pt[1]<b.bottom+60) return [innerWidth/2, innerHeight/2];
+    return [pt[0],pt[1]];
+  }
+  function enter(){
+    if(on) return; on=true; lock=false; btn.classList.add('on'); document.body.classList.add('loupe-on');
+    build(); lens.style.display='block'; tip.style.display='block'; panel.style.display='block';
+    lens.classList.remove('lock'); refreshTip();
+    last=startPt(); update(last[0],last[1]);
+    document.addEventListener('mousemove',onMove,true); addI();
+  }
+  function exit(){
+    if(!on) return; on=false; lock=false; btn.classList.remove('on'); document.body.classList.remove('loupe-on');
+    lens.classList.remove('lock');
+    lens.style.display='none'; tip.style.display='none'; panel.style.display='none';
+    document.removeEventListener('mousemove',onMove,true); remI();
+    lens.innerHTML=''; clone=null;
+  }
+  function onMove(e){ if(!on) return; last=[e.clientX,e.clientY]; if(lock) return; update(e.clientX,e.clientY); }
+  function setZ(z){ Z=clamp(z,1.5,8); lpZoom.value=Z; lpZoomV.textContent=Z.toFixed(1)+'×'; update(last[0],last[1]); }
+  function setL(l){ L=clamp(l,180,520); lpSize.value=L; lpSizeV.textContent=L; lens.style.width=L+'px'; lens.style.height=L+'px'; update(last[0],last[1]); }
+  btn.addEventListener('click',function(e){ e.stopPropagation(); on?exit():enter(); });
+  lpZoom.addEventListener('input',function(){ setZ(parseFloat(this.value)); });
+  lpSize.addEventListener('input',function(){ setL(parseFloat(this.value)); });
+
+  function inCtrl(e){ return e.target===btn||btn.contains(e.target)||panel.contains(e.target); }
+  var inter=[
+    ['wheel',function(e){ if(inCtrl(e)) return; if(!on) return; e.stopImmediatePropagation(); e.preventDefault(); setZ(Z+(e.deltaY<0?0.3:-0.3)); },true],
+    ['click',function(e){ if(inCtrl(e)) return; if(!on) return; e.stopImmediatePropagation(); e.preventDefault();
+      lock=!lock; lens.classList.toggle('lock',lock); if(!lock) update(last[0],last[1]); refreshTip(); },true],
+    ['contextmenu',function(e){ if(inCtrl(e)) return; if(!on) return; e.stopImmediatePropagation(); e.preventDefault(); },true],
+    ['keydown',function(e){ if(inCtrl(e)) return; if(!on) return; if(e.key==='Escape') exit(); else { e.stopImmediatePropagation(); e.preventDefault(); } },true],
+    ['touchstart',function(e){ if(inCtrl(e)) return; if(!on) return; e.stopImmediatePropagation(); e.preventDefault(); },true],
+    ['touchend',function(e){ if(inCtrl(e)) return; if(!on) return; e.stopImmediatePropagation(); e.preventDefault(); },true]
+  ];
+  function addI(){ for(var i=0;i<inter.length;i++) document.addEventListener(inter[i][0],inter[i][1],true); }
+  function remI(){ for(var i=0;i<inter.length;i++) document.removeEventListener(inter[i][0],inter[i][1],true); }
+  window.__loupe={enter:enter,exit:exit,setZ:setZ,setL:setL,getZ:function(){return Z;},getL:function(){return L;},isOn:function(){return on;},isLock:function(){return lock;}};
+})();
+
+  </script>
+  </body>
 </html>
