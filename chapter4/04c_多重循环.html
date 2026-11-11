@@ -282,12 +282,12 @@
 
   <!-- 5 两条铁律：外一次、内一遍 -->
   <section class="slide">
-    <div class="s-title">两条铁律：外一次、内一遍</div>
+    <div class="s-title">执行规则：外一次、内一遍</div>
     <div class="s-body">
-      <div class="s-sub" style="margin-top:0">记住这两条，任何嵌套都能手推</div>
+     
       <div class="two" style="margin-top:6px;align-items:start">
         <div>
-          <div class="box key" style="margin-top:0"><span class="label">铁律一</span>外层每执行 <b>1 次</b>，内层就要从<b>头到尾完整执行 1 遍</b>。</div>
+          <div class="box key" style="margin-top:0"><span class="label">规则一： </span> 外层每执行 <b>1 次</b>，内层就要从<b>头到尾完整执行 1 遍</b>。</div>
           <pre class="code" style="font-size:32px;margin-top:12px"><span class="kw">for</span> (i = <span class="num">0</span>; i &lt; <span class="num">3</span>; i++) {
     <span class="kw">for</span> (j = <span class="num">1</span>; j &lt;= <span class="num">4</span>; j++)
         <span class="kw">printf</span>(<span class="str">" %d"</span>, j);
@@ -303,7 +303,7 @@
               <tr><td>2</td><td>1 2 3 4</td><td>1 2 3 4</td></tr>
             </tbody>
           </table>
-          <div class="box tip" style="margin-top:12px"><span class="label">铁律二</span>j 从 1 变到 4 的这段时间里，外层的 i <b>一直是同一个值</b>。</div>
+          <div class="box tip" style="margin-top:12px"><span class="label">规则二： </span> j 从 1 变到 4 的这段时间里，外层的 i <b>一直是同一个值</b>。</div>
         </div>
       </div>
       <div class="box warn" style="margin-top:14px"><span class="label">推论</span>两层各跑 3 次和 4 次，循环体一共执行 <span class="tex"><span class="num">3</span><span class="op">×</span><span class="num">4</span><span class="op">=</span><span class="num">12</span></span> 次——这个乘法就是估算运行量的方法。</div>
@@ -362,7 +362,7 @@
             </ul>
           </div>
           <div class="reveal step" style="margin-top:14px">
-            <div class="s-sub orange" style="margin-top:0">于是：外层管行，内层管列</div>
+            <div class="s-sub orange" style="margin-top:0"> 外层管行，内层管列</div>
             <pre class="code" style="font-size:24px;line-height:1.4"><span class="kw">for</span> (i = <span class="num">1</span>; i &lt;= m; i++) {        <span class="cmt">/* 外层：m 行 */</span>
     <span class="kw">for</span> (j = <span class="num">1</span>; j &lt;= n; j++)    <span class="cmt">/* 内层：一行 n 个 */</span>
         <span class="kw">printf</span>(<span class="str">"*"</span>);
@@ -373,7 +373,7 @@
          
       </div>
        <div class="reveal step">
-            <div class="box red" style="margin-top:0;font-size:25px;line-height:1.4;padding:10px 22px"><span class="label" style="">初学最常见的错误​</span>把 <code class="inline" style="font-size:24px">printf("\n")</code> 写进内层 → 打一个星号就换行，屏幕上成了一条<b>竖线</b>。</div>
+            <div class="box red" style="margin-top:0;font-size:25px;line-height:1.4;padding:10px 22px"><span class="label" style="">初学最常见的错误： ​</span> 把 <code class="inline" style="font-size:24px">printf("\n")</code> 写进内层 → 打一个星号就换行，屏幕上成了一条<b>竖线</b>。</div>
           </div>
       <div class="reveal-hint" data-label="点一下看看">点一下看看（2 / 2）</div>
     </div>
@@ -418,7 +418,7 @@
 }</pre>
           </div>
           <div class="reveal step">
-            <div class="box tip" style="margin-top:0;font-size:27px;line-height:1.5"><span class="label">抓三处</span>① 外层管<b>行数</b>； 　② 内层终点写 <code class="inline">i</code>；
+            <div class="box tip" style="margin-top:0;font-size:27px;line-height:1.5"><span class="label">抓三处</span>① 外层管<b>行数</b>； 　② 内层终点为 <code class="inline">i</code>；
             <br> 　　　 ③ 换行留在<b>外层</b>，一行只换一次。</div>
           </div>
         </div>
@@ -454,7 +454,7 @@
         <div>
           <div class="box warn" style="margin-top:0;font-size:28px;line-height:1.4;padding:10px 22px"><span class="label" style="">分析：​</span>个数要随 <b>i</b> 变小：用一个含  <b>i</b> 的式子，怎么表达？</div>
           <div class="reveal step col">
-            <div class="box key" style="margin-top: 12px; font-size: 28px; line-height: 1.4; padding: 10px 22px;">端点：　<span class="label">i + j = m + 1</span>　　 <b>端点j</b>为 <code class="inline">m+1-i</code>。</div>
+            <div class="box key" style="margin-top: 12px; font-size: 28px; line-height: 1.4; padding: 10px 22px;"><span class="label">端点：　i + j = m + 1</span>　　 <b>端点 j </b> 为 <code class="inline">m+1-i</code>。</div>
           </div>
           <div class="reveal step">
             <div class="s-sub orange" style="margin-top:0">把内层终点换成 m+1−i</div>
@@ -463,6 +463,8 @@
         <span class="kw">printf</span>(<span class="str">"*"</span>);
     <span class="kw">printf</span>(<span class="str">"\n"</span>);
 }</pre>
+          </div>
+          <div class="reveal step">
             <div class="box tip" style="margin-top:6px;font-size:28px;line-height:1.35;padding:9px 20px"><span class="label">等价写法</span>倒着数也行：<code class="inline">for (j = m; j &gt;= i; j--)</code>，每行同样少一个。</div>
           </div>
          
@@ -593,10 +595,10 @@
   *****
    *****
     *****</pre></div>
-        <div class="card orange"><h4><span class="ico">②</span>金字塔</h4><pre style="font-family:Consolas,'Courier New',monospace;font-size:24px;line-height:1.22;margin:0;color:var(--blue-700)">    *
-   ***
-  *****
- *******
+        <div class="card orange"><h4><span class="ico">②</span>空心塔（封底）</h4><pre style="font-family:Consolas,'Courier New',monospace;font-size:24px;line-height:1.22;margin:0;color:var(--blue-700)">    *
+   * *
+  *   *
+ *     *
 *********</pre></div>
         <div class="card green"><h4><span class="ico">③</span>菱形</h4><pre style="font-family:Consolas,'Courier New',monospace;font-size:24px;line-height:1.22;margin:0;color:var(--blue-700)">   *
   ***
@@ -605,14 +607,16 @@
  *****
   ***
    *</pre></div>
-        <div class="card purple"><h4><span class="ico">④</span>空心塔</h4><pre style="font-family:Consolas,'Courier New',monospace;font-size:24px;line-height:1.22;margin:0;color:var(--blue-700)">    *
-   * *
-  *   *
- *     *
-*       *</pre></div>
+        <div class="card purple"><h4><span class="ico">④</span>空心菱形</h4><pre style="font-family:Consolas,'Courier New',monospace;font-size:24px;line-height:1.22;margin:0;color:var(--blue-700)">   *
+  * *
+ *   *
+*     *
+ *   *
+  * *
+   *</pre></div>
       </div>
       <div class="box key" style="margin-top:14px"><span class="label">分析三步</span>① 一共几行（外层次数）→ ② 第 i 行前面几个空格 → ③ 这一行几个星号。把 ② ③ 写成内层循环，就完事了。</div>
-      <div class="box tip" style="margin-top:10px"><span class="label">提示</span>图一每行整体右移一格：先空 i−1 格，再打固定个数；图三 = 图二的上半段 + 图二的倒影；图四每行只有边框两个星号，中间全打空格。</div>
+      <div class="box tip" style="margin-top:10px"><span class="label">提示</span>图一先空 i−1 格，再打固定个数；图二最后一行打满，其余每行只打两端；图三 = 上半段 + 倒影；图四每行只打两端，中间全空格。</div>
     </div>
   </section>
 
@@ -687,58 +691,54 @@ out: ;</pre>
     </div>
   </section>
 
-  <!-- 17 回收引例：把它塞进外层循环 -->
+  <!-- 17 回收引例：结构与代码 -->
   <section class="slide">
-    <div class="s-title">回收引例：塞进外层循环</div>
+    <div class="s-title">回收引例：结构与代码</div>
     <div class="s-body">
-      <div class="s-sub" style="margin-top:0">回到开头那道题：外层换数、内层判断——把"判断一个数"整段包进去</div>
-      <pre class="code" style="font-size:32px"><span class="kw">int</span> x, i, flag;
-<span class="kw">for</span> (x = <span class="num">2</span>; x &lt;= <span class="num">100</span>; x++) {                    <span class="cmt">/* 外层：换一个数 */</span>
-    flag = <span class="num">1</span>;                                   <span class="cmt">/* 每个数都要重新假设 */</span>
-    <span class="kw">for</span> (i = <span class="num">2</span>; i &lt;= sqrt(x); i++)              <span class="cmt">/* 内层：判断这个数 */</span>
-        <span class="kw">if</span> (x % i == <span class="num">0</span>) { flag = <span class="num">0</span>; <span class="kw">break</span>; }
-    <span class="kw">if</span> (flag) <span class="kw">printf</span>(<span class="str">"%d "</span>, x);                 <span class="cmt">/* 是素数就打印 */</span>
-}</pre>
-      <div class="two" style="margin-top:14px;align-items:start">
-        <div class="box key" style="margin-top:0"><span class="label">外层</span>管"现在轮到判定哪个数"——　x 从 2 走到 100。</div>
-        <div class="box warn" style="margin-top:0"><span class="label">内层</span>管"这个数能不能被整除"——　i 从 2 走到 <span class="tex"><span class="sq">&radic;<span class="sq-b"><i>x</i></span></span></span>。</div>
-      </div>
-      <div class="out" style="margin-top:12px">2 3 5 7 11 13 17 19 23 29 31 37 41 43 47 53 59 61 67 71 73 79 83 89 97</div>
-    </div>
-  </section>
-
-  <!-- 18 结构一眼看清：N-S 图 -->
-  <section class="slide">
-    <div class="s-title">结构一眼看清：N-S 图</div>
-    <div class="s-body">
-      <div style="display:grid;grid-template-columns:470px 1fr;gap:34px;align-items:start">
+      <div class="two" style="margin-top:0;align-items:start;grid-template-columns:370px 1fr;gap:24px">
         <div class="flow">
           <div class="cap">外层转一圈，内层跑一遍</div>
-          <svg viewBox="0 0 320 400" style="max-width:440px">
+          <svg viewBox="0 0 320 400" style="max-width:330px">
             <rect class="fc-ns" height="384" rx="10" width="304" x="8" y="8"></rect>
             <path class="fc-ns-cond" d="M8,18 a10,10 0 0 1 10,-10 h284 a10,10 0 0 1 10,10 v48 h-226 v326 h-68 a10,10 0 0 1 -10,-10 v-364 z"></path>
             <path class="fc-ns-cond" d="M86,150 H312 V202 H128 V324 H86 Z"></path>
             <line class="fc-ns-line" x1="128" x2="312" y1="262" y2="262"></line>
             <line class="fc-ns-line" x1="128" x2="312" y1="324" y2="324"></line>
-            <text class="fc-ns-t" font-size="24" font-weight="700" text-anchor="middle" x="160" y="45">当 x ≤ 100</text>
+            <foreignObject x="60" y="19" width="200" height="36">
+              <div xmlns="http://www.w3.org/1999/xhtml" style="height:100%;text-align:center;line-height:36px;font-size:24px;font-weight:700;white-space:nowrap">当 \(x\le 100\)</div>
+            </foreignObject>
             <text class="fc-ns-t" font-size="24" text-anchor="middle" x="199" y="100">flag = 1</text>
             <text class="fc-ns-t" font-size="24" text-anchor="middle" x="199" y="134">i = 2</text>
-            <text class="fc-ns-t" font-size="24" font-weight="700" text-anchor="middle" x="199" y="184">当 i ≤ √<tspan font-style="italic">x</tspan></text>
+            <foreignObject x="99" y="158" width="200" height="36">
+              <div xmlns="http://www.w3.org/1999/xhtml" style="height:100%;text-align:center;line-height:36px;font-size:24px;font-weight:700;white-space:nowrap">当 \(i\le\sqrt{x}\)</div>
+            </foreignObject>
             <text class="fc-ns-t" font-size="24" text-anchor="middle" x="220" y="240">x % i == 0</text>
             <text class="fc-ns-t" font-size="24" text-anchor="middle" x="220" y="301">flag=0; break</text>
             <text class="fc-ns-t" font-size="24" text-anchor="middle" x="199" y="366">x++</text>
           </svg>
         </div>
         <div>
-          <div class="box key" style="margin-top:0"><span class="label">读图顺序</span>从最外层往里读：x 每取一个新值，才轮到内层把 i 从 2 试到 <span class="tex"><span class="sq">&radic;<span class="sq-b"><i>x</i></span></span></span>。</div>
-          <div class="box tip"><span class="label">内层跑的时候</span>x <b>不动</b>——它只在自己那一层转完一圈后才加 1。</div>
-          <div class="box warn"><span class="label">嵌套的代价</span>外层的 99 圈 × 内层每圈十几次 ≈ 上千次判断，而代码只有 8 行。</div>
+          <div class="box key" style="margin-top:0;font-size:28px;line-height:1.4;padding:8px 22px"><span class="label">读图顺序</span>从最外层往里读：x 每取一个新值，才轮到内层把 i 从 2 试到 <span class="tex"><span class="sq">&radic;<span class="sq-b"><i>x</i></span></span></span>。</div>
+          <div class="reveal step">
+            <pre class="code" style="font-size:32px;line-height:1.32"><span class="kw">int</span> x, i, flag;
+<span class="kw">for</span> (x = <span class="num">2</span>; x &lt;= <span class="num">100</span>; x++) {
+    flag = <span class="num">1</span>;
+    <span class="kw">for</span> (i = <span class="num">2</span>; i &lt;= sqrt(x); i++)
+        <span class="kw">if</span> (x % i == <span class="num">0</span>) { flag = <span class="num">0</span>; <span class="kw">break</span>; }
+    <span class="kw">if</span> (flag) <span class="kw">printf</span>(<span class="str">"%d "</span>, x);
+}</pre>
+          </div>
         </div>
       </div>
+      <div class="reveal step">
+        <div class="out" style="margin-top:0">2 3 5 7 11 13 17 19 23 29 31 37 41 43 47 53 59 61 67 71 73 79 83 89 97</div>
+      </div>
+      <div class="box warn" style="margin-top:8px;font-size:28px;line-height:1.4;padding:8px 22px"><span class="label">嵌套的代价</span>外层的 99 圈 × 内层每圈十几次 ≈ 上千次判断，而代码不过 7 行。</div>
+      <div class="reveal-hint" style="margin-top:0" data-label="点一下，看代码">点一下，看代码</div>
     </div>
   </section>
 
-  <!-- 19 内层变量必须重置 -->
+  <!-- 18 内层变量必须重置 -->
   <section class="slide">
     <div class="s-title">内层变量必须重置</div>
     <div class="s-body">
@@ -764,7 +764,7 @@ out: ;</pre>
     </div>
   </section>
 
-  <!-- 20 运行追踪：9 到 12 -->
+  <!-- 19 运行追踪：9 到 12 -->
   <section class="slide">
     <div class="s-title">运行追踪：9 到 12</div>
     <div class="s-body">
@@ -783,12 +783,12 @@ out: ;</pre>
     </div>
   </section>
 
-  <!-- 21 枚举法：百钱百鸡 -->
+  <!-- 20 枚举法：百钱百鸡 -->
   <section class="slide">
     <div class="s-title">枚举法：百钱百鸡</div>
     <div class="s-body">
       <div class="s-sub" style="margin-top:0">《张丘建算经》里的老问题：百钱买百鸡</div>
-      <div class="box key" style="margin-top:6px"><span class="label">题</span>公鸡一只 5 钱，母鸡一只 3 钱，小鸡 3 只 1 钱。用 <b>100 钱</b>买 <b>100 只鸡</b>，三种鸡各多少只？</div>
+      <div class="box key" style="margin-top:6px"><span class="label">题目描述： </span> 公鸡一只 5 钱，母鸡一只 3 钱，小鸡 3 只 1 钱。用 <b>100 钱</b>买 <b>100 只鸡</b>，三种鸡各多少只？</div>
       <table class="tb" style="font-size:28px;margin-top:12px">
         <thead><tr><th style="width:14%">对象</th><th style="width:12%">设为</th><th style="width:32%">可能取值</th><th style="width:42%">范围怎么来的</th></tr></thead>
         <tbody>
@@ -801,7 +801,7 @@ out: ;</pre>
     </div>
   </section>
 
-  <!-- 22 三重遍历与 21780 次 -->
+  <!-- 21 三重遍历与 21780 次 -->
   <section class="slide">
     <div class="s-title">三重遍历与 21780 次</div>
     <div class="s-body">
@@ -811,16 +811,19 @@ out: ;</pre>
     <span class="kw">for</span> (z = <span class="num">3</span>; z &lt;= <span class="num">100</span>; z += <span class="num">3</span>)
       <span class="kw">if</span> (x + y + z == <span class="num">100</span> &amp;&amp; <span class="num">5</span> * x + <span class="num">3</span> * y + z / <span class="num">3</span> == <span class="num">100</span>)
         <span class="kw">printf</span>(<span class="str">"x=%d, y=%d, z=%d\n"</span>, x, y, z);</pre>
+      <div class="reveal step">
       <div class="two" style="margin-top:12px;align-items:start">
         <div class="out" style="margin-top:0">x=4, y=18, z=78
 x=8, y=11, z=81
 x=12, y=4, z=84</div>
         <div class="box red" style="margin-top:0"><span class="label">代价</span><span class="tex"><span class="num">20</span><span class="op">×</span><span class="num">33</span><span class="op">×</span><span class="num">33</span><span class="op">≈</span></span> <b>21780</b> 次判断。电脑一秒就跑完，但每次判断都有成本——思路值不值？</div>
       </div>
+      </div>
+      <div class="reveal-hint" data-label="点一下，看运行结果与代价">点一下，看运行结果与代价</div>
     </div>
   </section>
 
-  <!-- 23 优化：二重遍历 660 次 -->
+  <!-- 22 优化：二重遍历 660 次 -->
   <section class="slide">
     <div class="s-title">优化：二重遍历 660 次</div>
     <div class="s-body">
@@ -839,7 +842,7 @@ x=12, y=4, z=84</div>
     </div>
   </section>
 
-  <!-- 24 爱因斯坦阶梯 -->
+  <!-- 23 爱因斯坦阶梯 -->
   <section class="slide">
     <div class="s-title">爱因斯坦阶梯</div>
     <div class="s-body">
@@ -859,7 +862,7 @@ x=12, y=4, z=84</div>
     </div>
   </section>
 
-  <!-- 25 填空：XYZ + YZZ = 532 -->
+  <!-- 24 填空：XYZ + YZZ = 532 -->
   <section class="slide">
     <div class="s-title">填空：XYZ + YZZ = 532</div>
     <div class="s-body">
@@ -879,7 +882,7 @@ x=12, y=4, z=84</div>
     </div>
   </section>
 
-  <!-- 26 循环设计五问 -->
+  <!-- 25 循环设计五问 -->
   <section class="slide">
     <div class="s-title">循环设计五问</div>
     <div class="s-body">
@@ -895,7 +898,7 @@ x=12, y=4, z=84</div>
     </div>
   </section>
 
-  <!-- 27 易错点清单 -->
+  <!-- 26 易错点清单 -->
   <section class="slide">
     <div class="s-title">易错点清单</div>
     <div class="s-body">
@@ -911,7 +914,7 @@ x=12, y=4, z=84</div>
     </div>
   </section>
 
-  <!-- 28 小结：四句话 -->
+  <!-- 27 小结：四句话 -->
   <section class="slide">
     <div class="s-title">小结：四句话</div>
     <div class="s-body">
@@ -925,7 +928,7 @@ x=12, y=4, z=84</div>
     </div>
   </section>
 
-  <!-- 29 分层练习 -->
+  <!-- 28 分层练习 -->
   <section class="slide">
     <div class="s-title">分层练习</div>
     <div class="s-body">
@@ -938,7 +941,7 @@ x=12, y=4, z=84</div>
     </div>
   </section>
 
-  <!-- 30 结束页 -->
+  <!-- 29 结束页 -->
 <section class="slide end">
     <div class="end-inner">
       <h2>谢　谢</h2>
@@ -1253,30 +1256,29 @@ function texScan(root){
     {
       title: '回收引例：素数',
       items: [
-        { i: 17, t: '塞进外层循环' },
-        { i: 18, t: 'N-S 结构图' },
-        { i: 19, t: '内层要重置' },
-        { i: 20, t: '运行追踪' }
+        { i: 17, t: '结构与代码' },
+        { i: 18, t: '内层要重置' },
+        { i: 19, t: '运行追踪' }
       ]
     },
     {
       title: '枚举',
       items: [
-        { i: 21, t: '百钱百鸡' },
-        { i: 22, t: '三重遍历' },
-        { i: 23, t: '优化到二重' },
-        { i: 24, t: '爱因斯坦阶梯' }
+        { i: 20, t: '百钱百鸡' },
+        { i: 21, t: '三重遍历' },
+        { i: 22, t: '优化到二重' },
+        { i: 23, t: '爱因斯坦阶梯' }
       ]
     },
     {
       title: '收束',
       items: [
-        { i: 25, t: '填空练习' },
-        { i: 26, t: '设计五问' },
-        { i: 27, t: '易错点' },
-        { i: 28, t: '小结' },
-        { i: 29, t: '分层练习' },
-        { i: 30, t: '结束页' }
+        { i: 24, t: '填空练习' },
+        { i: 25, t: '设计五问' },
+        { i: 26, t: '易错点' },
+        { i: 27, t: '小结' },
+        { i: 28, t: '分层练习' },
+        { i: 29, t: '结束页' }
       ]
     }
   ];
