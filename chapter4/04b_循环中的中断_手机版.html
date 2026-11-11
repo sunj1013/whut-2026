@@ -1,0 +1,2043 @@
+<!DOCTYPE html>
+<!--
+  ============================================================================
+  C 语言课件 · 通用模板（参考用）
+  ----------------------------------------------------------------------------
+  本模板已内置“设计系统 + 演示引擎”，做其他主题的课件时：
+    1. 复制本文件，改 <title> 与封面文案；
+    2. 按需增删 <section class="slide"> 页面；
+    3. 底部脚本里的 tocGroups 数组按“页面索引 i : 目录文字 t”改写；
+    4. 其余 CSS / JS 引擎无需改动即可直接使用。
+
+  ★ 制作规则（2026-10-27 与任课教师沟通后定稿，做新课件时逐条遵守）
+    ① 版本化：不在原稿上改。每次改动前先复制为 原名_YYYYMMDD_HHMM.html，原稿保持不动，
+       最新成果＝时间戳最新的那一份。
+    ② 满宽不居中：正文交给 .fit 自动缩放（fitSlide 已内置补丁——按 1/s 加宽再整体缩回、
+       origin 左上），缩小后仍占满整行宽，绝不出现“内容挤在中间、左右两侧大片留白”。
+       版心需要更宽时给 .slide 加 .tightL（左右各 22px）。
+    ③ 字号：在“不溢出”前提下尽量大，判据是“播放时教室第 7 排能看清”。
+       **代码块固定 32px**，一页约装 14 行（行高 1.55 ≈ 49.6px，上限 709px）；
+       放不下时先“掐头去尾只留关键片段”，再“分栏 .two（代码列 ≥1.6fr）”，
+       都不行才加页。**不许降字号、不许让整页缩放、不许静默横裁。**
+       其它正文按 .s-body 字号档：标题 56／小标题 30／正文 28~32／注释 22。
+    ④ 每页必验：本机无头浏览器（Edge/Firefox）已不能出图，改用三层——
+       ① lint.py（结构）② latex_inject.py --check（裸数学）③ inject_check.py 生成
+       _check.html，普通浏览器打开“测”→“扫全部页”。新画的图另用
+       scripts/svg_render.py（PIL 光栅化）看线条是否重叠、文字是否出框。
+    ⑤ 图一律内嵌：截图、流程图用 <img src="data:image/png;base64,...">，
+       不引外部文件、不做“点击上传”，换电脑不丢图。
+    ⑥ 先题后析用 .coll 可折叠块（默认收起，点标题展开并自动重算 .fit）；
+       需要一次性全展示的内容不要用 .reveal。
+    ⑦ 流程图只用 .fc-* 图元类（配色/线宽/箭头见元件库），不自创形态；
+       已审定的图形不擅自改。**图内文字一律 ≥24px，且显示缩放比 ≥1**
+       （实际字号 = font-size × min(容器宽,max-width) / viewBox 宽）。
+       **分支标签一律放“右侧、上侧”**：向下分支标在竖线右侧，向右分支标在水平段上方。
+       模板后面几页的流程图是**版式演示**（早期尺寸，字号偏小）；实际画图按
+       flowchart-spec §1.1 与资料库元件库的框尺寸，别照抄示例页的框。
+    ⑧ 嵌套：N-S 图内层与外层**重合的线只画一遍**（内层不套外框，只补父级没有的分界线）；
+       传统流程图的嵌套循环**外层走外圈、内层走内圈**，左右各两条通道由内向外排开，
+       两层 0 出口不许并线（详见 references/flowchart-spec.md §5.6、§6）。
+    ⑨ 数学公式一律 LaTeX：正文写 \(\sqrt{x}\)、\(x^{2}\)、\(i\le\sqrt{x}\)，
+       不写裸 √x / 2^7 / sqrt(x)（sqrt(x) 原样只允许出现在 C 代码里）。
+       渲染器已内置在本模板（.tex 命名空间 + texScan），断网可用，无需外链。
+    ⑩ 封面与结束页不显示页码徽标（引擎已处理）；目录 tocGroups 的索引必须与实际页序一致。
+    ⑪ 交付前校验：页数、每页 div/table/svg/pre/g/text 标签平衡、data:image 张数。
+    ⑫ 放大镜已内置（右下角 🔍，光标为中心放大、单击锁定、滚轮 1.5–8×、左下角可调尺寸），
+
+  组件速查（详见各示例页）：
+    · 标题  .s-title
+    · 副标题 .s-sub / .s-sub.blue
+    · 提示框 .box + .tip(绿)/.warn(橙)/.key(紫)/.red(红)，内含 <span class="label">
+    · 代码  pre.code（.kw/.str/.cmt/.num 高亮）；行内 code.inline；结果 .out
+    · 表格  table.tb（单元格 .c-red/.c-green/.c-blue）
+    · 卡片  .card + .orange/.green/.purple/.red（含 .ico + h4）
+    · 布局  .grid.c2 / .grid.c3；.two / .two.wide；.feat 特性列表
+    · 流程图  .flow 容器 + .fc-* 图元类（fc-term/fc-proc/fc-io/fc-dec/fc-ns/fc-ns-cond/fc-line/fc-yes/fc-no）；N-S 用三角分割（顺序/双分支/单分支/多分支嵌套三角/前测试·后测试循环），传统用菱形判断（单/双分支·多分支公共汇合线·前测试·后测试循环·switch），任意新图复用同类即风格一致
+    · 习题  .reveal（默认隐藏）+ .reveal-hint（脉冲按钮）：先题后析
+    · 封面  .slide.cover ；结束 .slide.end
+  交互：← → ↑ ↓ / 空格 / Enter 翻页；Home/End 首尾；O 目录；B/. 黑屏；
+        Esc 关目录；滚轮/触屏滑动翻页；点击左右半屏翻页（代码区可复制）。
+  ============================================================================
+-->
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>循环中的中断</title>
+<style>
+  :root{
+    --fs-title: 48px; --fs-body: 32px; --fs-other: 30px; --fs-list: 29px;
+    --blue-900:#0a3d63; --blue-700:#124f83; --blue-600:#1a6fb5; --blue-400:#4a97d4; --blue-100:#e8f2fb;
+    --orange:#e8720c; --orange-soft:#fdf1e4;
+    --green:#2e8b57; --green-soft:#eaf7ef;
+    --purple:#8e44ad; --purple-soft:#f5ecfa;
+    --red:#c0392b; --red-soft:#fdeceb;
+    --ink:#1d2b36; --muted:#4d6376; --line:#d6e2ee;
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;overflow:hidden;background:var(--blue-900);font-family:"Microsoft YaHei","PingFang SC","Hiragino Sans GB","Source Han Sans SC",sans-serif;-webkit-font-smoothing:antialiased;}
+  #stage{position:fixed;left:50%;top:50%;width:1600px;height:900px;transform:translate(-50%,-50%) scale(var(--s,1));transform-origin:center center;background:#fff;overflow:hidden;transition:opacity .22s ease;}
+  body.blackout #stage{opacity:0;}
+  .slide{position:absolute;inset:0;display:none;flex-direction:column;padding:30px 64px 60px;background:linear-gradient(180deg,#ffffff 0%,#f4faff 100%);}
+  .slide.active{display:flex;animation:fadeUp .26s ease;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+  @keyframes itemIn{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:none;}}
+  .slide.active .s-title{animation:itemIn .42s ease both;}
+  .slide.active .fit > *:not(.reveal):not(.reveal-hint){animation:itemIn .42s ease both;}
+  .slide.active .fit > *:not(.reveal):not(.reveal-hint):nth-child(1){animation-delay:.08s;}
+  .slide.active .fit > *:not(.reveal):not(.reveal-hint):nth-child(2){animation-delay:.16s;}
+  .slide.active .fit > *:not(.reveal):not(.reveal-hint):nth-child(3){animation-delay:.24s;}
+  .slide.active .fit > *:not(.reveal):not(.reveal-hint):nth-child(4){animation-delay:.32s;}
+  .slide.active .fit > *:not(.reveal):not(.reveal-hint):nth-child(5){animation-delay:.40s;}
+  .slide.active .fit > *:not(.reveal):not(.reveal-hint):nth-child(6){animation-delay:.48s;}
+  .slide.cover.active .s-title,.slide.end.active .s-title{animation:none;}
+  .slide::after{content:"";position:absolute;right:-90px;bottom:-90px;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(26,111,181,.10) 0%,rgba(26,111,181,0) 70%);pointer-events:none;}
+  .s-title{flex:0 0 auto;align-self:flex-start;background:linear-gradient(135deg,#1a6fb5 0%,#124f83 100%);color:#fff;font-size:48px;font-weight:700;letter-spacing:1.5px;line-height:1.15;padding:14px 30px 14px 24px;border-left:10px solid var(--orange);border-radius:0 12px 12px 0;margin-bottom:18px;box-shadow:0 6px 16px rgba(18,79,131,.18);}
+  .s-sub{font-size:var(--fs-body);font-weight:700;color:var(--blue-700);border-left:7px solid var(--orange);padding:2px 0 2px 14px;margin:14px 0 10px;}
+  .s-sub:first-child{margin-top:0;}
+  .s-sub.blue{border-left-color:var(--blue-600);}
+  .s-body{flex:1 1 auto;min-height:0;overflow:hidden;font-size:32px;line-height:1.5;color:var(--ink);}
+  .fit{overflow:hidden;}
+  /* 版心临时加宽（左右 22px）——需要贴边排版时给 .slide 加 .tightL */
+  .slide.tightL{padding-left:22px;padding-right:22px;} .slide.tightL .code{padding-left:18px;}
+  /* 可折叠块（先题后析 / 解析 / 运行结果）：默认收起，点标题展开 */
+  .coll{margin-top:12px;}
+  .coll-hd{display:inline-flex;align-items:center;gap:10px;background:linear-gradient(135deg,#e8720c,#c55807);color:#fff;font-size:24px;padding:9px 22px;border-radius:999px;cursor:pointer;box-shadow:0 5px 12px rgba(232,114,12,.3);user-select:none;transition:filter .2s,box-shadow .2s;}
+  .coll-hd:hover{filter:brightness(1.07);box-shadow:0 7px 16px rgba(232,114,12,.4);}
+  .coll-hd::after{content:"▾";font-size:19px;line-height:1;}
+  .coll.open .coll-hd{background:linear-gradient(135deg,#1a6fb5,#124f83);box-shadow:0 5px 12px rgba(18,79,131,.28);}
+  .coll.open .coll-hd::after{content:"▴";}
+  .coll-bd{max-height:0;opacity:0;overflow:hidden;transition:max-height .5s ease,opacity .4s ease;}
+  .coll.open .coll-bd{max-height:3200px;opacity:1;margin-top:12px;}
+  .s-body p{margin:8px 0;}
+  .s-body p:first-child{margin-top:0;}
+  .s-body ul,.s-body ol{padding-left:1.5em;margin:8px 0;}
+  .s-body li{margin:4px 0;}
+  .s-body ul>li::marker{color:var(--blue-600);}
+  .s-body ol>li::marker{color:var(--orange);font-weight:800;}
+  b,strong{color:var(--blue-700);}
+  table.tb{width:100%;border-collapse:separate;border-spacing:0;font-size:var(--fs-other);line-height:1.45;margin:6px 0;border-radius:12px;overflow:hidden;box-shadow:0 4px 14px rgba(18,79,131,.08);}
+  table.tb thead th{background:linear-gradient(135deg,#1a6fb5,#124f83);color:#fff;font-weight:600;font-size:var(--fs-other);padding:12px 18px;text-align:left;}
+  table.tb td,table.tb tbody th{padding:11px 18px;background:#fff;border-bottom:1px solid var(--line);vertical-align:top;}
+  table.tb tbody tr:last-child td,table.tb tbody tr:last-child th{border-bottom:none;}
+  table.tb tbody th{background:#eaf3fb;color:var(--blue-700);font-weight:600;text-align:left;white-space:nowrap;}
+  table.tb tbody tr:nth-child(even) td{background:#f7fafd;}
+  .c-red{color:var(--red);font-weight:600;} .c-green{color:var(--green);font-weight:700;} .c-blue{color:var(--blue-600);font-weight:700;}
+  .box{border-left:7px solid var(--blue-600);background:var(--blue-100);border-radius:0 10px 10px 0;padding:16px 28px;margin:10px 0;font-size:30px;line-height:1.7;}
+  .box .label{display:inline-block;font-weight:800;color:var(--blue-700);margin-right:10px;}
+  .box.tip{border-left-color:var(--green);background:var(--green-soft);} .box.tip .label{color:var(--green);}
+  .box.warn{border-left-color:var(--orange);background:var(--orange-soft);} .box.warn .label{color:#b95a05;}
+  .box.key{border-left-color:var(--purple);background:var(--purple-soft);} .box.key .label{color:var(--purple);}
+  .box.red{border-left-color:var(--red);background:var(--red-soft);} .box.red .label{color:var(--red);}
+  pre.code{background:#0d2b45;color:#d8e9f5;border-left:6px solid var(--orange);border-radius:0 12px 12px 0;padding:14px 22px;margin:8px 0;font-family:Consolas,"Courier New",monospace;font-size:32px;line-height:1.55;white-space:pre;overflow:hidden;box-shadow:0 8px 22px rgba(13,43,69,.22);}
+  pre.code .kw{color:#6ec1ff;} pre.code .str{color:#ffc17a;} pre.code .cmt{color:#7fa5c0;font-style:italic;} pre.code .num{color:#ff9d6b;}
+  code.inline{font-family:Consolas,"Courier New",monospace;background:var(--blue-100);color:#c0392b;padding:2px 8px;font-size:32px;border-radius:5px;}
+  .out{background:#0d2b45;color:#bfe4ff;border-left:6px solid var(--blue-400);border-radius:0 12px 12px 0;padding:12px 22px;margin:8px 0;font-family:Consolas,"Courier New",monospace;font-size:32px;line-height:1.5;white-space:pre;}
+  .grid{display:grid;gap:14px;} .grid.c2{grid-template-columns:1fr 1fr;} .grid.c3{grid-template-columns:repeat(3,1fr);} .grid.c4{grid-template-columns:repeat(4,1fr);} .grid{ gap:26px 14px; }
+  .card{background:#fff;border:1px solid var(--line);border-top:7px solid var(--blue-600);border-radius:0 0 16px 16px;padding:22px 28px;box-shadow:0 6px 16px rgba(18,79,131,.08);} .card.orange{border-top-color:var(--orange);} .card.green{border-top-color:var(--green);} .card.purple{border-top-color:var(--purple);} .card.red{border-top-color:var(--red);} .card h4{font-size:30px;color:var(--blue-700);margin-bottom:8px;display:flex;align-items:center;gap:10px;line-height:1.2;} .card.orange h4{color:#b95a05;} .card.green h4{color:var(--green);} .card.purple h4{color:var(--purple);} .card.red h4{color:var(--red);} .card p{font-size:27px;color:var(--muted);line-height:1.7;margin:0;} .card .ico{font-size:30px;line-height:1;}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start;} .two.wide{grid-template-columns:1.15fr 1fr;}
+  .feat{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px;} .feat li{display:flex;align-items:center;gap:22px;background:#fff;border:1px solid var(--line);border-left:7px solid var(--blue-600);border-radius:0 12px 12px 0;padding:12px 24px;box-shadow:0 4px 10px rgba(18,79,131,.06);} .feat li:nth-child(even){border-left-color:var(--orange);} .feat .k{flex:0 0 auto;width:270px;font-size:30px;font-weight:700;color:var(--blue-700);line-height:1.25;} .feat .v{font-size:27px;color:var(--muted);line-height:1.5;}
+  .slide.cover{background:linear-gradient(135deg,#1a6fb5 0%,#0d4a7a 58%,#0a3d63 100%);padding:0 110px 60px;justify-content:center;} .slide.cover::before{content:"";position:absolute;right:-100px;top:-100px;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(232,114,12,.18) 0%,rgba(232,114,12,0) 70%);} .slide.cover::after{content:"";position:absolute;left:-100px;bottom:-120px;width:440px;height:440px;border-radius:50%;background:radial-gradient(circle,rgba(74,151,212,.18) 0%,rgba(74,151,212,0) 70%);} .cover-inner{position:relative;z-index:2;} .cover-kicker{display:inline-block;font-size:var(--fs-other);letter-spacing:3px;color:#ffd9b3;border:1px solid rgba(255,217,179,.55);padding:8px 24px;margin-bottom:28px;border-radius:999px;} .cover h1{font-size:82px;font-weight:800;color:#fff;letter-spacing:5px;line-height:1.15;margin-bottom:16px;} .cover-bar{width:650px;height:8px;border-radius:4px;background:linear-gradient(90deg,#e8720c,#ffb26b);margin-bottom:22px;} .cover-sub{font-size:40px;color:#a9d8f5;letter-spacing:3px;margin-bottom:36px;} .cover-meta{font-size:var(--fs-other);color:#7fb2dd;letter-spacing:2px;}
+  .slide.end{background:linear-gradient(135deg,#1a6fb5 0%,#0d4a7a 58%,#0a3d63 100%);padding:0 110px 60px;justify-content:center;} .slide.end::before{content:"";position:absolute;right:-100px;bottom:-120px;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(232,114,12,.16) 0%,rgba(232,114,12,0) 70%);} .end-inner{position:relative;z-index:2;} .end h2{font-size:82px;font-weight:800;color:#fff;letter-spacing:10px;margin-bottom:22px;} .end p{font-size:var(--fs-body);color:#a9d8f5;letter-spacing:2px;}
+  .pageinfo{position:absolute;right:40px;top:22px;z-index:20;font-size:var(--fs-other);color:var(--blue-600);letter-spacing:1px;background:rgba(255,255,255,.95);border:1px solid var(--line);border-radius:999px;padding:5px 20px;box-shadow:0 4px 10px rgba(18,79,131,.08);} .pageinfo b{font-size:var(--fs-other);color:var(--orange);}
+  .nav{position:absolute;right:36px;bottom:14px;z-index:20;display:flex;align-items:center;gap:10px;} .nav button{height:50px;border:none;cursor:pointer;background:linear-gradient(135deg,#1a6fb5,#124f83);color:#fff;font-size:var(--fs-other);line-height:1;display:flex;align-items:center;justify-content:center;transition:all .18s;font-family:inherit;border-radius:12px;width:50px;box-shadow:0 5px 12px rgba(18,79,131,.28);} .nav button:hover{background:linear-gradient(135deg,#e8720c,#c55807);transform:translateY(-2px);} .nav button:disabled{background:#b9cfe4;cursor:not-allowed;box-shadow:none;transform:none;} .nav .tocbtn{width:auto;padding:0 22px;font-weight:700;letter-spacing:1px;}
+  .progress{position:absolute;left:0;bottom:0;height:6px;width:0;z-index:20;background:linear-gradient(90deg,#1a6fb5,#e8720c);transition:width .3s ease;}
+  .keyhint{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);z-index:20;font-size:20px;color:#7fa8c4;letter-spacing:1px;background:rgba(255,255,255,.85);border:1px solid var(--line);border-radius:999px;padding:4px 16px;transition:opacity .6s ease;} .keyhint.hide{opacity:0;}
+  .toc{position:absolute;inset:0;z-index:40;background:rgba(10,61,99,.96);display:none;padding:44px 60px 60px;overflow:auto;} .toc.show{display:block;} .toc h3{font-size:40px;color:#fff;letter-spacing:4px;margin-bottom:6px;} .toc .toc-bar{width:110px;height:6px;border-radius:3px;background:linear-gradient(90deg,#e8720c,#ffb26b);margin-bottom:20px;} .toc-list{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;align-items:start;} .toc-group{background:rgba(255,255,255,.05);border-radius:14px;padding:14px 14px 16px;border-top:5px solid var(--blue-400);} .toc-group:nth-child(2){border-top-color:var(--orange);} .toc-group:nth-child(3){border-top-color:var(--green);} .toc-group:nth-child(4){border-top-color:var(--purple);} .toc-group:nth-child(5){border-top-color:var(--red);} .toc-group-title{font-size:22px;color:#ffc17a;font-weight:800;letter-spacing:1px;margin-bottom:10px;padding-bottom:8px;border-bottom:1px dashed rgba(255,255,255,.18);line-height:1.25;} .toc-group a{display:block;color:#cfe6f7;font-size:20px;padding:8px 12px;border-radius:8px;cursor:pointer;margin-bottom:4px;text-decoration:none;line-height:1.35;transition:all .16s;} .toc-group a:hover{background:linear-gradient(90deg,#e8720c,#c55807);color:#fff;} .toc-close{position:absolute;right:40px;top:22px;background:none;border:1px solid #7fb2dd;color:#cfe6f7;font-size:var(--fs-other);padding:7px 22px;cursor:pointer;font-family:inherit;border-radius:12px;} .toc-close:hover{background:#e8720c;border-color:#e8720c;color:#fff;}
+  /* 习题解析：先隐藏，点击后动画揭示，避免答案与题目同时出现 */
+  .reveal{max-height:0;opacity:0;overflow:hidden;margin-top:0!important;transition:max-height .55s ease, opacity .45s ease;}
+  .reveal.shown{max-height:3000px;opacity:1;margin-top:14px!important;}
+  .reveal.shown .box{box-shadow:0 0 0 2px rgba(232,114,12,.35), 0 6px 16px rgba(18,79,131,.08);}
+  .reveal-hint{display:inline-flex;align-items:center;gap:8px;margin-top:14px;background:linear-gradient(135deg,#e8720c,#c55807);color:#fff;font-size:24px;padding:8px 18px;border-radius:999px;cursor:pointer;box-shadow:0 5px 12px rgba(232,114,12,.3);animation:pulse 1.5s ease-in-out infinite;user-select:none;}
+  .reveal-hint.gone{display:none;}
+  .reveal.step{will-change:max-height,opacity;}
+  @keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.05);}}
+
+  /* 流程图组件：N-S 图（盒图）与传统流程图通用 */
+  .flow{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;width:100%;gap:6px;}
+  .flow svg{display:block;width:100%;height:auto;}
+  .flow .cap{font-size:23px;font-weight:800;color:var(--blue-700);letter-spacing:1px;text-align:center;line-height:1.3;}
+  .flow svg text{font-family:"Microsoft YaHei","PingFang SC","Hiragino Sans GB","Source Han Sans SC",sans-serif;}
+  .fc-term{fill:var(--blue-700);} .fc-term-t{fill:#fff;font-weight:700;}
+  .fc-proc{fill:#fff;stroke:var(--blue-600);stroke-width:2.5;} .fc-proc-t{fill:var(--ink);}
+  .fc-io{fill:#fff;stroke:var(--purple);stroke-width:2.5;} .fc-io-t{fill:var(--purple);font-weight:700;}
+  .fc-dec{fill:var(--orange-soft);stroke:var(--orange);stroke-width:2.5;} .fc-dec-t{fill:#9a4a00;font-weight:700;}
+  .fc-line{stroke:#5a7a93;stroke-width:2.5;fill:none;stroke-linecap:round;stroke-linejoin:round;}
+  .fc-yes{fill:var(--green);font-weight:800;} .fc-no{fill:var(--red);font-weight:800;}
+  .fc-ns{fill:#fff;stroke:var(--blue-600);stroke-width:2.5;} .fc-ns-line{stroke:var(--blue-600);stroke-width:2.5;}
+  .fc-ns-cond{fill:var(--blue-100);stroke:var(--blue-600);stroke-width:2.5;} .fc-ns-t{fill:var(--ink);}
+
+  /* ===== 页面放大镜 loupe 工具（以光标为中心放大 + 单击锁定 + 滑块面板，2026-10-30 改进） ===== */
+  #btnLoupe{position:fixed;right:18px;bottom:84px;z-index:60;width:54px;height:54px;border:none;border-radius:50%;
+    background:linear-gradient(135deg,#1a6fb5,#0e4f86);color:#fff;font-size:24px;cursor:pointer;
+    box-shadow:0 6px 16px rgba(26,111,181,.4);display:flex;align-items:center;justify-content:center;user-select:none;}
+  #btnLoupe.on{background:linear-gradient(135deg,#e8720c,#c55807);box-shadow:0 6px 16px rgba(232,114,12,.45);}
+  #loupe{position:fixed;width:320px;height:320px;border-radius:14px;background:#fff;
+    overflow:hidden;box-shadow:0 0 0 3px #1a6fb5,0 12px 34px rgba(0,0,0,.35);z-index:70;pointer-events:none;display:none;}
+  #loupe .lens-stage{position:absolute;left:0;top:0;transform-origin:0 0;}
+  #loupe .lens-stage *{animation:none !important;transition:none !important;}
+  /* 中心准星：直观标出“正在放大的是这一点” */
+  #loupe::before,#loupe::after{content:'';position:absolute;z-index:3;pointer-events:none;background:rgba(232,114,12,.8);}
+  #loupe::before{left:50%;top:50%;width:1px;height:20px;margin:-10px 0 0 -0.5px;}
+  #loupe::after{left:50%;top:50%;width:20px;height:1px;margin:-0.5px 0 0 -10px;}
+  #loupe.lock{box-shadow:0 0 0 3px #e8720c,0 12px 34px rgba(0,0,0,.35);}
+  #loupeTip{position:fixed;left:50%;top:14px;transform:translateX(-50%);background:rgba(14,79,134,.92);color:#fff;
+    font-size:18px;padding:8px 18px;border-radius:999px;z-index:70;display:none;pointer-events:none;white-space:nowrap;
+    box-shadow:0 6px 16px rgba(0,0,0,.3);}
+  #loupePanel{position:fixed;left:18px;bottom:18px;z-index:75;background:rgba(20,28,38,.92);color:#e8eef5;
+    border-radius:12px;padding:12px 16px;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,.4);display:none;width:236px;}
+  #loupePanel .ttl{font-size:13px;color:#7fd0ff;margin-bottom:6px;display:flex;align-items:center;gap:6px;}
+  #loupePanel .row{display:flex;align-items:center;gap:10px;margin:7px 0;}
+  #loupePanel label{width:40px;color:#9fb4c8;flex:none;}
+  #loupePanel input[type=range]{flex:1;accent-color:#1a6fb5;cursor:pointer;}
+  #loupePanel .val{width:48px;text-align:right;color:#fff;font-variant-numeric:tabular-nums;}
+  body.loupe-on{cursor:crosshair;}
+
+  /* ===== 正文可选中复制：选中 / 拖选 / 长按都不翻页 ===== */
+  #stage .slide{-webkit-user-select:text;user-select:text;}
+  #stage .slide ::selection{background:rgba(232,114,12,.28);}
+  #stage .nav,#stage .nav *,#stage .keyhint,#stage .pageinfo,#stage .progress,
+  #stage .toc,#stage .toc *,#stage .coll-hd,#stage .reveal-hint,
+  #btnLoupe,#loupePanel{-webkit-user-select:none;user-select:none;}
+  #copyTip{position:fixed;left:50%;bottom:96px;z-index:80;display:flex;align-items:center;gap:8px;
+    padding:8px 10px 8px 18px;border-radius:999px;background:rgba(14,79,134,.95);color:#fff;
+    font-size:17px;line-height:1.2;white-space:nowrap;box-shadow:0 10px 26px rgba(0,0,0,.3);
+    opacity:0;pointer-events:none;transform:translateX(-50%) translateY(10px);
+    transition:opacity .18s ease,transform .18s ease;}
+  #copyTip.on{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0);}
+  #copyTip b{color:#ffd08a;font-weight:700;font-variant-numeric:tabular-nums;}
+  #copyTip .kbd{font-size:14px;color:#bcd8ee;border:1px solid rgba(188,216,238,.45);border-radius:6px;padding:1px 7px;}
+  #copyTip button{border:none;cursor:pointer;font-family:inherit;font-size:16px;font-weight:700;
+    padding:6px 15px;border-radius:999px;background:linear-gradient(135deg,#e8720c,#c55807);color:#fff;}
+  #copyTip button:hover{filter:brightness(1.08);}
+  @media (max-width:720px){
+    #copyTip{font-size:15px;padding:6px 8px 6px 14px;gap:6px;}
+    #copyTip .kbd{display:none;}          /* 手机上不显示 Ctrl C，长按有系统菜单 */
+    #copyTip button{font-size:15px;padding:5px 12px;}
+  }
+
+
+  /* ===== LaTeX 行内公式（零依赖、断网可用） ===== */
+  .tex{font-family:"Cambria Math","Latin Modern Math",Cambria,"Times New Roman",Times,serif;font-style:normal;letter-spacing:0;white-space:nowrap;}
+  .tex i{font-style:italic;padding-right:.02em;}
+  .tex .num,.tex .up{font-style:normal;}
+  .tex .fn{font-style:normal;margin:0 .14em;}
+  .tex .op{padding:0 .1em;}
+  .tex sup{font-size:.62em;vertical-align:.55em;line-height:0;}
+  .tex sub{font-size:.62em;vertical-align:-.25em;line-height:0;}
+  .tex .sq{white-space:nowrap;}
+  /* 根号上划线：必须压在 .radical 字形自带的顶笔上，不能穿过被开方字母。
+     Cambria Math 字面 ascent = 0.778em，√（U+221A）笔画范围 −0.041~0.921em，顶笔在 0.856~0.921em，
+     故 top = 0.778 − 0.921 = −0.143em（负值：顶笔高过 ascent 线）；
+     高度 0.065em 与字形顶笔同厚；left −0.04em 使横线插进顶笔右端（√ advance 0.657em，顶笔 0.571~0.714em）避免接缝。
+     改用 Times New Roman 回退时把 top 改到 −.09em。 */
+  .tex .sq-b{position:relative;padding:0 .06em 0 .04em;}
+  .tex .sq-b::before{content:"";position:absolute;left:-.04em;right:0;top:-.143em;height:.065em;min-height:1.5px;background:currentColor;border-radius:1px;}
+  .tex .fx{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;font-size:.84em;line-height:1.06;margin:0 .14em;}
+  .tex .fx-n{border-bottom:2px solid currentColor;padding:0 .12em;}
+  .tex .fx-d{padding:0 .12em;}
+  </style>
+<!-- MOBILE LAYER v1 — 手机层 CSS（独立样式块，位于全部原有样式之后） -->
+<style id="mLayerCss">
+/* MOBILE LAYER MODE: expand */
+/* MOBILE LAYER v1 — 手机层 CSS（响应式回流）
+   单一真源：scripts/build_mobile.py 读取本文件注入桌面模板；也可整段复制到任意 c-courseware 桌面 HTML 的 style 结束标签前。
+   配套：mobile-layer.dom.html、mobile-layer.js（均放在 body 结束标签前）。
+   注意：本文件会被注入 <style> 内部，注释中禁止出现 style/body 结束标签字面串，否则浏览器提前闭合样式块。
+   标记说明：
+     @COLLAPSE_EXPAND_START/END  —— 仅 expand 模式保留（强制展开）
+     @HIDE_REVEAL_HINT           —— 仅 expand 模式保留（隐藏失效按钮）
+     keep 模式由 build_mobile.py 移除上述两段，并追加 mobile-layer-keep.css / mobile-layer-keep.js。
+   规则全文见 references/mobile-layer-spec.md。
+*/
+
+/* 手机专属 UI 默认隐藏：仅在 ≤720px 显示，避免污染桌面端 */
+#mTop,#mBar,#mTocPanel,#mImgView{display:none;}
+
+@media (max-width:720px){
+  /* —— 回流：桌面分页画布 → 手机竖向连续阅读 —— */
+  html,body{overflow:auto!important;height:auto!important;}
+  /* 根元素背景与 body 一致：避免横向溢出时右侧露出深蓝色竖带（桌面 html 是 --blue-900） */
+  html{background:#eef3f8!important;}
+  body{background:#eef3f8!important;font-size:16px;-webkit-text-size-adjust:100%;}
+  #stage{position:static!important;transform:none!important;width:auto!important;height:auto!important;
+    max-width:820px;margin:0 auto;background:#fff;overflow:visible!important;
+    box-shadow:0 0 24px rgba(10,61,99,.12);min-height:100vh;padding-bottom:72px!important;}
+  .slide{position:static!important;inset:auto!important;display:block!important;opacity:1!important;
+    transform:none!important;flex-direction:column;padding:22px 16px 26px!important;overflow:visible!important;
+    background:#fff!important;border-bottom:1px solid #e3ebf3;}
+  .slide.active{display:block!important;}
+
+  /* 章节标题：蓝色（与桌面一致，不用橙色） */
+  .s-title{font-size:22px!important;font-weight:800!important;padding:12px 18px 12px 14px!important;
+    margin-bottom:16px!important;border-left:8px solid #fff!important;border-radius:0 12px 12px 0!important;
+    letter-spacing:.5px!important;color:#fff!important;text-shadow:0 1px 2px rgba(0,0,0,.18);
+    background:linear-gradient(135deg,#1a6fb5 0%,#124f83 100%)!important;
+    box-shadow:0 6px 16px rgba(18,79,131,.28)!important;}
+  .s-sub{font-size:16px!important;margin:14px 0 8px!important;}
+  .s-body{font-size:15px!important;line-height:1.7!important;overflow:visible!important;}
+  .s-body p,.s-body li{font-size:15px!important;line-height:1.7!important;}
+  .s-body ul,.s-body ol{padding-left:1.3em!important;}
+
+  /* 组件：单列 + 克制字号 */
+  .box{font-size:14px!important;line-height:1.7!important;padding:12px 16px!important;margin:12px 0!important;}
+  .box .label{font-size:13px!important;}
+  .card{padding:14px 16px!important;margin:0!important;border-top-width:5px!important;border-radius:0 0 14px 14px!important;}
+  .card h4{font-size:15px!important;margin-bottom:6px!important;}
+  .card p{font-size:13px!important;line-height:1.7!important;}
+  .card ul li{font-size:13px!important;}
+  /* 卡片标题前的圆形序号①/②/③：桌面 30px 配大标题无碍，手机卡片标题仅 15px，须压成不突增的比例 */
+  .card .ico{font-size:18px!important;line-height:1!important;}
+  /* 流程图说明文字 .flow .cap：桌面 23px，手机端压到与正文同级，避免高于 22px 标题造成突增 */
+  .flow .cap{font-size:15px!important;line-height:1.35!important;}
+  .two,.grid,.grid.c2,.grid.c3,.grid.c4,.nav2x2{grid-template-columns:minmax(0,1fr)!important;gap:12px!important;}
+  .two > *,.grid > *,.nav2x2 > *{min-width:0!important;}
+  /* 内联固定像素列（如 958px minmax(0,1fr)）优先级高于类规则，会把截图 / 表格撑出视口后被裁掉；
+     用属性选择器 + !important 统一压成单列。必须用 minmax(0,1fr)：裸 1fr = minmax(auto,1fr)，
+     会被 pre.code 里不换行的长代码按 min-content 撑到 760px（03d 第 4 页实测）。 */
+  .s-body [style*="grid-template-columns"]{grid-template-columns:minmax(0,1fr)!important;gap:12px!important;}
+  .s-body [style*="grid-template-columns"] > *{min-width:0!important;}
+  .s-body [style*="display:grid"]{max-width:100%!important;}
+  .nav2x2 .card{padding:18px 18px!important;}
+
+  /* 图片：桌面截图常带内联 width:600px，手机端必须限宽；并排对比已由 .two 单列堆叠 */
+  .slide img{max-width:100%!important;height:auto!important;box-sizing:border-box;cursor:zoom-in;}
+  .slide img + div{font-size:13px!important;line-height:1.6!important;}
+  /* 宽截图缩小后字看不清：点图进全屏遮罩，可切换原始像素尺寸拖动查看 */
+  #mImgView{display:flex!important;position:fixed;inset:0;z-index:70;flex-direction:column;
+    align-items:center;justify-content:center;gap:12px;background:rgba(6,24,38,.97);
+    padding:14px;overflow:auto;-webkit-overflow-scrolling:touch;}
+  #mImgView.hidden{display:none!important;}
+  #mImgView img{max-width:100%!important;max-height:78vh!important;width:auto!important;height:auto!important;
+    object-fit:contain;border-radius:6px;box-shadow:0 8px 30px rgba(0,0,0,.5);cursor:zoom-in;}
+  /* 原始尺寸可能比视口宽，左上角对齐才能正常拖动查看（居中会产生不可滚动的负溢出） */
+  #mImgView.zoom{justify-content:flex-start;align-items:flex-start;}
+  #mImgView.zoom img{max-width:none!important;max-height:none!important;
+    width:var(--natw,1200px)!important;cursor:zoom-out;}
+  #mImgView .m-img-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:center;}
+  #mImgView .m-img-tip{color:#cfe6f7;font-size:13px;letter-spacing:.5px;}
+  #mImgView .m-img-close{background:none;border:1px solid #7fb2dd;color:#cfe6f7;font-size:14px;
+    padding:6px 16px;border-radius:12px;font-family:inherit;cursor:pointer;}
+  .feat li{flex-direction:column;align-items:flex-start;gap:4px;padding:10px 14px!important;}
+  .feat .k{width:auto!important;font-size:14px!important;}
+  /* 桌面 .feat .v=28px，手机端必须显式覆盖，否则与 14px 标签比例失调 */
+  .feat .v{font-size:14px!important;line-height:1.7!important;}
+
+  /* 小练手参考答案：内联 repeat(3,1fr) 不被类规则命中，故由脚本补 .ans-grid 类 */
+  .ans-grid{grid-template-columns:1fr!important;gap:12px 0!important;}
+  /* 莱布尼茨等长公式：竖排 + 允许换行 + 缩小字号 */
+  .formula-row{flex-direction:column!important;align-items:flex-start!important;gap:10px!important;padding:12px 16px!important;}
+  .formula-expr{white-space:normal!important;word-break:break-word;font-size:28px!important;line-height:1.5!important;letter-spacing:0!important;}
+
+  pre.code{font-size:13px!important;line-height:1.5!important;white-space:pre;overflow-x:auto;
+    -webkit-overflow-scrolling:touch;padding:12px 14px!important;box-shadow:none!important;
+    max-width:100%!important;box-sizing:border-box;}
+  .out{font-size:12px!important;overflow-x:auto;padding:10px 14px!important;
+    max-width:100%!important;box-sizing:border-box;}
+  code.inline{font-size:13px!important;padding:1px 6px!important;}
+
+  /* 表格：铺满宽度 + 内容允许换行 + 表头 14px（桌面 thead th 用 --fs-other=30px，手机上过大） */
+  table.tb{width:100%!important;font-size:13px!important;display:block;overflow-x:auto;white-space:normal;
+    -webkit-overflow-scrolling:touch;line-height:1.5!important;box-shadow:none!important;border-radius:0!important;}
+  table.tb thead th{font-size:14px!important;font-weight:700!important;padding:8px 10px!important;
+    white-space:normal;word-break:break-word;}
+  table.tb td,table.tb tbody th{font-size:13px!important;padding:8px 10px!important;
+    white-space:normal;word-break:break-word;}
+  /* 顶层表格通栏：抵消 .slide 的 16px 内边距，使宽度与手机屏幕一致；嵌在 .two 内的表格不做出血 */
+  .s-body > table.tb{margin-left:-16px!important;margin-right:-16px!important;width:calc(100% + 32px)!important;}
+
+  .reveal,.reveal.step{max-height:none!important;opacity:1!important;overflow:visible!important;margin-top:14px!important;}
+  .coll-bd{max-height:none!important;opacity:1!important;}
+  .coll-hd::after{content:""!important;}
+  /* 折叠标题常带内联 font-size:30px / padding:9px 26px，expand 模式同样要压到手机字号 */
+  .coll-hd{font-size:15px!important;padding:8px 16px!important;cursor:default;
+    background:linear-gradient(135deg,#1a6fb5,#124f83);}
+  /* 封面 / 封底：还原蓝色背景（否则被上面的白底规则盖掉，浅色字看不清） */
+  .slide.cover,.slide.end{padding:34px 22px!important;justify-content:center;overflow:hidden!important;
+    background:linear-gradient(135deg,#1a6fb5 0%,#0d4a7a 58%,#0a3d63 100%)!important;border-bottom:none!important;}
+  /* 桌面装饰光晕 position:absolute;right:-100px，手机端 .slide 变 static 后会相对视口向右探出 100px，
+     造成横向溢出、浏览器自动缩小整页 → 右侧缺一截。纯装饰元素在手机端一律隐藏 */
+  .slide.cover::before,.slide.cover::after,.slide.end::before,.slide.end::after,.slide::after{display:none!important;}
+  .cover h1{font-size:30px!important;letter-spacing:2px!important;margin-bottom:12px!important;}
+  .cover-sub{font-size:17px!important;margin-bottom:18px!important;color:#e8f4ff!important;}
+  .cover-kicker{font-size:13px!important;margin-bottom:18px!important;padding:6px 16px!important;color:#ffecd6!important;}
+  .cover-bar{width:200px!important;margin-bottom:16px!important;}
+  .cover-meta{font-size:13px!important;color:#cfe6f7!important;}
+  .end h2{font-size:32px!important;letter-spacing:4px!important;margin-bottom:14px!important;}
+  .end p{font-size:16px!important;color:#e8f4ff!important;}
+
+  /* 隐藏桌面专属 UI + loupe */
+  .nav,.pageinfo,.keyhint,.progress,#btnLoupe,#loupe,#loupePanel,#loupeTip,.toc{display:none!important;}
+  .reveal-hint{display:none!important;}
+
+  /* —— 手机专属 UI —— */
+  #mTop{display:block!important;position:fixed;top:0;left:0;right:0;height:3px;background:rgba(18,79,131,.12);z-index:50;}
+  #mTopBar{height:100%;width:0;background:linear-gradient(90deg,#1a6fb5,#e8720c);transition:width .15s;}
+  #mBar{display:flex!important;position:fixed;left:0;right:0;bottom:0;z-index:50;gap:8px;
+    padding:8px 10px;background:rgba(255,255,255,.96);border-top:1px solid #d6e2ee;
+    box-shadow:0 -4px 14px rgba(10,61,99,.12);}
+  #mBar button{flex:1;border:none;border-radius:10px;padding:11px 4px;font-size:14px;font-weight:700;
+    font-family:inherit;color:#fff;background:linear-gradient(135deg,#1a6fb5,#124f83);cursor:pointer;}
+  #mBar #mToc{background:linear-gradient(135deg,#8e44ad,#6f3590);}
+  #mBar button:active{filter:brightness(1.08);}
+  #mTocPanel{display:block!important;position:fixed;inset:0;z-index:60;background:rgba(10,61,99,.97);
+    padding:56px 18px 24px;overflow:auto;}
+  #mTocPanel.hidden{display:none!important;}
+  #mTocPanel .m-toc-hd{display:flex;align-items:center;justify-content:space-between;color:#fff;font-size:22px;
+    letter-spacing:2px;margin-bottom:6px;}
+  #mTocPanel .m-toc-hd button{background:none;border:1px solid #7fb2dd;color:#cfe6f7;font-size:15px;padding:6px 18px;
+    cursor:pointer;font-family:inherit;border-radius:12px;}
+  #mTocList .m-group{background:rgba(255,255,255,.06);border-radius:14px;padding:14px 14px 16px;
+    border-top:5px solid var(--blue-400);margin-bottom:14px;}
+  #mTocList .m-group-title{font-size:18px;color:#ffc17a;font-weight:800;letter-spacing:1px;margin-bottom:10px;
+    padding-bottom:8px;border-bottom:1px dashed rgba(255,255,255,.18);line-height:1.25;}
+  #mTocList a{display:block;color:#cfe6f7;font-size:15px;padding:10px 14px;border-radius:8px;cursor:pointer;
+    text-decoration:none;line-height:1.35;transition:all .16s;}
+  #mTocList a:hover,#mTocList a.active{background:linear-gradient(90deg,#e8720c,#c55807);color:#fff;}
+}
+</style>
+
+</head>
+<body>
+  <div id="stage">
+
+  <!-- 全局流程图箭头定义（供各页 SVG 引用，只需一处） -->
+  <svg aria-hidden="true" height="0" width="0" style="position:absolute; width:0; height:0; overflow:hidden"><defs>
+    <marker id="fcArrow" markerHeight="11" markerUnits="userSpaceOnUse" markerWidth="11" orient="auto" refX="8" refY="5.5">
+      <path d="M1,1 L10,5.5 L1,10 Z" fill="#5a7a93"/>
+    </marker>
+  </defs></svg>
+
+  <!-- 0 封面 -->
+<section class="slide cover active" data-group="本节目录">
+    <div class="cover-inner">
+      <div class="cover-kicker">武汉理工大学 人工智能学院</div>
+      <h1>C程序设计基础</h1>
+      <div class="cover-bar"></div>
+      <div class="cover-sub">第 4 章　循环结构（break / continue ）</div>
+      <div class="cover-meta">主讲：孙骏</div>
+    </div>
+  </section>
+  <!-- 1 本节要解决的两个问题 -->
+  <section class="slide" data-group="导览">
+    <div class="s-title">本节要解决的两个问题</div>
+    <div class="s-body">
+      <div class="s-sub" style="margin-top:0">写循环时，几乎都会遇到这两种情况</div>
+      <div class="grid c2" style="margin-top:12px;align-items:stretch">
+        <div class="card"><h4><span class="ico">①</span>答案已经出来了</h4><p>判断 33 是不是素数，试到 3 就有结论了，可循环还准备把 4、5 … 一路试到 \( \sqrt{x} \)。</p></div>
+        <div class="card orange"><h4><span class="ico">②</span>这一轮不想做</h4><p>输入一串成绩，遇到负数（无效数据）只想跳过这一条，后面的数据还要接着处理。</p></div>
+      </div>
+      <div class="box key" style="margin-top:22px"><span class="label">两个关键字</span><code class="inline">break</code> 结束<b>整个</b>循环；<code class="inline">continue</code> 只结束<b>本次</b>循环。名字很像，作用完全不同，今天要彻底分清。</div>
+      <div class="box warn" style="margin-top:12px"><span class="label">路线</span>先摆出例题（判断素数）→ 学 break → 学 continue → 看两个陷阱 → 最后回到例题，用 break 把它写完。</div>
+    </div>
+  </section>
+
+  <!-- 2 例题先行：判断素数 -->
+  <section class="slide" data-group="引入 · 判断素数">
+    <div class="s-title">例题先行：判断素数</div>
+    <div class="s-body">
+      <div class="box tip" style="margin-top:0"><span class="label">素数</span>大于 1、且只能被 1 和它本身整除的整数。2、3、5、7、11、13 都是素数；4、6、9、15 不是。</div>
+      <p style="font-size:34px;line-height:1.6;margin:16px 0 4px">输入一个<b>大于 2 的整数</b> <code class="inline">x</code>，判断它是不是素数，输出结论。</p>
+      <table class="tb" style="font-size:30px;margin-top:12px">
+        <thead><tr><th style="width:14%">输入 x</th><th style="width:56%">人工怎么判</th><th style="width:30%">输出</th></tr></thead>
+        <tbody>
+          <tr><td><b>17</b></td><td>2、3、4 都除不尽（\( \sqrt{17}\approx 4.1 \)，试到 4 就够）</td><td class="c-green">17 是素数</td></tr>
+          <tr><td><b>33</b></td><td>试到 \(i=3\)：<code class="inline">33 % 3 == 0</code>，这时已经能下结论</td><td class="c-red">33 不是素数</td></tr>
+        </tbody>
+      </table>
+      <div class="box warn" style="margin-top:18px"><span class="label">盯住"这时"</span>33 试到 3 就定了，还要不要接着试 4、5 …？这一问，就是今天要解决的问题。</div>
+    </div>
+  </section>
+
+  <!-- 3 试除法：从 2 试到 √x -->
+  <section class="slide" data-group="引入 · 判断素数">
+    <div class="s-title">试除法：从 2 试到 \( \sqrt{x} \)</div>
+    <div class="s-body">
+      <div class="s-sub" style="margin-top:0">思路：拿 2、3、4 … 挨个去试除</div>
+      <ul class="feat">
+        <li><span class="k">i 从 2 开始</span><span class="v">1 能整除任何整数，试它没有意义</span></li>
+        <li><span class="k">只试到 \( \sqrt{x} \)</span><span class="v">若 \(x=a\times b\) 且 \(a\le b\)，必有 \(a\le\sqrt{x}\)：小因子一定在前半段</span></li>
+        <li><span class="k">见到因子就下结论</span><span class="v">\(x\bmod i=0\) 时，一定不是素数，后面的 i 全都白试</span></li>
+        <li><span class="k">试完都没有因子</span><span class="v">说明 \(x\) 只能被 1 和自身整除 → 是素数</span></li>
+      </ul>
+      <div class="box key" style="margin-top:18px"><span class="label">为什么到 \( \sqrt{x} \) 就够</span>18 = 2 × 9，小因子 2 ≤ \( \sqrt{18}\approx 4.24 \)；只要 \(x\) 有因子，最小的那个一定不超过 \( \sqrt{x} \)，所以 \( \sqrt{x} \) 之后不必再试。</div>
+      <div class="box red"><span class="label">别漏等号</span>写成 \(i<\sqrt{x}\) 时，49、121 这类完全平方数会漏掉 \(i=\sqrt{x}\) 这个因子，把 49 误判成素数。</div>
+    </div>
+  </section>
+
+  <!-- 4 卡住的地方：找到因子之后 -->
+  <section class="slide" data-group="引入 · 判断素数">
+    <div class="s-title">卡住的地方：找到因子之后</div>
+    <div class="s-body">
+      <div style="display:grid;grid-template-columns:1fr 470px;gap:32px;align-items:start">
+        <div>
+          <div class="s-sub" style="margin-top:0">循环能写出来，结论却"卡"在循环里面</div>
+          <pre class="code" style="font-size:29px">i = 2;
+while (i &lt;= sqrt(x)) {
+    if (x % i == 0) {
+        /* 这里已经能确定：x 不是素数 */
+    }
+    i++;
+}</pre>
+          <div class="box red" style="margin-top:8px;font-size:28px"><span class="label">问题</span>结论已经有了，循环却还要把 i 从 3 一路试到 \( \sqrt{x} \)：33 白跑 3 轮，一个五位数可能要白跑上百轮。</div>
+        </div>
+        <div class="flow" style="margin-top:0">
+          <div class="cap">这段循环的流程图</div>
+          <svg viewBox="0 0 420 408" style="max-width:460px">
+            <rect class="fc-proc" height="44" rx="4" width="160" x="120" y="6"/>
+            <text class="fc-proc-t" font-size="26" text-anchor="middle" x="200" y="35">i = 2</text>
+            <line class="fc-line" marker-end="url(#fcArrow)" x1="200" x2="200" y1="50" y2="60"/>
+            <polygon class="fc-dec" points="200,64 310,100 200,136 90,100"/>
+            <foreignObject x="110" y="78" width="180" height="44">
+              <div xmlns="http://www.w3.org/1999/xhtml" style="height:100%;text-align:center;line-height:44px;font-size:25px;font-weight:700;color:#9a4a00;white-space:nowrap">\(i\le\sqrt{x}\)</div>
+            </foreignObject>
+            <text class="fc-yes" font-size="21" text-anchor="start" x="212" y="155">非0</text>
+            <text class="fc-no" font-size="21" text-anchor="start" x="320" y="94">0</text>
+            <line class="fc-line" marker-end="url(#fcArrow)" x1="200" x2="200" y1="136" y2="154"/>
+            <polygon class="fc-dec" points="200,158 310,194 200,230 90,194"/>
+            <text class="fc-dec-t" font-size="23" text-anchor="middle" x="200" y="202"><tspan font-style="italic">x</tspan> % <tspan font-style="italic">i</tspan> == 0</text>
+            <text class="fc-yes" font-size="21" text-anchor="start" x="320" y="187">非0</text>
+            <text class="fc-no" font-size="21" text-anchor="start" x="212" y="249">0</text>
+            <line class="fc-line" marker-end="url(#fcArrow)" x1="200" x2="200" y1="230" y2="248"/>
+            <rect class="fc-proc" height="44" rx="4" width="160" x="120" y="252"/>
+            <text class="fc-proc-t" font-size="26" text-anchor="middle" x="200" y="281">i++</text>
+            <path class="fc-line" d="M120,274 L40,274 L40,100 L86,100" marker-end="url(#fcArrow)"/>
+            <path class="fc-line" d="M310,100 L390,100 L390,340 L200,340 L200,350" marker-end="url(#fcArrow)"/>
+            <path class="fc-line" d="M310,194 L350,194 L350,340"/>
+            <rect fill="#fdeceb" height="48" rx="10" stroke="#c0392b" stroke-dasharray="8 6" stroke-width="2.5" width="228" x="86" y="352"/>
+            <text fill="#c0392b" font-size="23" font-weight="700" text-anchor="middle" x="200" y="384">两条出口汇到一起</text>
+          </svg>
+        </div>
+      </div>
+      <div class="box key" style="margin-top:4px"><span class="label">想提前走人</span>循环的出口原本只有"条件变 0"；想在中间离开，C 语言给了两个关键字：<code class="inline">break</code> 与 <code class="inline">continue</code>。这道例题先放一放，学完两个关键字，最后再回来收尾。</div>
+    </div>
+  </section>
+
+  <!-- 5 break 语句：形式与功能 -->
+  <section class="slide" data-group="模块1 · break 与 continue">
+    <div class="s-title">break 语句：形式与功能</div>
+    <div class="s-body">
+      <div class="two" style="margin-top:0;align-items:start">
+        <div>
+          <div class="s-sub" style="margin-top:0">一般形式</div>
+          <pre class="code" style="font-size:32px">break;</pre>
+          <div class="s-sub blue" style="margin-top:26px">能出现在哪里</div>
+          <ul style="font-size:30px;line-height:1.75;padding-left:1.3em">
+            <li><code class="inline">switch</code> 的 <code class="inline">case</code> 分支里</li>
+            <li>循环体内部（<code class="inline">while / do-while / for</code>）</li>
+          </ul>
+        </div>
+        <div>
+          <div class="s-sub" style="margin-top:0">两条功能</div>
+          <div class="box key" style="margin-top:6px"><span class="label">①</span>跳出所在的多分支 <code class="inline">switch</code> 语句。</div>
+          <div class="box warn"><span class="label">②</span>跳出所在的<b>循环</b>语句——提前结束整个循环，条件不再判断。</div>
+          <div class="box red"><span class="label">三点注意</span>不带任何值（<code class="inline">break;</code> 后面不加条件）；只能出现在 <code class="inline">switch</code> 或循环体内；它结束的是<b>整个循环</b>，不是这一轮。</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 break 把控制送到哪里 -->
+  <section class="slide" data-group="模块1 · break 与 continue">
+    <div class="s-title">break 把控制送到哪里</div>
+    <div class="s-body">
+      <div style="display:grid;grid-template-columns:520px 1fr;gap:40px;align-items:start">
+        <div class="flow">
+          <div class="cap">break：直接跳到循环外面</div>
+          <svg viewBox="0 0 500 590" style="max-width:500px">
+            <rect class="fc-proc" height="46" rx="4" width="160" x="100" y="12"/>
+            <text class="fc-proc-t" font-size="24" text-anchor="middle" x="180" y="40">计算 e1</text>
+            <line class="fc-line" marker-end="url(#fcArrow)" x1="180" x2="180" y1="58" y2="86"/>
+            <polygon class="fc-dec" points="180,86 280,124 180,162 80,124"/>
+            <text class="fc-dec-t" font-size="24" text-anchor="middle" x="180" y="132">e2</text>
+            <text class="fc-yes" font-size="24" text-anchor="start" x="194" y="180">非0</text>
+            <text class="fc-no" font-size="24" text-anchor="start" x="300" y="116">0</text>
+            <line class="fc-line" marker-end="url(#fcArrow)" x1="180" x2="180" y1="162" y2="190"/>
+            <rect class="fc-proc" height="46" rx="4" width="160" x="100" y="190"/>
+            <text class="fc-proc-t" font-size="24" text-anchor="middle" x="180" y="218">语句1 …</text>
+            <line class="fc-line" marker-end="url(#fcArrow)" x1="180" x2="180" y1="236" y2="264"/>
+            <polygon class="fc-dec" points="180,264 280,302 180,340 80,302"/>
+            <text class="fc-dec-t" font-size="24" text-anchor="middle" x="180" y="310">e</text>
+            <text class="fc-yes" font-size="24" text-anchor="start" x="286" y="292">非0</text>
+            <text class="fc-no" font-size="24" text-anchor="start" x="194" y="358">0</text>
+            <line class="fc-line" marker-end="url(#fcArrow)" x1="180" x2="180" y1="340" y2="368"/>
+            <rect class="fc-proc" height="46" rx="4" width="160" x="100" y="368"/>
+            <text class="fc-proc-t" font-size="24" text-anchor="middle" x="180" y="396">语句2 …</text>
+            <line class="fc-line" marker-end="url(#fcArrow)" x1="180" x2="180" y1="414" y2="442"/>
+            <rect class="fc-proc" height="46" rx="4" width="160" x="100" y="442"/>
+            <text class="fc-proc-t" font-size="24" text-anchor="middle" x="180" y="470">计算 e3</text>
+            <rect class="fc-proc" height="50" rx="4" width="264" x="60" y="512"/>
+            <text class="fc-proc-t" font-size="24" text-anchor="middle" x="192" y="542">循环之后的语句</text>
+            <path class="fc-line" d="M280,302 L360,302 L360,537"/>
+            <path class="fc-line" d="M280,124 L440,124 L440,537 L324,537" marker-end="url(#fcArrow)"/>
+            <path class="fc-line" d="M100,465 L40,465 L40,124 L76,124" marker-end="url(#fcArrow)"/>
+          </svg>
+        </div>
+        <div>
+          <div class="box key" style="margin-top:0;line-height:1.34;padding:6px 20px"><span class="label">去向</span>不是"回到循环开头"，也不是"回到上一句"，而是<b>循环后面的第一条语句</b>。</div>
+          <div class="box tip" style="margin:2px 0;line-height:1.34;padding:6px 20px"><span class="label">循环就此结束</span>剩下的轮次一次都不执行，循环条件也不再判断。</div>
+          <div class="box warn" style="margin:2px 0;line-height:1.34;padding:6px 20px"><span class="label">两条路，一个出口</span>条件变 0 与 break 跳出，最后都落到同一个框——程序不会告诉你它是从哪条路来的。</div>
+          <div class="reveal-hint" data-label="👉 点一下，看两种写法" style="margin-top:0">👉 点一下，看两种写法（1 / 2）</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start">
+            <div class="reveal step" data-step="1">
+              <div class="s-sub" style="font-size:26px;line-height:1.2;margin:0 0 2px;padding:0 0 0 12px">while 写法</div>
+              <pre class="code" style="font-size:32px;line-height:1.28;padding:8px 16px;margin:0">e1;
+while(e2){
+    语句1;
+    if(e) break;
+    语句2;
+    e3;
+}</pre>
+            </div>
+            <div class="reveal step" data-step="2">
+              <div class="s-sub blue" style="font-size:26px;line-height:1.2;margin:0 0 2px;padding:0 0 0 12px">for 写法</div>
+              <pre class="code" style="font-size:32px;line-height:1.28;padding:8px 16px;margin:0">for(e1; e2; e3){
+    语句1;
+    if(e) break;
+    语句2;
+}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 例：1~5 遇到 3 就停 -->
+  <section class="slide" data-group="模块1 · break 与 continue">
+    <div class="s-title">例：1~5 遇到 3 就停</div>
+    <div class="s-body">
+      <div class="two" style="margin-top:0;align-items:start">
+        <div>
+          <div class="s-sub" style="margin-top:0">循环体（完整程序略）</div>
+          <pre class="code" style="font-size:32px">for (i = 1; i &lt;= 5; i++) {
+    printf("%d ", i);     <span class="cmt">/* ① */</span>
+    if (i == 3) break;    <span class="cmt">/* ② */</span>
+    printf("%d ", i);     <span class="cmt">/* ③ */</span>
+}</pre>
+        </div>
+        <div>
+          <div class="s-sub" style="margin-top:0">逐轮看</div>
+          <table class="tb" style="font-size:28px">
+            <thead><tr><th style="width:14%">i</th><th style="width:36%">② 成立？</th><th style="width:50%">这一轮打印</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>不成立</td><td>1 1</td></tr>
+              <tr><td>2</td><td>不成立</td><td>2 2</td></tr>
+              <tr><td>3</td><td class="c-red">成立 → break</td><td>3（③ 不执行）</td></tr>
+            </tbody>
+          </table>
+          <div class="out" style="margin-top:10px">1 1 2 2 3</div>
+        </div>
+      </div>
+      <div class="box warn" style="margin-top:14px"><span class="label">看清楚</span>i = 4、i = 5 这两轮<b>根本没有发生</b>——不是"跳过了 printf"，而是整个循环已经结束。</div>
+      <div class="coll" style="margin-top:6px">
+        <div class="coll-hd">追问：break 之后，i 停在几？</div>
+        <div class="coll-bd">
+          <p style="font-size:29px;line-height:1.55;margin:0">break 只把<b>控制</b>送走，变量的值原封不动：本例 i 停在 <b class="c-red">3</b>；若是正常跑完（条件变 0），i 会是 <b class="c-blue">6</b>。这个"循环终值"就是后面判断素数的依据。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8 continue 语句：形式与功能 -->
+  <section class="slide" data-group="模块1 · break 与 continue">
+    <div class="s-title">continue 语句：形式与功能</div>
+    <div class="s-body">
+      <div class="two" style="margin-top:0;align-items:start">
+        <div>
+          <div class="s-sub" style="margin-top:0">一般形式</div>
+          <pre class="code" style="font-size:32px">continue;</pre>
+          <div class="s-sub blue" style="margin-top:26px">能出现在哪里</div>
+          <ul style="font-size:30px;line-height:1.75;padding-left:1.3em">
+            <li>循环体内部（<code class="inline">while / do-while / for</code>）</li>
+            <li><b>不能</b>用在 <code class="inline">switch</code> 里替代 break</li>
+          </ul>
+        </div>
+        <div>
+          <div class="s-sub" style="margin-top:0">唯一的功能</div>
+          <div class="box key" style="margin-top:6px"><span class="label">核心</span>提前结束<b>本次</b>循环，接着进行"是否执行下次循环"的判断。</div>
+          <div class="box tip"><span class="label">循环没结束</span>只是这一轮到此为止：本轮剩下的语句不做了，下一轮照常开始。</div>
+          <div class="box red"><span class="label">和 break 的分水岭</span>break 走的是"整个循环"，continue 走的是"这一轮"。</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9 continue 把控制送回哪里 -->
+  <section class="slide" data-group="模块1 · break 与 continue">
+    <div class="s-title">continue 把控制送回哪里</div>
+    <div class="s-body">
+      <div style="display:grid;grid-template-columns:520px 1fr;gap:40px;align-items:start">
+        <div class="flow">
+          <div class="cap">continue：回到循环的判断处</div>
+          <svg viewBox="0 0 500 590" style="max-width:500px">
+            <rect class="fc-proc" height="46" rx="4" width="160" x="100" y="12"/>
+            <text class="fc-proc-t" font-size="24" text-anchor="middle" x="180" y="40">计算 e1</text>
+            <line class="fc-line" marker-end="url(#fcArrow)" x1="180" x2="180" y1="58" y2="86"/>
+            <polygon class="fc-dec" points="180,86 280,124 180,162 80,124"/>
+            <text class="fc-dec-t" font-size="24" text-anchor="middle" x="180" y="132">e2</text>
+            <text class="fc-yes" font-size="24" text-anchor="start" x="194" y="180">非0</text>
+            <text class="fc-no" font-size="24" text-anchor="start" x="300" y="116">0</text>
+            <line class="fc-line" marker-end="url(#fcArrow)" x1="180" x2="180" y1="162" y2="190"/>
+            <rect class="fc-proc" height="46" rx="4" width="160" x="100" y="190"/>
+            <text class="fc-proc-t" font-size="24" text-anchor="middle" x="180" y="218">语句 …</text>
+            <line class="fc-line" marker-end="url(#fcArrow)" x1="180" x2="180" y1="236" y2="264"/>
+            <polygon class="fc-dec" points="180,264 280,302 180,340 80,302"/>
+            <text class="fc-dec-t" font-size="24" text-anchor="middle" x="180" y="310">e</text>
+            <text class="fc-yes" font-size="24" text-anchor="start" x="286" y="292">非0</text>
+            <text class="fc-no" font-size="24" text-anchor="start" x="194" y="358">0</text>
+            <line class="fc-line" marker-end="url(#fcArrow)" x1="180" x2="180" y1="340" y2="368"/>
+            <rect class="fc-proc" height="46" rx="4" width="160" x="100" y="368"/>
+            <text class="fc-proc-t" font-size="24" text-anchor="middle" x="180" y="396">语句 …</text>
+            <line class="fc-line" marker-end="url(#fcArrow)" x1="180" x2="180" y1="414" y2="442"/>
+            <rect class="fc-proc" height="46" rx="4" width="160" x="100" y="442"/>
+            <text class="fc-proc-t" font-size="24" text-anchor="middle" x="180" y="470">计算 e3</text>
+            <rect class="fc-proc" height="50" rx="4" width="200" x="80" y="512"/>
+            <text class="fc-proc-t" font-size="24" text-anchor="middle" x="180" y="542">循环之后的语句</text>
+            <path class="fc-line" d="M280,302 L360,302 L360,465 L262,465" marker-end="url(#fcArrow)"/>
+            <path class="fc-line" d="M280,124 L440,124 L440,542 L282,542" marker-end="url(#fcArrow)"/>
+            <path class="fc-line" d="M100,465 L40,465 L40,124 L76,124" marker-end="url(#fcArrow)"/>
+          </svg>
+        </div>
+        <div>
+          <div class="box key" style="margin-top:0"><span class="label">去向</span>不是"循环外面"，而是回到<b>下一次循环的判断</b>：for 还要先执行 <code class="inline">i++</code>。</div>
+          <div class="box tip"><span class="label">这一轮到此为止</span>continue 后面的语句本轮不执行，下一轮从头再来。</div>
+          <div class="box warn"><span class="label">对比着看</span>break 的箭头往<b>下</b>走（离开循环），continue 的箭头往<b>回</b>走（回到判断）。</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10 同一段程序：break 换成 continue -->
+  <section class="slide" data-group="对照 · 改写与等价">
+    <div class="s-title">同一段程序：break 换成 continue</div>
+    <div class="s-body">
+      <div class="two" style="margin-top:0;align-items:start">
+        <div>
+          <div class="s-sub blue" style="margin-top:0">break 版</div>
+          <pre class="code" style="font-size:29px">for (i = 1; i &lt;= 5; i++) {
+    printf("%d ", i);
+    if (i == 3) break;
+    printf("%d ", i);
+}</pre>
+          <div class="out">1 1 2 2 3</div>
+        </div>
+        <div>
+          <div class="s-sub" style="margin-top:0">continue 版（只改一个词）</div>
+          <pre class="code" style="font-size:29px">for (i = 1; i &lt;= 5; i++) {
+    printf("%d ", i);
+    if (i == 3) continue;
+    printf("%d ", i);
+}</pre>
+          <div class="out">1 1 2 2 3 4 4 5 5</div>
+        </div>
+      </div>
+      <div class="coll" style="margin-top:10px">
+        <div class="coll-hd">逐轮推演：输出为什么不一样（点开看每一轮）</div>
+        <div class="coll-bd">
+          <table class="tb" style="font-size:25px">
+            <thead><tr><th style="width:10%">i</th><th style="width:18%">break 版</th><th style="width:20%">continue 版</th><th style="width:52%">这一轮发生了什么</th></tr></thead>
+            <tbody>
+              <tr><td>1、2</td><td>1 1　2 2</td><td>1 1　2 2</td><td>两次 printf 都执行，两版一样</td></tr>
+              <tr><td>3</td><td class="c-red">3</td><td class="c-red">3</td><td>都是"只打印一次"：break 走了，continue 回来了</td></tr>
+              <tr><td>4、5</td><td class="c-red">—</td><td class="c-green">4 4　5 5</td><td>break 早已结束循环；continue 照常跑完</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 11 break 与 continue 对照 -->
+  <section class="slide" data-group="对照 · 改写与等价">
+    <div class="s-title">break 与 continue 对照</div>
+    <div class="s-body">
+      <table class="tb" style="font-size:29px;margin-top:0">
+        <thead><tr><th style="width:22%">对比项</th><th style="width:39%">break</th><th style="width:39%">continue</th></tr></thead>
+        <tbody>
+          <tr><td>作用对象</td><td>整个循环（或整个 switch）</td><td>只作用于当前这一轮</td></tr>
+          <tr><td>控制去向</td><td>循环之后的第一条语句</td><td>循环"下一次判断"处（for 还要先做 i++）</td></tr>
+          <tr><td>循环还继续吗</td><td class="c-red">不再继续</td><td class="c-green">继续，直到条件为 0</td></tr>
+          <tr><td>能不能用在 switch</td><td>能，用来结束分支</td><td>不能（switch 不是循环）</td></tr>
+          <tr><td>典型用途</td><td>找到答案就收工、出错就退出</td><td>跳过非法数据、跳过不关心的元素</td></tr>
+        </tbody>
+      </table>
+      <div class="box key" style="margin-top:16px"><span class="label">记着： </span> break 是"<b>散会</b>"，continue 是"<b>下一个人发言</b>"。</div>
+    </div>
+  </section>
+
+  <!-- 12 陷阱：for 能直接改成 while 吗 -->
+  <section class="slide" data-group="进阶 · for 省略与陷阱">
+    <div class="s-title">陷阱：for 能直接改成 while 吗</div>
+    <div class="s-body">
+      <div class="two" style="margin-top:0;align-items:start">
+        <div>
+          <div class="s-sub blue" style="margin-top:0">for 版：</div>
+          <pre class="code" style="font-size:32px">sum = 0;
+for (n = 0; n &lt; 10; n++) {
+    scanf("%d", &amp;m);
+    if (m &lt; 0) continue;
+    sum = sum + m;
+}</pre>
+        </div>
+        <div>
+          <div class="s-sub" style="margin-top:0">while 版：</div>
+          <pre class="code" style="font-size:32px">sum = 0; n = 0;
+while (n &lt; 10) {
+    scanf("%d", &amp;m);
+    if (m &lt; 0) continue;
+    sum = sum + m;
+    n++;              <span class="cmt">/* 被跳过 */</span>
+}</pre>
+        </div>
+      </div>
+      <div class="reveal-hint" style="margin-top:6px">👉 点一下，看两版为什么不等价</div>
+      <div class="reveal">
+        <div class="box red" style="margin-top:0;font-size:27px;line-height:1.4;padding:8px 22px"><span class="label">区别是： </span>for 的 <code class="inline">n++</code> 在循环头，continue 绕不过它，读满 10 个整数就结束。<b>for 版：累加 10 个整数。</b><br>while 的 <code class="inline">n++</code> 在循环体末尾，负数那一轮被 continue 跳过、不计数，n 只在累加时才 +1 —— 于是变成"凑够 10 个正整数才停"。<b>while 版：累加 10 个正整数。</b></div>
+        <div class="box key" style="margin-top:4px;font-size:27px;line-height:1.4;padding:8px 22px"><span class="label">改法</span>把 <code class="inline">n++</code> 挪到 continue <b>之前</b>，两版才等价；否则题意就变了，输入里负数一多还会一直读下去。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 13 另一种用法：for(;;) 与 break -->
+  <section class="slide" data-group="进阶 · for 省略与陷阱">
+    <div class="s-title">省略表达式2：for(;;) 与 break</div>
+    <div class="s-body">
+      <div class="two" style="margin-top:0;align-items:start">
+        <div>
+          <div class="s-sub" style="margin-top:0">例：求 1 + 2 + … + 100</div>
+          <pre class="code" style="font-size:32px">sum = 0; i = 1;
+for (;;) {               <span class="cmt">/* 三个表达式全空 */</span>
+    if (i &gt; 100) break;  <span class="cmt">/* 唯一出口 */</span>
+    sum += i;
+    i++;
+}
+printf("%d\n", sum);     <span class="cmt">/* 5050 */</span></pre>
+        </div>
+        <div>
+          <div class="s-sub" style="margin-top:0">三种写法对照</div>
+          <table class="tb" style="font-size:27px">
+            <thead><tr><th style="width:44%">写法</th><th style="width:56%">说明</th></tr></thead>
+            <tbody>
+              <tr><td><code class="inline">for(i=1;i&lt;=100;i++)</code></td><td>三要素齐全，最常用</td></tr>
+              <tr><td><code class="inline">for(;i&lt;=100;)</code></td><td>省略 e1、e3，初值与步进写在别处</td></tr>
+              <tr><td><code class="inline">for(;;)</code></td><td>条件恒成立，只能靠 break 出去</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="box warn" style="margin-top:16px"><span class="label">两个分号不能省</span><code class="inline">for(;;)</code> 里两个分号必须都在；写成 <code class="inline">for()</code> 是语法错误。</div>
+      <div class="box key"><span class="label">使用场景</span>循环次数事先不知道、只能"做到满足条件为止"时，这种"无条件循环 + break"最自然。</div>
+    </div>
+  </section>
+
+
+  <!-- 14 练一练①：填空 -->
+  <section class="slide" data-group="练一练">
+    <div class="s-title">练一练①：填空</div>
+    <div class="s-body">
+      <p style="font-size:32px;line-height:1.6;margin:0 0 10px">下面的程序打印 <b>100 以内、个位数为 6、且能被 3 整除</b> 的所有数，请填空。</p>
+      <pre class="code" style="font-size:32px">int i, j;
+for (i = 0; ___①___ ; i++) {
+    j = i * 10 + 6;          <span class="cmt">/* 构造个位为 6 的数 */</span>
+    if ( ___②___ ) continue;  <span class="cmt">/* 不能整除就跳过 */</span>
+    printf("%d\t", j);
+}</pre>
+      <div class="reveal-hint" style="margin-top:10px">👉 点击看答案与运行结果</div>
+      <div class="reveal">
+        <div class="box key"><span class="label">答案</span>① <code class="inline">i &lt; 10</code>（i 取 0~9，正好 10 个候选）　② <code class="inline">j % 3</code>——不能整除时非 0 即真，continue 才生效；写 <code class="inline">j % 3 != 0</code> 也对</div>
+        <div class="out" style="margin-top:4px;padding:8px 22px">6	36	66	96</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 15 练一练②：读程序写结果 -->
+  <section class="slide" data-group="练一练">
+    <div class="s-title">练一练②：读程序写结果</div>
+    <div class="s-body">
+      <pre class="code" style="font-size:32px">int i, s = 0;
+for (i = 1; i &lt;= 10; i++) {
+    if (i % 3 == 0) continue;   <span class="cmt">/* 3、6、9 跳过 */</span>
+    if (i &gt; 7) break;           <span class="cmt">/* 到 8 就收工 */</span>
+    s += i;
+}
+printf("%d\n", s);</pre>
+      <div class="reveal-hint" style="margin-top:10px">👉 点一下，看提示</div>
+      <div class="reveal">
+        <div class="box tip" style="margin-top:0"><span class="label">提示</span>continue 在前，3、6、9 连 break 的判断都轮不到；真正做累加的只有 1、2、4、5、7 五个数。先在草稿纸上推一遍，再翻下一页对答案。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 16 练一练②：逐轮推演 -->
+  <section class="slide" data-group="练一练">
+    <div class="s-title">练一练②：逐轮推演</div>
+    <div class="s-body">
+      <table class="tb" style="font-size:28px;margin-top:0">
+        <thead><tr><th style="width:14%">i</th><th style="width:24%">发生什么</th><th style="width:16%">s</th><th style="width:46%">说明</th></tr></thead>
+        <tbody>
+          <tr><td>1、2</td><td>累加</td><td>3</td><td>两个 if 都不成立</td></tr>
+          <tr><td>3</td><td class="c-red">continue</td><td>3</td><td>3 % 3 == 0，跳过累加</td></tr>
+          <tr><td>4、5</td><td>累加</td><td>12</td><td>继续累加</td></tr>
+          <tr><td>6</td><td class="c-red">continue</td><td>12</td><td>又被跳过</td></tr>
+          <tr><td>7</td><td>累加</td><td class="c-green">19</td><td>得到最终结果</td></tr>
+          <tr><td>8</td><td class="c-red">break</td><td>19</td><td>8 &gt; 7，整个循环结束</td></tr>
+        </tbody>
+      </table>
+      <div class="out" style="margin-top:14px">19</div>
+      <div class="box key" style="margin-top:10px"><span class="label">分工</span>continue 结束的是"这一轮"（3、6 没累加，循环照旧往下走）；break 结束的是"整个循环"（8 之后连判断都不做了）。</div>
+    </div>
+  </section>
+
+  <!-- 17 回到素数：算法流程图 -->
+  <section class="slide" data-group="回到素数">
+    <div class="s-title">回到素数：算法流程图</div>
+    <div class="s-body">
+      <div style="display:grid;grid-template-columns:660px 1fr;gap:26px;align-items:start">
+        <div class="flow">
+          <div class="cap">找到因子就跳出，跳出即定案</div>
+          <svg viewBox="0 0 580 648" style="max-width:600px">
+            <rect class="fc-term" x="205" y="4" width="130" height="38" rx="19"/>
+            <text class="fc-term-t" x="270" y="31" font-size="26" text-anchor="middle">开始</text>
+            <line class="fc-line" x1="270" y1="42" x2="270" y2="58" marker-end="url(#fcArrow)"/>
+            <polygon class="fc-io" points="206,58 334,58 324,108 196,108"/>
+            <text class="fc-io-t" x="265" y="93" font-size="26" text-anchor="middle">输入 x</text>
+            <path class="fc-line" d="M270,108 L270,122" marker-end="url(#fcArrow)"/>
+            <rect class="fc-proc" x="200" y="124" width="140" height="42" rx="4"/>
+            <text class="fc-proc-t" x="270" y="152" font-size="26" text-anchor="middle">i = 2</text>
+            <path class="fc-line" d="M270,166 L270,180" marker-end="url(#fcArrow)"/>
+            <polygon class="fc-dec" points="270,184 400,220 270,256 140,220"/>
+            <foreignObject x="150" y="198" width="240" height="44">
+              <div xmlns="http://www.w3.org/1999/xhtml" style="height:100%;text-align:center;line-height:44px;font-size:24px;font-weight:700;color:#9a4a00;white-space:nowrap">\(i\le\sqrt{x}\)</div>
+            </foreignObject>
+            <text class="fc-yes" x="284" y="272" font-size="24" text-anchor="start">非0</text>
+            <text class="fc-no"  x="410" y="212" font-size="24" text-anchor="start">0</text>
+            <path class="fc-line" d="M270,256 L270,270" marker-end="url(#fcArrow)"/>
+            <polygon class="fc-dec" points="270,274 400,310 270,346 140,310"/>
+            <text class="fc-dec-t" x="270" y="319" font-size="24" text-anchor="middle">x % i == 0</text>
+            <text class="fc-yes" x="410" y="302" font-size="24" text-anchor="start">非0</text>
+            <text class="fc-no"  x="284" y="366" font-size="24" text-anchor="start">0</text>
+            <path class="fc-line" d="M270,346 L270,372" marker-end="url(#fcArrow)"/>
+            <rect class="fc-proc" x="200" y="374" width="140" height="42" rx="4"/>
+            <text class="fc-proc-t" x="270" y="402" font-size="26" text-anchor="middle">i++</text>
+            <path class="fc-line" d="M200,395 L92,395 L92,220 L137,220" marker-end="url(#fcArrow)"/>
+            <path class="fc-line" d="M400,220 L550,220 L550,424 L270,424 L270,431" marker-end="url(#fcArrow)"/>
+            <path class="fc-line" d="M400,310 L470,310 L470,424"/>
+            <polygon class="fc-dec" points="270,434 400,470 270,506 140,470"/>
+            <foreignObject x="150" y="448" width="240" height="44">
+              <div xmlns="http://www.w3.org/1999/xhtml" style="height:100%;text-align:center;line-height:44px;font-size:24px;font-weight:700;color:#9a4a00;white-space:nowrap">\(i\le\sqrt{x}\)</div>
+            </foreignObject>
+            <text class="fc-yes" x="105" y="458" font-size="24" text-anchor="middle">非0</text>
+            <text class="fc-no"  x="410" y="462" font-size="24" text-anchor="start">0</text>
+            <path class="fc-line" d="M140,470 L70,470 L70,521" marker-end="url(#fcArrow)"/>
+            <path class="fc-line" d="M400,470 L460,470 L460,521" marker-end="url(#fcArrow)"/>
+            <polygon class="fc-io" points="35,524 245,524 235,580 25,580"/>
+            <text class="fc-io-t" x="135" y="560" font-size="24" text-anchor="middle">输出 x 不是素数</text>
+            <polygon class="fc-io" points="365,524 550,524 540,580 355,580"/>
+            <text class="fc-io-t" x="452" y="560" font-size="24" text-anchor="middle">输出 x 是素数</text>
+            <path class="fc-line" d="M135,580 L135,592 L452,592 L452,580"/>
+            <path class="fc-line" d="M270,592 L270,599" marker-end="url(#fcArrow)"/>
+            <rect class="fc-term" x="205" y="602" width="130" height="38" rx="19"/>
+            <text class="fc-term-t" x="270" y="629" font-size="26" text-anchor="middle">结束</text>
+          </svg>
+        </div>
+        <div>
+          <div class="s-sub blue" style="margin-top:0">看懂这张图</div>
+          <div class="box tip" style="margin-top:8px"><span class="label">菱形①</span>\(i\le\sqrt{x}\)：<b>非0</b> 继续试；<b>0</b> 说明已经试完。</div>
+          <div class="box warn"><span class="label">菱形②</span><code class="inline">x % i == 0</code>：<b>非0</b> 找到因子，立刻跳出；<b>0</b> 换下一个 i。</div>
+          <div class="box key"><span class="label">菱形③</span>退出后再问一次 \(i\le\sqrt{x}\)：<b>非0</b> 是跳出（有因子）→ 不是素数；<b>0</b> 是试完（无因子）→ 是素数。</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 18 回到素数：参考代码 -->
+  <section class="slide" data-group="回到素数">
+    <div class="s-title">回到素数：参考代码</div>
+    <div class="s-body">
+      <pre class="code" style="font-size:32px">#include &lt;stdio.h&gt;
+#include &lt;math.h&gt;
+int main(void) {
+    int x, i;
+    scanf("%d", &amp;x);
+    for (i = 2; i &lt;= sqrt(x); i++)      <span class="cmt">/* ① 从 2 试到 √x */</span>
+        if (x % i == 0) break;          <span class="cmt">/* ② 找到因子就跳出 */</span>
+    if (i &lt;= sqrt(x))                   <span class="cmt">/* ③ 看 i 停在哪 */</span>
+        printf("%d 不是素数\n", x);      <span class="cmt">/*    跳出来的 */</span>
+    else
+        printf("%d 是素数\n", x);        <span class="cmt">/*    试完的   */</span>
+    return 0;
+}</pre>
+    </div>
+  </section>
+
+  <!-- 19 运行追踪：33 与 17 -->
+  <section class="slide" data-group="回到素数">
+    <div class="s-title">运行追踪：33 与 17</div>
+    <div class="s-body">
+      <div class="two" style="margin-top:0;align-items:start">
+        <div>
+          <div class="s-sub blue" style="margin-top:0">输入 33：i = 3 时跳出</div>
+          <table class="tb" style="font-size:27px">
+            <thead><tr><th style="width:16%">i</th><th style="width:36%">x % i</th><th style="width:48%">结果</th></tr></thead>
+            <tbody>
+              <tr><td>2</td><td>1</td><td>不整除，i++</td></tr>
+              <tr><td>3</td><td class="c-red">0</td><td class="c-red">break 跳出</td></tr>
+            </tbody>
+          </table>
+          <div class="out">i 停在 3；33 的平方根约 5.74<br>3 没有超过它　→　33 不是素数</div>
+        </div>
+        <div>
+          <div class="s-sub blue" style="margin-top:0">输入 17：试满全程</div>
+          <table class="tb" style="font-size:27px">
+            <thead><tr><th style="width:16%">i</th><th style="width:36%">x % i</th><th style="width:48%">结果</th></tr></thead>
+            <tbody>
+              <tr><td>2</td><td>1</td><td>不整除，i++</td></tr>
+              <tr><td>3</td><td>2</td><td>不整除，i++</td></tr>
+              <tr><td>4</td><td>1</td><td>不整除，i++</td></tr>
+              <tr><td>5</td><td>—</td><td class="c-green">5 &gt; 4.12，条件变 0</td></tr>
+            </tbody>
+          </table>
+          <div class="out">i 停在 5；17 的平方根约 4.12<br>5 已经超过它　→　17 是素数</div>
+        </div>
+      </div>
+      <div class="box key" style="margin-top:18px"><span class="label">看到差别了吗</span>跳出时 \(i\le\sqrt{x}\)，试完时 \(i>\sqrt{x}\)——同一句 <code class="inline">i &lt;= sqrt(x)</code>，恰好把两种结束方式分开。</div>
+    </div>
+  </section>
+
+  <!-- 20 例题：录入成绩，读到 -1 结束 -->
+  <section class="slide" data-group="综合例题">
+    <div class="s-title">例题：录入成绩，读到 -1 结束</div>
+    <div class="s-body">
+      <div class="two" style="margin-top:0;align-items:start">
+        <div>
+          <div class="s-sub" style="margin-top:0">题目</div>
+          <p style="font-size:30px;line-height:1.55;margin:0 0 12px">录入全班成绩，<b>人数事先不知道</b>，输入 -1 表示结束。输出实考人数和平均分。</p>
+          <div class="s-sub blue" style="margin-top:10px">输入 / 输出</div>
+          <div class="out" style="font-size:27px;padding:10px 20px;margin:4px 0">输入　85　92　78　-1</div>
+          <div class="out" style="font-size:27px;padding:10px 20px;margin:4px 0">输出　3 人，平均 85.0</div>
+          <div class="reveal-hint" data-label="👉 点一下，接着看" style="margin-top:10px">👉 点一下，接着看（1 / 4）</div>
+          <div class="reveal step" data-step="1">
+            <div class="box warn" style="margin-top:0;font-size:28px;line-height:1.45"><span class="label">先想想：</span>for 表达式中里能给出循环次数吗？具体"人数"该在哪儿计算（加1）？</div>
+          </div>
+          <div class="reveal step" data-step="3">
+            <div class="box tip" style="font-size:26px;line-height:1.4;padding:10px 18px"><span class="label">出口在循环体</span>次数事先不知道，就写 <code class="inline">for(;;)</code>；-1 只是数据结束，break 之后不必再判断什么。</div>
+          </div>
+        </div>
+        <div>
+          <div class="reveal step" data-step="2">
+          <pre class="code" style="font-size:32px">sum = 0;  n = 0;
+for (;;) {
+    scanf("%d", &amp;s);
+    if (s &lt; 0) break;
+    sum += s;
+    n++;
+}
+printf("%d 人，平均 %.1f\n",
+       n, (double)sum / n);</pre>
+          </div>
+          <div class="reveal step" data-step="4">
+          <div class="box key" style="margin-top:10px;font-size:28px;line-height:1.45"><span class="label">别多加人</span><code class="inline">n++</code> 排在 break 后面，-1 不会被算成一个人；平均分要用 <code class="inline">n</code>，不能拿循环次数。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 21 例题：缺考不计，只算有效成绩 -->
+  <section class="slide" data-group="综合例题">
+    <div class="s-title">例题：缺考不计，只算有效成绩</div>
+    <div class="s-body">
+      <div class="two" style="margin-top:0;align-items:start">
+        <div>
+          <div class="s-sub" style="margin-top:0">题目</div>
+          <p style="font-size:30px;line-height:1.55;margin:0 0 12px">一次读入 8 个成绩，<b>-1 表示缺考</b>。缺考的人不计，输出实考人数和平均分。</p>
+          <div class="s-sub blue" style="margin-top:10px">输入 / 输出</div>
+          <div class="out" style="font-size:27px;padding:10px 20px;margin:4px 0">输入　80　-1　90　70　60　-1　88　92</div>
+          <div class="out" style="font-size:27px;padding:10px 20px;margin:4px 0">输出　6 人，平均 80.0</div>
+          <div class="reveal-hint" data-label="👉 点一下，接着看" style="margin-top:10px">👉 点一下，接着看（1 / 4）</div>
+          <div class="reveal step" data-step="1">
+            <div class="box warn" style="margin-top:0;font-size:28px;line-height:1.45"><span class="label">先想想：</span>缺考那一轮该跳过哪几行？<code class="inline">n++</code> 写在哪里才不会把缺考算进去？</div>
+          </div>
+          <div class="reveal step" data-step="3">
+            <div class="box red" style="font-size:26px;line-height:1.4;padding:10px 18px"><span class="label">放错位置</span>把 <code class="inline">n++</code> 挪到 continue 前面，两个缺考的也被算进去，平均分会变成 60.0。</div>
+          </div>
+        </div>
+        <div>
+          <div class="reveal step" data-step="2">
+          <pre class="code" style="font-size:32px">sum = 0;  n = 0;
+for (i = 1; i &lt;= 8; i++) {
+    scanf("%d", &amp;s);
+    if (s &lt; 0) continue;
+    sum += s;
+    n++;
+}
+printf("%d 人，平均 %.1f\n",
+       n, (double)sum / n);</pre>
+          </div>
+          <div class="reveal step" data-step="4">
+          <div class="box key" style="margin-top:10px;font-size:28px;line-height:1.45"><span class="label">看 n 不看 i</span>循环跑满 8 次，用 <code class="inline">n</code> 记住真正有效的个数；这里不需要判断 <code class="inline">i</code> 的终值。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 22 例题：装车，超重前一件收工 -->
+  <section class="slide" data-group="综合例题">
+    <div class="s-title">例题：装车，超重前一件收工</div>
+    <div class="s-body">
+      <div class="two" style="margin-top:0;align-items:start">
+        <div>
+          <div class="s-sub" style="margin-top:0">题目</div>
+          <p style="font-size:30px;line-height:1.55;margin:0 0 12px">逐个读入包裹重量，一车最多 <b>100 kg</b>，下一件会超重就停装；输出本车件数和总重。</p>
+          <div class="s-sub blue" style="margin-top:10px">输入 / 输出</div>
+          <div class="out" style="font-size:27px;padding:10px 20px;margin:4px 0">输入　30　25　40　20　15　…</div>
+          <div class="out" style="font-size:27px;padding:10px 20px;margin:4px 0">输出　本车 3 件，共 95 kg</div>
+          <div class="reveal-hint" data-label="👉 点一下，接着看" style="margin-top:10px">👉 点一下，接着看（1 / 4）</div>
+          <div class="reveal step" data-step="1">
+            <div class="box warn" style="margin-top:0;font-size:28px;line-height:1.45"><span class="label">先想想：</span>拦住循环的是循环次数，还是累加出来的 <code class="inline">sum</code>？刚好 100 kg 算超重吗？</div>
+          </div>
+          <div class="reveal step" data-step="3">
+            <div class="box tip" style="font-size:26px;line-height:1.4;padding:10px 18px"><span class="label">先算再比</span>判断写 <code class="inline">sum + w &gt; 100</code>：若写成 <code class="inline">sum &gt; 100</code>，超重那件已被加进 sum，输出就不是 95 kg。</div>
+          </div>
+        </div>
+        <div>
+          <div class="reveal step" data-step="2">
+          <pre class="code" style="font-size:32px">sum = 0;  n = 0;
+for (;;) {
+    scanf("%d", &amp;w);
+    if (sum + w &gt; 100) break;
+    sum += w;
+    n++;
+}
+printf("本车 %d 件，共 %d kg\n",
+       n, sum);</pre>
+          </div>
+          <div class="reveal step" data-step="4">
+          <div class="box key" style="margin-top:10px;font-size:28px;line-height:1.45"><span class="label">不是找答案</span>这次 break 跟"找到答案"无关：拦住它的是累加量 <code class="inline">sum</code>，循环次数事先也不知道。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 23 例题：温度巡检，坏值跳过、数据收工 -->
+  <section class="slide" data-group="综合例题">
+    <div class="s-title">例题：温度巡检，坏值跳过、数据收工</div>
+    <div class="s-body">
+      <div class="two" style="margin-top:0;align-items:start">
+        <div>
+          <div class="s-sub" style="margin-top:0">题目</div>
+          <p style="font-size:30px;line-height:1.55;margin:0 0 12px">传感器上报 10 个温度：<b>-999</b> 是坏值，跳过；<b>0</b> 表示数据结束。输出有效值个数和最高温度。</p>
+          <div class="s-sub blue" style="margin-top:10px">输入 / 输出</div>
+          <div class="out" style="font-size:27px;padding:10px 20px;margin:4px 0">输入　25　-999　28　33　0</div>
+          <div class="out" style="font-size:27px;padding:10px 20px;margin:4px 0">输出　3 个 最高 33</div>
+          <div class="reveal-hint" data-label="👉 点一下，接着看" style="margin-top:10px">👉 点一下，接着看（1 / 4）</div>
+          <div class="reveal step" data-step="1">
+            <div class="box warn" style="margin-top:0;font-size:28px;line-height:1.45"><span class="label">先想想：</span>坏值要不要占个数？0 是结束标志，能不能也拿去比最高温？</div>
+          </div>
+          <div class="reveal step" data-step="3">
+            <div class="box key" style="font-size:26px;line-height:1.4;padding:10px 18px"><span class="label">各管一段</span>continue 丢掉坏值、<code class="inline">n</code> 不加；break 收掉整批数据，0 不会被拿来比最高温。</div>
+          </div>
+        </div>
+        <div>
+          <div class="reveal step" data-step="2">
+          <pre class="code" style="font-size:32px">n = 0;  max = -1000;
+for (i = 1; i &lt;= 10; i++) {
+    scanf("%d", &amp;t);
+    if (t == 0) break;
+    if (t == -999) continue;
+    n++;
+    if (t &gt; max) max = t;
+}
+printf("%d 个 最高 %d\n", n, max);</pre>
+          </div>
+          <div class="reveal step" data-step="4">
+          <div class="box key" style="margin-top:10px;font-size:28px;line-height:1.45"><span class="label">结果在统计量里</span>两条出口都不影响统计：<code class="inline">n</code> 只数有效值，<code class="inline">max</code> 只比有效值。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 24 易错点清单 -->
+  <section class="slide" data-group="收尾 · 易错点与小节">
+    <div class="s-title">易错点清单</div>
+    <div class="s-body">
+      <ul class="feat">
+        <li><span class="k">i 从 1 开始</span><span class="v">1 能整除任何整数，第一轮就判成"不是素数"，全错</span></li>
+        <li><span class="k">漏 math.h</span><span class="v">用了 sqrt 却没 <code class="inline">#include &lt;math.h&gt;</code>，编译告警或链接失败</span></li>
+        <li><span class="k">漏了等号</span><span class="v">写成 \(i&lt;\sqrt{x}\)：49、121 这类完全平方数会被误判成素数</span></li>
+        <li><span class="k">break 当 return</span><span class="v">写成 <code class="inline">return 0;</code> 会直接结束整个程序，后面的判断不再执行</span></li>
+        <li><span class="k">跳出后不判断</span><span class="v">只靠"有没有跳出"记状态又没记对，分不清两条出口</span></li>
+        <li><span class="k">while 里忘了 i++</span><span class="v">循环变量不推进，条件永远成立 → 死循环</span></li>
+      </ul>
+      <div class="box key" style="margin-top:16px"><span class="label">自查一遍</span>试除范围对不对？出口判断放对位置没有？跳出之后还能不能拿到 i 的值？</div>
+    </div>
+  </section>
+
+  <!-- 25 小结：三句话 -->
+  <section class="slide" data-group="收尾 · 易错点与小节">
+    <div class="s-title">小结：三句话</div>
+    <div class="s-body">
+      <div class="grid c3" style="margin-top:0;align-items:stretch">
+        <div class="card"><h4><span class="ico">①</span>break</h4><p>结束<b>整个</b>循环，控制落到循环之后的第一条语句。</p></div>
+        <div class="card orange"><h4><span class="ico">②</span>continue</h4><p>只结束<b>本次</b>循环，回到下一次的判断；for 还会先做 i++。</p></div>
+        <div class="card green"><h4><span class="ico">③</span>事后看变量</h4><p>跳出与正常结束靠<b>循环变量的终值</b>区分，这是判断素数的关键。</p></div>
+      </div>
+      <table class="tb" style="font-size:29px;margin-top:24px">
+        <thead><tr><th style="width:34%">场景</th><th style="width:24%">用什么</th><th style="width:42%">例子</th></tr></thead>
+        <tbody>
+          <tr><td>答案已确定，不必再跑</td><td class="c-red">break</td><td>找到一个因子就判"不是素数"</td></tr>
+          <tr><td>这条数据不要，其余照做</td><td class="c-green">continue</td><td>成绩为负，跳过这一条</td></tr>
+          <tr><td>循环次数事先不知道</td><td class="c-blue">for(;;) + break</td><td>一直读到满足条件为止</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 26 分层练习 -->
+  <section class="slide" data-group="分层练习">
+    <div class="s-title">分层练习</div>
+    <div class="s-body">
+      <div class="s-sub" style="margin-top:0">基础：把今天的两段程序亲手写一遍</div>
+      <ol style="font-size:29px;line-height:1.65;padding-left:1.4em;margin:4px 0 14px">
+        <li>把判断素数的程序改成 <b>while</b> 版，输入 15、17 各跑一次，观察 i 的终值。</li>
+        <li>把判断素数改成"输出结论后立即结束"：不再用事后判断，而是找到因子就 <code class="inline">printf</code> 并 break，试完再输出"是素数"——两种写法都试一下，比较哪个更清楚。</li>
+      </ol>
+      <div class="s-sub blue">提高：把判断变成"查找"</div>
+      <ol style="font-size:29px;line-height:1.65;padding-left:1.4em;margin:4px 0 14px">
+        <li>逐个输入 5 个整数，判断每个是不是素数——批量处理的写法留到下节"多重循环"再讲。</li>
+        <li>输入 10 个数，求和，遇到负数就跳过（用 continue）；如果输入 0 则立即停止（用 break）。</li>
+      </ol>
+      <div class="box key" style="margin-top:0"><span class="label">思考</span>把素数程序里的 <code class="inline">break</code> 删掉，程序还对不对？错在哪里？把 <code class="inline">i &lt;= sqrt(x)</code> 改成 <code class="inline">i &lt; sqrt(x)</code>，输入 49 会输出什么？</div>
+    </div>
+  </section>
+
+  <!-- 27 结束页 -->
+<section class="slide end" data-group="封底">
+    <div class="end-inner">
+      <h2>谢　谢</h2>
+      <p>下一部分：循环结构综合练习　·　数组初步</p>
+    </div>
+  </section>
+
+
+  <!-- 导航 UI（无需改动） -->
+  <div class="pageinfo"><b id="cur">1</b> / <span id="total">28</span></div>
+  <div class="nav">
+    <button class="tocbtn" id="btnToc" title="目录（按 O 键）">目录</button>
+    <button id="btnPrev" title="上一页（←）">‹</button>
+    <button id="btnNext" title="下一页（→ / 空格）">›</button>
+  </div>
+  <div class="keyhint" id="keyhint">← → 翻页　·　空格下一页　·　拖动选中文字可直接复制　·　B 黑屏　·　O 目录　·　Esc 关闭</div>
+  <div class="progress" id="progress"></div>
+  <div class="toc" id="toc">
+    <button class="toc-close" id="btnTocClose">关闭 ✕</button>
+    <h3>目录</h3>
+    <div class="toc-bar"></div>
+    <div class="toc-list" id="tocList" style="grid-template-columns:repeat(6,1fr)"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+/* 极简 LaTeX 子集渲染：\(\sqrt{x}\)、x^2、a_{i}、\frac、希腊字母与常见运算符
+   零依赖，断网可用。转成 HTML 片段（.tex 命名空间内）。 */
+function texToHtml(src){
+  var SYM = {
+    le:'<=', leq:'<=', ge:'>=', geq:'>=', ne:'!=', neq:'!=', approx:'~',
+    times:'*', div:'/', cdot:'.', pm:'+-', mp:'-+', infty:'oo', pi:'pi',
+    alpha:'a', beta:'b', gamma:'c', theta:'t', lambda:'l', mu:'m', omega:'w',
+    to:'->', rightarrow:'->', Rightarrow:'=>', bmod:' mod ', '%':'%',
+    sin:'sin', cos:'cos', tan:'tan', log:'log', ln:'ln', max:'max', min:'min', exp:'exp'
+  };
+  var HTML = {
+    le:'&le;', leq:'&le;', ge:'&ge;', geq:'&ge;', ne:'&ne;', neq:'&ne;',
+    approx:'&asymp;', times:'&times;', div:'&divide;', cdot:'&middot;',
+    pm:'&plusmn;', mp:'&#8723;', infty:'&infin;', pi:'&pi;', alpha:'&alpha;',
+    beta:'&beta;', gamma:'&gamma;', theta:'&theta;', lambda:'&lambda;',
+    mu:'&mu;', omega:'&omega;', to:'&rarr;', rightarrow:'&rarr;',
+    Rightarrow:'&rArr;', bmod:'<span class="fn">mod</span>', '%':'%'
+  };
+  var FN = {sin:1,cos:1,tan:1,log:1,ln:1,max:1,min:1,exp:1};
+
+  var s = String(src), i = 0;
+
+  function esc(t){ return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  function macro(){
+    var m = /^\\([a-zA-Z]+|[\s\S])/.exec(s.slice(i));
+    if(!m){ i++; return ''; }
+    var name = m[1]; i += m[0].length;
+    if(name === 'frac'){
+      var a = arg(), b = arg();
+      return '<span class="fx"><span class="fx-n">'+a+'</span><span class="fx-d">'+b+'</span></span>';
+    }
+    if(name === 'sqrt'){ return '<span class="sq">&radic;<span class="sq-b">'+arg()+'</span></span>'; }
+    if(name === 'text' || name === 'mathrm'){ return '<span class="up">'+esc(rawArg())+'</span>'; }
+    if(HTML[name] !== undefined){
+      return FN[name] ? '<span class="fn">'+name+'</span>' : '<span class="op">'+HTML[name]+'</span>';
+    }
+    if(name === '\\'){ return '<br>'; }
+    return esc(name);
+  }
+
+  function arg(){
+    if(s[i] === '{'){
+      i++;
+      var r = parse();
+      if(s[i] === '}') i++;
+      return r;
+    }
+    if(s[i] === '\\'){
+      var m = /^\\([a-zA-Z]+|[\s\S])/.exec(s.slice(i));
+      var nm = m[1]; i += m[0].length;
+      if(HTML[nm] !== undefined) return FN[nm] ? '<span class="fn">'+nm+'</span>' : '<span class="op">'+HTML[nm]+'</span>';
+      return '<i>'+esc(nm)+'</i>';
+    }
+    var c = s[i]; i++;
+    if(c === undefined) return '';
+    if(/[0-9a-zA-Z]/.test(c)) return '<i>'+c+'</i>';
+    return '<span class="op">'+esc(c)+'</span>';
+  }
+
+  function rawArg(){
+    if(s[i] === '{'){
+      var d = 0, st = i + 1;
+      for(var k = i; k < s.length; k++){
+        if(s[k] === '{') d++;
+        else if(s[k] === '}'){ d--; if(d === 0){ var out = s.slice(st, k); i = k + 1; return out; } }
+      }
+      i = s.length; return s.slice(st);
+    }
+    var c2 = s[i]; i++;
+    return c2 || '';
+  }
+
+  function parse(){
+    var out = '';
+    while(i < s.length){
+      var c = s[i];
+      if(c === '}') break;
+      if(c === '\\'){ out += macro(); continue; }
+      if(c === '^' || c === '_'){
+        i++;
+        var a2 = arg();
+        out += (c === '^') ? '<sup>'+a2+'</sup>' : '<sub>'+a2+'</sub>';
+        continue;
+      }
+      if(c === '{'){ i++; out += parse(); if(s[i] === '}') i++; continue; }
+      if(c === ' '){ i++; out += ' '; continue; }
+      if(c === '-'){ i++; out += '<span class="op">&minus;</span>'; continue; }
+      if(/[0-9.]/.test(c)){
+        var n = /^[0-9.]+/.exec(s.slice(i))[0]; i += n.length;
+        out += '<span class="num">'+n+'</span>'; continue;
+      }
+      if(/[a-zA-Z]/.test(c)){ i++; out += '<i>'+c+'</i>'; continue; }
+      i++;
+      out += '<span class="op">'+esc(c)+'</span>';
+    }
+    return out;
+  }
+
+  return parse();
+}
+
+/* 浏览器端：把文档里 \( ... \) 的文本节点转成 .tex 片段 */
+function texScan(root){
+  if(!root) root = document.body;
+  var it = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null, false);
+  var nodes = [], n;
+  while((n = it.nextNode())) nodes.push(n);
+  for(var k = 0; k < nodes.length; k++){
+    var node = nodes[k];
+    var t = node.nodeValue;
+    if(t.indexOf('\\(') < 0 || t.indexOf('\\)') < 0) continue;
+    var host = node.parentNode;
+    if(!host || /^(SCRIPT|STYLE|PRE|CODE)$/.test(host.tagName)) continue;
+    var parts = t.split(/(\\\([\s\S]*?\\\))/);
+    if(parts.length < 2) continue;
+    var frag = document.createDocumentFragment();
+    for(var p = 0; p < parts.length; p++){
+      var seg = parts[p];
+      if(!seg) continue;
+      if(seg.slice(0,2) === '\\(' && seg.slice(-2) === '\\)'){
+        var sp = document.createElement('span');
+        sp.className = 'tex';
+        sp.innerHTML = texToHtml(seg.slice(2, -2));
+        frag.appendChild(sp);
+      } else {
+        frag.appendChild(document.createTextNode(seg));
+      }
+    }
+    host.replaceChild(frag, node);
+  }
+}
+
+
+  try { texScan(document.body); } catch(e){ console.warn('texScan', e); }
+})();
+</script>
+
+<script>
+(function(){
+    if(window.matchMedia("(max-width:720px)").matches) return;
+  var stage   = document.getElementById('stage');
+  var slides  = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var total   = slides.length;
+  var cur     = 0;
+  var curEl   = document.getElementById('cur');
+  var pageinfo = document.querySelector('.pageinfo');
+  var bar     = document.getElementById('progress');
+  var btnPrev = document.getElementById('btnPrev');
+  var btnNext = document.getElementById('btnNext');
+  var toc     = document.getElementById('toc');
+  var tocList = document.getElementById('tocList');
+  var keyhint = document.getElementById('keyhint');
+
+  document.getElementById('total').textContent = total;
+
+  // 将每页正文内容包裹进 .fit，便于按高度自动等比缩放，彻底杜绝溢出被裁切
+  slides.forEach(function(slide){
+    var body = slide.querySelector('.s-body');
+    if(!body) return;
+    var fit = document.createElement('div');
+    fit.className = 'fit';
+    while(body.firstChild){ fit.appendChild(body.firstChild); }
+    body.appendChild(fit);
+  });
+
+  // 若正文高度超出可视区，则整体等比缩放至恰好放得下（仅在当前页测量）
+  // 若正文高度超出可视区，则整体等比缩放至恰好放得下（仅在当前页测量）
+  // 补丁（2026-10-27）：缩放时把 .fit 宽度按 1/s 加宽再整体缩回（origin 左上），
+  // 使缩小后仍占满整行宽，避免“内容挤在中间、左右两侧大片留白”。
+  function fitSlide(slide){
+    if(!slide) return;
+    var body = slide.querySelector('.s-body');
+    var fit  = slide.querySelector('.fit');
+    if(!body || !fit) return;
+    fit.style.transform = 'none';
+    fit.style.width = '';
+    var avail = body.clientHeight;
+    var s = 1;
+    for(var i = 0; i < 3; i++){
+      var natural = fit.scrollHeight;
+      if(natural <= avail + 1) break;
+      var s2 = Math.min(1, avail / natural);
+      if(Math.abs(s2 - s) < 0.004) break;
+      s = s2;
+      fit.style.width = (100 / s) + '%';
+    }
+    if(s < 1){
+      fit.style.transform = 'scale(' + s + ')';
+      fit.style.transformOrigin = 'top left';
+    } else {
+      fit.style.width = '';
+    }
+  }
+
+  // 习题揭示：先看题目，点击/→/空格后解析才滑出
+  function hasPendingReveal(){
+    var s = slides[cur];
+    return !!(s && s.querySelector('.reveal:not(.shown)'));
+  }
+  function stepOrder(a, b){
+    return (+a.getAttribute('data-step') || 0) - (+b.getAttribute('data-step') || 0);
+  }
+  function updateRevealHint(s){
+    var h = s.querySelector('.reveal-hint');
+    if(!h) return;
+    if(!h.hasAttribute('data-label')) h.setAttribute('data-label', h.textContent.replace(/（\d+ \/ \d+）$/, '').trim());
+    var base = h.getAttribute('data-label');
+    var steps = Array.prototype.slice.call(s.querySelectorAll('.reveal.step')).sort(stepOrder);
+    var pend = s.querySelectorAll('.reveal:not(.shown)').length;
+    if(!pend){ h.classList.add('gone'); return; }
+    h.classList.remove('gone');
+    var done = s.querySelectorAll('.reveal.step.shown').length;
+    h.textContent = steps.length ? base + '（' + (done + 1) + ' / ' + steps.length + '）' : base;
+  }
+  function revealAnswers(){
+    var s = slides[cur];
+    if(!s) return false;
+    var pending = s.querySelectorAll('.reveal:not(.shown)');
+    if(!pending.length) return false;
+    var steps = Array.prototype.slice.call(s.querySelectorAll('.reveal.step:not(.shown)')).sort(stepOrder);
+    if(steps.length){
+      steps[0].classList.add('shown');
+    } else {
+      pending.forEach(function(el){ el.classList.add('shown'); });
+    }
+    updateRevealHint(s);
+    fitSlide(s);
+    setTimeout(function(){ fitSlide(s); }, 560);
+    return true;
+  }
+
+  // 目录：按“页面索引 i : 目录文字 t”维护，分组数量任意
+  var tocGroups = [
+    {
+      title: '开场',
+      items: [
+        { i: 0, t: '封面' },
+        { i: 1, t: '两个问题' }
+      ]
+    },
+    {
+      title: '例题先行',
+      items: [
+        { i: 2, t: '判断素数' },
+        { i: 3, t: '试除法' },
+        { i: 4, t: '卡住的地方' }
+      ]
+    },
+    {
+      title: 'break',
+      items: [
+        { i: 5, t: '形式与功能' },
+        { i: 6, t: '控制转移' },
+        { i: 7, t: '例：到 3 就停' }
+      ]
+    },
+    {
+      title: 'continue',
+      items: [
+        { i: 8, t: '形式与功能' },
+        { i: 9, t: '控制转移' },
+        { i: 10, t: '换成 continue' },
+        { i: 11, t: '两者对照' }
+      ]
+    },
+    {
+      title: '陷阱与练习',
+      items: [
+        { i: 12, t: 'for 改 while' },
+        { i: 13, t: 'for(;;)+break' },
+        { i: 14, t: '练一练①' },
+        { i: 15, t: '练一练②' },
+        { i: 16, t: '练②推演' }
+      ]
+    },
+    {
+      title: '回到素数',
+      items: [
+        { i: 17, t: '流程图' },
+        { i: 18, t: '参考代码' },
+        { i: 19, t: '运行追踪' }
+      ]
+    },
+    {
+      title: '实际例题',
+      items: [
+        { i: 20, t: '读到 -1 结束' },
+        { i: 21, t: '缺考不计' },
+        { i: 22, t: '装车超重' },
+        { i: 23, t: '温度巡检' }
+      ]
+    },
+    {
+      title: '收尾',
+      items: [
+        { i: 24, t: '易错点' },
+        { i: 25, t: '小结' },
+        { i: 26, t: '分层练习' },
+        { i: 27, t: '结束页' }
+      ]
+    }
+  ];
+
+  tocGroups.forEach(function(group){
+    var g = document.createElement('div');
+    g.className = 'toc-group';
+    var h = document.createElement('div');
+    h.className = 'toc-group-title';
+    h.textContent = group.title;
+    g.appendChild(h);
+    group.items.forEach(function(item){
+      var a = document.createElement('a');
+      a.textContent = item.t;
+      a.onclick = function(){ go(item.i); closeToc(); };
+      g.appendChild(a);
+    });
+    tocList.appendChild(g);
+  });
+
+  function resize(){
+    var s = Math.min(window.innerWidth / 1600, window.innerHeight / 900);
+    stage.style.setProperty('--s', s);
+    fitSlide(slides[cur]);
+  }
+  window.addEventListener('resize', resize);
+
+  function go(i){
+    cur = Math.max(0, Math.min(total - 1, i));
+    hideCopyTip();
+    if (window.getSelection) window.getSelection().removeAllRanges();  // 翻页后清掉上一页的选中，避免误复制
+    slides.forEach(function(s, k){ s.classList.toggle('active', k === cur); });
+    curEl.textContent = cur + 1;
+    // 封面与结束页不显示页码徽标
+    var isCover = slides[cur].classList.contains('cover') || slides[cur].classList.contains('end');
+    pageinfo.style.visibility = isCover ? 'hidden' : 'visible';
+    bar.style.width = ((cur + 1) / total * 100) + '%';
+    btnPrev.disabled = (cur === 0);
+    btnNext.disabled = (cur === total - 1);
+    updateRevealHint(slides[cur]);
+    fitSlide(slides[cur]);
+  }
+
+  btnPrev.onclick = function(){ go(cur - 1); this.blur(); hideHint(); };
+  btnNext.onclick = function(){ if(hasPendingReveal()){ revealAnswers(); this.blur(); hideHint(); return; } go(cur + 1); this.blur(); hideHint(); };
+
+  function openToc(){ toc.classList.add('show'); }
+  function closeToc(){ toc.classList.remove('show'); }
+  document.getElementById('btnToc').onclick = function(){
+    toc.classList.contains('show') ? closeToc() : openToc();
+    this.blur();
+  };
+  document.getElementById('btnTocClose').onclick = function(){
+    closeToc(); this.blur();
+  };
+
+  document.addEventListener('keydown', function(e){
+    var k = e.key;
+
+    // 放大镜开启期间屏蔽全部全局快捷键，避免调整滑块（←/↑/PageUp/Backspace）时误翻页
+    if (document.body.classList.contains('loupe-on')) return;
+
+    // Ctrl/Cmd + A：一键选中本页正文（方便整页复制），不翻页
+    if ((e.ctrlKey || e.metaKey) && (k === 'a' || k === 'A')) {
+      e.preventDefault();
+      var bodyEl = slides[cur].querySelector('.s-body');
+      if (bodyEl && window.getSelection) {
+        var rng = document.createRange();
+        rng.selectNodeContents(bodyEl);
+        var sel = window.getSelection();
+        sel.removeAllRanges(); sel.addRange(rng);
+        setTimeout(showCopyTip, 30);
+      }
+      return;
+    }
+
+    if (toc.classList.contains('show')) {
+      if (k === 'Escape' || k === 'o' || k === 'O') { e.preventDefault(); closeToc(); }
+      return;
+    }
+
+    if (k === 'ArrowRight' || k === 'ArrowDown' || k === 'PageDown' ||
+        k === ' ' || k === 'Enter') {
+      e.preventDefault();
+      if (hasPendingReveal()) { revealAnswers(); hideHint(); return; }
+      go(cur + 1); hideHint();
+    } else if (k === 'ArrowLeft' || k === 'ArrowUp' || k === 'PageUp' ||
+               k === 'Backspace') {
+      e.preventDefault(); go(cur - 1); hideHint();
+    } else if (k === 'Home') {
+      e.preventDefault(); go(0); hideHint();
+    } else if (k === 'End') {
+      e.preventDefault(); go(total - 1); hideHint();
+    } else if (k === 'o' || k === 'O') {
+      e.preventDefault(); openToc();
+    } else if (k === 'b' || k === 'B' || k === '.') {
+      e.preventDefault();
+      document.body.classList.toggle('blackout');
+    }
+  });
+
+  var wheelLock = false;
+  document.addEventListener('wheel', function(e){
+    // 放大镜开启期间屏蔽滚轮翻页，避免滚轮落在设置面板上时误翻页
+    if (document.body.classList.contains('loupe-on')) return;
+    if (toc.classList.contains('show')) return;
+    if (wheelLock) return;
+    wheelLock = true;
+    setTimeout(function(){ wheelLock = false; }, 420);
+    if (e.deltaY > 0) go(cur + 1); else go(cur - 1);
+    hideHint();
+  }, { passive: true });
+
+  /* ===== 文本选中 / 复制：选中、拖选、长按一律不翻页 ===== */
+  var press = { x: 0, y: 0, t: 0, moved: false, hadSel: false };
+  var copyTip = document.createElement('div');
+  copyTip.id = 'copyTip';
+  copyTip.innerHTML = '<span id="copyTipTx">已选中 0 字</span>'
+    + '<span class="kbd">Ctrl</span><span class="kbd">C</span>'
+    + '<button type="button" id="copyTipBtn">复制</button>';
+  document.body.appendChild(copyTip);
+  var copyTipTx  = document.getElementById('copyTipTx');
+  var copyTipBtn = document.getElementById('copyTipBtn');
+  var copyTimer  = null;
+
+  function selText(){
+    var s = window.getSelection ? window.getSelection() : null;
+    return s ? String(s).replace(/\s+$/, '') : '';
+  }
+  function hideCopyTip(){ clearTimeout(copyTimer); if (copyTip) copyTip.classList.remove('on'); }
+  function showCopyTip(){
+    var t = selText();
+    if (!t || document.body.classList.contains('loupe-on')) { hideCopyTip(); return; }
+    copyTipTx.innerHTML = '已选中 <b>' + t.length + '</b> 字';
+    copyTipBtn.textContent = '复制';
+    copyTip.classList.add('on');
+    clearTimeout(copyTimer);
+    copyTimer = setTimeout(hideCopyTip, 4000);
+  }
+  function copySel(){
+    var t = selText();
+    if (!t) return;
+    var done = function(){
+      copyTipBtn.textContent = '已复制 ✓';
+      clearTimeout(copyTimer);
+      copyTimer = setTimeout(hideCopyTip, 900);
+    };
+    function fallback(){
+      var ta = document.createElement('textarea');
+      ta.value = t; ta.setAttribute('readonly', '');
+      ta.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0;';
+      document.body.appendChild(ta);
+      ta.select();
+      try { if (document.execCommand('copy')) done(); } catch (err) {}
+      document.body.removeChild(ta);
+    }
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(t).then(done, fallback);
+    } else {
+      fallback();
+    }
+  }
+  copyTipBtn.addEventListener('mousedown', function(e){ e.preventDefault(); e.stopPropagation(); });
+  copyTipBtn.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); copySel(); });
+  copyTip.addEventListener('click', function(e){ e.stopPropagation(); });
+
+  document.addEventListener('mousedown', function(e){
+    if (e.button !== 0) return;
+    if (copyTip.contains(e.target)) return;   // 点"复制"按钮：不当作翻页动作
+    press.x = e.clientX; press.y = e.clientY; press.t = Date.now();
+    press.moved = false;
+    press.hadSel = !!selText();          // 按下前已有选中内容 → 这一下是"取消选中"，不是翻页
+    hideCopyTip();
+  });
+  document.addEventListener('mousemove', function(e){
+    if (!press.t || press.moved) return;
+    if (Math.abs(e.clientX - press.x) > 6 || Math.abs(e.clientY - press.y) > 6) press.moved = true;
+  });
+  document.addEventListener('mouseup', function(e){
+    if (e.button !== 0) return;
+    if (!copyTip.contains(e.target)) setTimeout(showCopyTip, 30);
+  });
+
+  document.addEventListener('click', function(e){
+    // 放大镜开启期间屏蔽点击翻页，避免点击设置面板（滑块）时误翻页
+    if (document.body.classList.contains('loupe-on')) return;
+    if (e.button !== 0) return;                       // 右键 / 中键不翻页，保留原生菜单（右键可复制）
+    // 可折叠区块：点击标题开合，不触发翻页
+    var hd = e.target.closest('.coll-hd');
+    if (hd) {
+      var box = hd.parentElement;
+      box.classList.toggle('open');
+      fitSlide(slides[cur]);
+      setTimeout(function(){ fitSlide(slides[cur]); }, 520);
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+    if (toc.classList.contains('show')) return;
+    if (e.target.closest('.nav')) return;
+    if (e.target.closest('.toc')) return;
+    if (e.target.closest('a')) return;
+    if (e.target.closest('#copyTip')) return;
+    if (e.target.closest('.code, .out, pre, table, .reveal, .coll')) return;
+    if (selText()) { hideHint(); return; }             // ① 当前有选中文字：只算选中，不翻页
+    if (press.hadSel) { press.hadSel = false; return; } // ② 按下前有选中：这一下只取消选中，不翻页
+    if (press.moved) return;                           // ③ 拖动过（拖选）：不翻页
+    if (press.t && Date.now() - press.t > 600) { press.t = 0; return; } // ④ 长按（触屏取词）：不翻页
+    if (hasPendingReveal()) { revealAnswers(); hideHint(); return; }
+    if (e.clientX > window.innerWidth / 2) go(cur + 1);
+    else go(cur - 1);
+    hideHint();
+  });
+
+  var tx = 0, ty = 0;
+  document.addEventListener('touchstart', function(e){
+    if (copyTip.contains(e.target)) return;   // 落在复制提示条上：保持提示条可见
+    tx = e.changedTouches[0].clientX;
+    ty = e.changedTouches[0].clientY;
+    press.x = tx; press.y = ty; press.t = Date.now();
+    press.moved = false;
+    press.hadSel = !!selText();
+    hideCopyTip();
+  }, { passive: true });
+  document.addEventListener('touchmove', function(e){
+    if (!press.t || press.moved) return;
+    if (Math.abs(e.changedTouches[0].clientX - press.x) > 6 ||
+        Math.abs(e.changedTouches[0].clientY - press.y) > 6) press.moved = true;
+  }, { passive: true });
+  document.addEventListener('touchend', function(e){
+    if (copyTip.contains(e.target)) return;
+    var dx = e.changedTouches[0].clientX - tx;
+    var dy = e.changedTouches[0].clientY - ty;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) {
+      if (hasPendingReveal()) { revealAnswers(); hideHint(); return; }
+      go(dx < 0 ? cur + 1 : cur - 1);
+      hideHint();
+      return;
+    }
+    setTimeout(showCopyTip, 60);   // 长按取词 / 点选后给出"复制"提示
+  }, { passive: true });
+
+  var hintTimer = null;
+  function hideHint(){
+    if (keyhint.classList.contains('hide')) return;
+    clearTimeout(hintTimer);
+    hintTimer = setTimeout(function(){ keyhint.classList.add('hide'); }, 500);
+  }
+  hintTimer = setTimeout(function(){ keyhint.classList.add('hide'); }, 6000);
+
+  resize();
+  go(0);
+})();
+</script>
+<script>
+
+(function(){
+  var stage=document.getElementById('stage'); if(!stage) return;
+  var L=320, Z=2.5, on=false, lens=null, tip=null, panel=null, clone=null, btn=null;
+  var last=[innerWidth/2, innerHeight/2];
+  var lock=false;
+
+  btn=document.createElement('button'); btn.id='btnLoupe';
+  btn.title='放大镜：移动鼠标查看细节，Esc 退出'; btn.textContent='\uD83D\uDD0D';
+  document.body.appendChild(btn);
+
+  tip=document.createElement('div'); tip.id='loupeTip';
+  tip.textContent='\uD83D\uDD0D 放大镜：鼠标移到哪儿，就以那儿为中心放大 · 单击锁定位置 · 滚轮调倍数 · Esc 退出';
+  document.body.appendChild(tip);
+
+  lens=document.createElement('div'); lens.id='loupe'; document.body.appendChild(lens);
+
+  panel=document.createElement('div'); panel.id='loupePanel';
+  panel.innerHTML='<div class="ttl">\uD83D\uDD0D 放大镜设置</div>'
+    +'<div class="row"><label>缩放</label><input id="lpZoom" type="range" min="1.5" max="8" step="0.1" value="2.5"><span class="val" id="lpZoomV">2.5×</span></div>'
+    +'<div class="row"><label>尺寸</label><input id="lpSize" type="range" min="180" max="520" step="10" value="320"><span class="val" id="lpSizeV">320</span></div>';
+  document.body.appendChild(panel);
+  var lpZoom=panel.querySelector('#lpZoom'), lpZoomV=panel.querySelector('#lpZoomV');
+  var lpSize=panel.querySelector('#lpSize'), lpSizeV=panel.querySelector('#lpSizeV');
+
+  function build(){
+    clone=stage.cloneNode(true); clone.removeAttribute('id');
+    var ids=clone.querySelectorAll('[id]'); for(var i=0;i<ids.length;i++) ids[i].removeAttribute('id');
+    clone.style.transform=''; clone.style.width=''; clone.style.height='';
+    clone.style.position='absolute'; clone.classList.add('lens-stage');
+    lens.innerHTML=''; lens.appendChild(clone);
+  }
+  function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+  function refreshTip(){
+    tip.textContent = lock
+      ? '🔒 已锁定该位置 · 单击任意处解除锁定 · Esc 退出'
+      : '🔍 放大镜：鼠标移到哪儿，就以那儿为中心放大 · 单击锁定位置 · 滚轮调倍数 · Esc 退出';
+  }
+
+  // 把光标处的幻灯片内容放到透镜中心，并按 Z 放大（translate+scale，origin 0 0，避免 border 偏移）
+  function update(cx,cy){
+    var r=stage.getBoundingClientRect();
+    var iw=stage.offsetWidth, ih=stage.offsetHeight;
+    // 克隆体去掉了 #stage 的 id，需显式给定固有尺寸，否则 .slide(inset:0) 会塌成 0
+    clone.style.width=iw+'px'; clone.style.height=ih+'px';
+    var s=parseFloat(getComputedStyle(stage).getPropertyValue('--s'))||1;
+    var fx=clamp((cx-r.left)/r.width,0,1), fy=clamp((cy-r.top)/r.height,0,1);
+    var k=s*Z;
+    var px=fx*iw, py=fy*ih;
+    var q=position(cx,cy), ox=q[0], oy=q[1];
+    clone.style.transformOrigin='0 0';
+    // 点 (px,py) 经 scale(k) 后到 (k*px,k*py)，再 translate 让它落在透镜内的光标位置
+    clone.style.transform='translate('+(ox - k*px)+'px,'+(oy - k*py)+'px) scale('+k+')';
+  }
+  // 透镜定位：以鼠标所在点为中心；靠近视口边缘时贴边，光标处内容仍精确对齐
+  function position(cx,cy){
+    var lx=clamp(cx-L/2, 8, Math.max(8, innerWidth-L-8));
+    var ly=clamp(cy-L/2, 8, Math.max(8, innerHeight-L-8));
+    lens.style.left=lx+'px'; lens.style.top=ly+'px';
+    return [cx-lx, cy-ly];   // 光标在透镜内的局部坐标（未贴边时就是 L/2）
+  }
+  // 常驻记录鼠标位置：进入放大镜时直接从当前光标处开始，不再从屏幕中心跳一下
+  var pt=[innerWidth/2, innerHeight/2];
+  document.addEventListener('mousemove',function(e){ pt=[e.clientX,e.clientY]; },true);
+  // 起点：就在光标处；但若是刚点了放大镜按钮（光标压在按钮上），改用页面中心，免得一开就盖住按钮
+  function startPt(){
+    var b=btn.getBoundingClientRect();
+    if(pt[0]>b.left-60 && pt[0]<b.right+60 && pt[1]>b.top-60 && pt[1]<b.bottom+60) return [innerWidth/2, innerHeight/2];
+    return [pt[0],pt[1]];
+  }
+  function enter(){
+    if(on) return; on=true; lock=false; btn.classList.add('on'); document.body.classList.add('loupe-on');
+    build(); lens.style.display='block'; tip.style.display='block'; panel.style.display='block';
+    lens.classList.remove('lock'); refreshTip();
+    last=startPt(); update(last[0],last[1]);
+    document.addEventListener('mousemove',onMove,true); addI();
+  }
+  function exit(){
+    if(!on) return; on=false; lock=false; btn.classList.remove('on'); document.body.classList.remove('loupe-on');
+    lens.classList.remove('lock');
+    lens.style.display='none'; tip.style.display='none'; panel.style.display='none';
+    document.removeEventListener('mousemove',onMove,true); remI();
+    lens.innerHTML=''; clone=null;
+  }
+  function onMove(e){ if(!on) return; last=[e.clientX,e.clientY]; if(lock) return; update(e.clientX,e.clientY); }
+  function setZ(z){ Z=clamp(z,1.5,8); lpZoom.value=Z; lpZoomV.textContent=Z.toFixed(1)+'×'; update(last[0],last[1]); }
+  function setL(l){ L=clamp(l,180,520); lpSize.value=L; lpSizeV.textContent=L; lens.style.width=L+'px'; lens.style.height=L+'px'; update(last[0],last[1]); }
+  btn.addEventListener('click',function(e){ e.stopPropagation(); on?exit():enter(); });
+  lpZoom.addEventListener('input',function(){ setZ(parseFloat(this.value)); });
+  lpSize.addEventListener('input',function(){ setL(parseFloat(this.value)); });
+
+  function inCtrl(e){ return e.target===btn||btn.contains(e.target)||panel.contains(e.target); }
+  var inter=[
+    ['wheel',function(e){ if(inCtrl(e)) return; if(!on) return; e.stopImmediatePropagation(); e.preventDefault(); setZ(Z+(e.deltaY<0?0.3:-0.3)); },true],
+    ['click',function(e){ if(inCtrl(e)) return; if(!on) return; e.stopImmediatePropagation(); e.preventDefault();
+      lock=!lock; lens.classList.toggle('lock',lock); if(!lock) update(last[0],last[1]); refreshTip(); },true],
+    ['contextmenu',function(e){ if(inCtrl(e)) return; if(!on) return; e.stopImmediatePropagation(); e.preventDefault(); },true],
+    ['keydown',function(e){ if(!on) return; if(e.key==='Escape'){ exit(); return; } if(inCtrl(e)){ e.stopPropagation(); return; } e.stopImmediatePropagation(); e.preventDefault(); },true],
+    ['touchstart',function(e){ if(inCtrl(e)) return; if(!on) return; e.stopImmediatePropagation(); e.preventDefault(); },true],
+    ['touchend',function(e){ if(inCtrl(e)) return; if(!on) return; e.stopImmediatePropagation(); e.preventDefault(); },true]
+  ];
+  function addI(){ for(var i=0;i<inter.length;i++) document.addEventListener(inter[i][0],inter[i][1],true); }
+  function remI(){ for(var i=0;i<inter.length;i++) document.removeEventListener(inter[i][0],inter[i][1],true); }
+  window.__loupe={enter:enter,exit:exit,setZ:setZ,setL:setL,getZ:function(){return Z;},getL:function(){return L;},isOn:function(){return on;},isLock:function(){return lock;}};
+})();
+
+  </script>
+  <!-- MOBILE LAYER v1 — 手机层 DOM（放在 body 结束标签前、#stage 之后；与 mobile-layer.js 配套） -->
+<div id="mTop"><div id="mTopBar"></div></div>
+<div id="mBar">
+  <button id="mToc" type="button">☰ 目录</button>
+  <button id="mPrev" type="button">↑ 上一节</button>
+  <button id="mNext" type="button">↓ 下一节</button>
+</div>
+<div id="mTocPanel" class="hidden">
+  <div class="m-toc-hd"><span>目录</span><button id="mTocClose" type="button">✕</button></div>
+  <div id="mTocList"></div>
+</div>
+<div id="mImgView" class="hidden">
+  <img id="mImgViewImg" alt="放大查看">
+  <div class="m-img-bar">
+    <span class="m-img-tip" id="mImgViewTip">轻触图片切换原始大小 · 轻触空白处关闭</span>
+    <button class="m-img-close" id="mImgViewClose" type="button">✕ 关闭</button>
+  </div>
+</div>
+
+<!-- MOBILE LAYER v1 — 手机层 JS（自动目录分组 + 滚动导航 + 进度；仅手机端运行） -->
+<script>
+(function(){
+  if(!window.matchMedia("(max-width:720px)").matches) return;
+  var slides=Array.prototype.slice.call(document.querySelectorAll(".slide"));
+  if(!slides.length) return;
+  var bar=document.getElementById("mTopBar"),
+      panel=document.getElementById("mTocPanel"),
+      list=document.getElementById("mTocList"),
+      btnToc=document.getElementById("mToc"),
+      btnPrev=document.getElementById("mPrev"),
+      btnNext=document.getElementById("mNext"),
+      btnClose=document.getElementById("mTocClose"),
+      cur=0;
+
+  function titleOf(s,i){
+    var t=(s.querySelector(".s-title")||{}).textContent||"";
+    if(!t){ var e=s.querySelector(".end h2,.cover h1"); if(e) t=e.textContent; }
+    t=(t||"").trim();
+    if(t) return t;
+    if(s.classList.contains("end")) return "封底";
+    if(s.classList.contains("cover")) return "封面";
+    return "第"+(i+1)+"节";
+  }
+
+  function buildToc(){
+    var groups={};
+    slides.forEach(function(s,i){
+      // 已确认规则：封面不纳入目录（封面页仍可正常滚动阅读）
+      if(s.classList.contains("cover")) return;
+      var g=s.getAttribute("data-group")||"本节目录";
+      (groups[g]=groups[g]||[]).push({i:i,t:titleOf(s,i)});
+    });
+    var palette=["var(--blue-400)","var(--orange)","var(--green)","var(--purple)","var(--red)","#c9a227"];
+    var gi=0;
+    Object.keys(groups).forEach(function(g){
+      var gd=document.createElement("div"); gd.className="m-group";
+      gd.style.borderTopColor=palette[gi%palette.length]; gi++;
+      var ht=document.createElement("div"); ht.className="m-group-title"; ht.textContent=g; gd.appendChild(ht);
+      groups[g].forEach(function(it){
+        var a=document.createElement("a"); a.textContent=it.t; a.dataset.i=it.i;
+        a.onclick=function(){ scrollTo(it.i); closeToc(); };
+        gd.appendChild(a);
+      });
+      list.appendChild(gd);
+    });
+  }
+
+  function scrollTo(i){
+    i=Math.max(0,Math.min(slides.length-1,i));
+    slides[i].scrollIntoView({behavior:"smooth",block:"start"});
+  }
+  function openToc(){ if(panel) panel.classList.remove("hidden"); }
+  function closeToc(){ if(panel) panel.classList.add("hidden"); }
+  if(btnToc) btnToc.onclick=function(){ panel.classList.contains("hidden")?openToc():closeToc(); };
+  if(btnClose) btnClose.onclick=closeToc;
+  if(btnPrev) btnPrev.onclick=function(){ scrollTo(cur-1); };
+  if(btnNext) btnNext.onclick=function(){ scrollTo(cur+1); };
+
+  function onScroll(){
+    var y=window.scrollY+window.innerHeight*0.3, idx=0;
+    for(var k=0;k<slides.length;k++){ if(slides[k].offsetTop<=y) idx=k; }
+    if(idx!==cur){ cur=idx; markActive(); }
+    var max=document.documentElement.scrollHeight-window.innerHeight;
+    if(bar) bar.style.width=(max>0?window.scrollY/max*100:0)+"%";
+  }
+  function markActive(){
+    if(!list) return;
+    Array.prototype.forEach.call(list.querySelectorAll("a"),function(a){
+      a.classList.toggle("active", parseInt(a.dataset.i,10)===cur);
+    });
+  }
+  buildToc();
+  window.addEventListener("scroll",onScroll,{passive:true});
+  window.addEventListener("resize",onScroll);
+  onScroll();
+
+  /* 图片放大：复用内嵌 base64 的 src，零外链；仅手机端绑定，桌面端不受影响 */
+  var view=document.getElementById("mImgView"),
+      big=document.getElementById("mImgViewImg"),
+      tip=document.getElementById("mImgViewTip"),
+      btnClose=document.getElementById("mImgViewClose"),
+      prevOverflow="";
+  if(view && big){
+    function openImg(src){
+      big.src=src;
+      big.onload=function(){ view.style.setProperty("--natw",(big.naturalWidth||1200)+"px"); };
+      view.classList.remove("zoom","hidden");
+      prevOverflow=document.body.style.overflow;
+      document.body.style.overflow="hidden";
+      if(tip) tip.textContent="轻触图片切换原始大小 · 轻触空白处关闭";
+    }
+    function closeImg(){
+      view.classList.add("hidden");
+      view.classList.remove("zoom");
+      big.removeAttribute("src");
+      document.body.style.overflow=prevOverflow;
+    }
+    Array.prototype.forEach.call(document.querySelectorAll(".slide img"),function(im){
+      im.addEventListener("click",function(e){ e.stopPropagation(); openImg(im.getAttribute("src")||im.src); });
+    });
+    big.addEventListener("click",function(e){
+      e.stopPropagation();
+      var on=view.classList.toggle("zoom");
+      if(tip) tip.textContent=on?"原始大小 · 可拖动查看；再轻触图片适应屏幕":"轻触图片切换原始大小 · 轻触空白处关闭";
+    });
+    view.addEventListener("click",function(e){ if(e.target===view) closeImg(); });
+    if(btnClose) btnClose.addEventListener("click",function(e){ e.stopPropagation(); closeImg(); });
+    document.addEventListener("keydown",function(e){
+      if(e.key==="Escape" && !view.classList.contains("hidden")) closeImg();
+    });
+  }
+})();
+</script>
+
+</body>
+</html>
