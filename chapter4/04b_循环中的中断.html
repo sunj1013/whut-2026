@@ -150,6 +150,7 @@
   .reveal.shown .box{box-shadow:0 0 0 2px rgba(232,114,12,.35), 0 6px 16px rgba(18,79,131,.08);}
   .reveal-hint{display:inline-flex;align-items:center;gap:8px;margin-top:14px;background:linear-gradient(135deg,#e8720c,#c55807);color:#fff;font-size:24px;padding:8px 18px;border-radius:999px;cursor:pointer;box-shadow:0 5px 12px rgba(232,114,12,.3);animation:pulse 1.5s ease-in-out infinite;user-select:none;}
   .reveal-hint.gone{display:none;}
+  .reveal.step{will-change:max-height,opacity;}
   @keyframes pulse{0%,100%{transform:scale(1);}50%{transform:scale(1.05);}}
 
   /* 流程图组件：N-S 图（盒图）与传统流程图通用 */
@@ -263,7 +264,7 @@
     <div class="s-body">
       <div class="s-sub" style="margin-top:0">写循环时，几乎都会遇到这两种情况</div>
       <div class="grid c2" style="margin-top:12px;align-items:stretch">
-        <div class="card"><h4><span class="ico">①</span>答案已经出来了</h4><p>判断 15 是不是素数，试到 3 就有结论了，可循环还准备把 4、5 … 一路试到 \( \sqrt{x} \)。</p></div>
+        <div class="card"><h4><span class="ico">①</span>答案已经出来了</h4><p>判断 33 是不是素数，试到 3 就有结论了，可循环还准备把 4、5 … 一路试到 \( \sqrt{x} \)。</p></div>
         <div class="card orange"><h4><span class="ico">②</span>这一轮不想做</h4><p>输入一串成绩，遇到负数（无效数据）只想跳过这一条，后面的数据还要接着处理。</p></div>
       </div>
       <div class="box key" style="margin-top:22px"><span class="label">两个关键字</span><code class="inline">break</code> 结束<b>整个</b>循环；<code class="inline">continue</code> 只结束<b>本次</b>循环。名字很像，作用完全不同，今天要彻底分清。</div>
@@ -281,10 +282,10 @@
         <thead><tr><th style="width:14%">输入 x</th><th style="width:56%">人工怎么判</th><th style="width:30%">输出</th></tr></thead>
         <tbody>
           <tr><td><b>17</b></td><td>2、3、4 都除不尽（\( \sqrt{17}\approx 4.1 \)，试到 4 就够）</td><td class="c-green">17 是素数</td></tr>
-          <tr><td><b>15</b></td><td>试到 \(i=3\)：<code class="inline">15 % 3 == 0</code>，这时已经能下结论</td><td class="c-red">15 不是素数</td></tr>
+          <tr><td><b>33</b></td><td>试到 \(i=3\)：<code class="inline">33 % 3 == 0</code>，这时已经能下结论</td><td class="c-red">33 不是素数</td></tr>
         </tbody>
       </table>
-      <div class="box warn" style="margin-top:18px"><span class="label">盯住"这时"</span>15 试到 3 就定了，还要不要接着试 4、5 …？这一问，就是今天要解决的问题。</div>
+      <div class="box warn" style="margin-top:18px"><span class="label">盯住"这时"</span>33 试到 3 就定了，还要不要接着试 4、5 …？这一问，就是今天要解决的问题。</div>
     </div>
   </section>
 
@@ -318,7 +319,7 @@ while (i &lt;= sqrt(x)) {
     }
     i++;
 }</pre>
-          <div class="box red" style="margin-top:8px;font-size:28px"><span class="label">问题</span>结论已经有了，循环却还要把 i 从 3 一路试到 \( \sqrt{x} \)：15 白跑 2 轮，一个五位数可能要白跑上百轮。</div>
+          <div class="box red" style="margin-top:8px;font-size:28px"><span class="label">问题</span>结论已经有了，循环却还要把 i 从 3 一路试到 \( \sqrt{x} \)：33 白跑 3 轮，一个五位数可能要白跑上百轮。</div>
         </div>
         <div class="flow" style="margin-top:0">
           <div class="cap">这段循环的流程图</div>
@@ -363,7 +364,7 @@ while (i &lt;= sqrt(x)) {
           <div class="s-sub blue" style="margin-top:26px">能出现在哪里</div>
           <ul style="font-size:30px;line-height:1.75;padding-left:1.3em">
             <li><code class="inline">switch</code> 的 <code class="inline">case</code> 分支里</li>
-            <li>循环体内部（while / do-while / for）</li>
+            <li>循环体内部（<code class="inline">while / do-while / for</code>）</li>
           </ul>
         </div>
         <div>
@@ -393,7 +394,7 @@ while (i &lt;= sqrt(x)) {
             <text class="fc-no" font-size="24" text-anchor="start" x="300" y="116">0</text>
             <line class="fc-line" marker-end="url(#fcArrow)" x1="180" x2="180" y1="162" y2="190"/>
             <rect class="fc-proc" height="46" rx="4" width="160" x="100" y="190"/>
-            <text class="fc-proc-t" font-size="24" text-anchor="middle" x="180" y="218">语句 …</text>
+            <text class="fc-proc-t" font-size="24" text-anchor="middle" x="180" y="218">语句1 …</text>
             <line class="fc-line" marker-end="url(#fcArrow)" x1="180" x2="180" y1="236" y2="264"/>
             <polygon class="fc-dec" points="180,264 280,302 180,340 80,302"/>
             <text class="fc-dec-t" font-size="24" text-anchor="middle" x="180" y="310">e</text>
@@ -401,7 +402,7 @@ while (i &lt;= sqrt(x)) {
             <text class="fc-no" font-size="24" text-anchor="start" x="194" y="358">0</text>
             <line class="fc-line" marker-end="url(#fcArrow)" x1="180" x2="180" y1="340" y2="368"/>
             <rect class="fc-proc" height="46" rx="4" width="160" x="100" y="368"/>
-            <text class="fc-proc-t" font-size="24" text-anchor="middle" x="180" y="396">语句 …</text>
+            <text class="fc-proc-t" font-size="24" text-anchor="middle" x="180" y="396">语句2 …</text>
             <line class="fc-line" marker-end="url(#fcArrow)" x1="180" x2="180" y1="414" y2="442"/>
             <rect class="fc-proc" height="46" rx="4" width="160" x="100" y="442"/>
             <text class="fc-proc-t" font-size="24" text-anchor="middle" x="180" y="470">计算 e3</text>
@@ -413,9 +414,30 @@ while (i &lt;= sqrt(x)) {
           </svg>
         </div>
         <div>
-          <div class="box key" style="margin-top:0"><span class="label">去向</span>不是"回到循环开头"，也不是"回到上一句"，而是<b>循环后面的第一条语句</b>。</div>
-          <div class="box tip"><span class="label">循环就此结束</span>剩下的轮次一次都不执行，循环条件也不再判断。</div>
-          <div class="box warn"><span class="label">两条路，一个出口</span>条件变 0 与 break 跳出，最后都落到同一个框——程序不会告诉你它是从哪条路来的。</div>
+          <div class="box key" style="margin-top:0;line-height:1.34;padding:6px 20px"><span class="label">去向</span>不是"回到循环开头"，也不是"回到上一句"，而是<b>循环后面的第一条语句</b>。</div>
+          <div class="box tip" style="margin:2px 0;line-height:1.34;padding:6px 20px"><span class="label">循环就此结束</span>剩下的轮次一次都不执行，循环条件也不再判断。</div>
+          <div class="box warn" style="margin:2px 0;line-height:1.34;padding:6px 20px"><span class="label">两条路，一个出口</span>条件变 0 与 break 跳出，最后都落到同一个框——程序不会告诉你它是从哪条路来的。</div>
+          <div class="reveal-hint" data-label="👉 点一下，看两种写法" style="margin-top:0">👉 点一下，看两种写法（1 / 2）</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start">
+            <div class="reveal step" data-step="1">
+              <div class="s-sub" style="font-size:26px;line-height:1.2;margin:0 0 2px;padding:0 0 0 12px">while 写法</div>
+              <pre class="code" style="font-size:32px;line-height:1.28;padding:8px 16px;margin:0">e1;
+while(e2){
+    语句1;
+    if(e) break;
+    语句2;
+    e3;
+}</pre>
+            </div>
+            <div class="reveal step" data-step="2">
+              <div class="s-sub blue" style="font-size:26px;line-height:1.2;margin:0 0 2px;padding:0 0 0 12px">for 写法</div>
+              <pre class="code" style="font-size:32px;line-height:1.28;padding:8px 16px;margin:0">for(e1; e2; e3){
+    语句1;
+    if(e) break;
+    语句2;
+}</pre>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -467,8 +489,8 @@ while (i &lt;= sqrt(x)) {
           <pre class="code" style="font-size:32px">continue;</pre>
           <div class="s-sub blue" style="margin-top:26px">能出现在哪里</div>
           <ul style="font-size:30px;line-height:1.75;padding-left:1.3em">
-            <li>循环体内部（while / do-while / for）</li>
-            <li>不能用在 <code class="inline">switch</code> 里替代 break</li>
+            <li>循环体内部（<code class="inline">while / do-while / for</code>）</li>
+            <li><b>不能</b>用在 <code class="inline">switch</code> 里替代 break</li>
           </ul>
         </div>
         <div>
@@ -580,7 +602,7 @@ while (i &lt;= sqrt(x)) {
           <tr><td>典型用途</td><td>找到答案就收工、出错就退出</td><td>跳过非法数据、跳过不关心的元素</td></tr>
         </tbody>
       </table>
-      <div class="box key" style="margin-top:16px"><span class="label">记法</span>break 是"<b>散会</b>"，continue 是"<b>你去下一轮</b>"。散会之后谁也不发言，下一轮则还是同一个会议室。</div>
+      <div class="box key" style="margin-top:16px"><span class="label">记着： </span> break 是"<b>散会</b>"，continue 是"<b>下一个人发言</b>"。</div>
     </div>
   </section>
 
@@ -590,7 +612,7 @@ while (i &lt;= sqrt(x)) {
     <div class="s-body">
       <div class="two" style="margin-top:0;align-items:start">
         <div>
-          <div class="s-sub blue" style="margin-top:0">原来：for 版（正确）</div>
+          <div class="s-sub blue" style="margin-top:0">for 版：</div>
           <pre class="code" style="font-size:32px">sum = 0;
 for (n = 0; n &lt; 10; n++) {
     scanf("%d", &amp;m);
@@ -599,7 +621,7 @@ for (n = 0; n &lt; 10; n++) {
 }</pre>
         </div>
         <div>
-          <div class="s-sub" style="margin-top:0">改成 while 版（有坑）</div>
+          <div class="s-sub" style="margin-top:0">while 版：</div>
           <pre class="code" style="font-size:32px">sum = 0; n = 0;
 while (n &lt; 10) {
     scanf("%d", &amp;m);
@@ -609,14 +631,17 @@ while (n &lt; 10) {
 }</pre>
         </div>
       </div>
-      <div class="box red" style="margin-top:10px"><span class="label">后果</span>只要输入一个负数，continue 就把 <code class="inline">n++</code> 跳过去了，n 永远是 0，循环条件永远成立 → <b>死循环</b>。</div>
-      <div class="box key"><span class="label">原因与改法</span>for 的 <code class="inline">n++</code> 写在循环头里，continue 绕过的是循环体，绕不过循环头；改 while 时要把 <code class="inline">n++</code> 挪到 continue <b>之前</b>，或用别的写法。</div>
+      <div class="reveal-hint" style="margin-top:6px">👉 点一下，看两版为什么不等价</div>
+      <div class="reveal">
+        <div class="box red" style="margin-top:0;font-size:27px;line-height:1.4;padding:8px 22px"><span class="label">区别是： </span>for 的 <code class="inline">n++</code> 在循环头，continue 绕不过它，读满 10 个整数就结束。<b>for 版：累加 10 个整数。</b><br>while 的 <code class="inline">n++</code> 在循环体末尾，负数那一轮被 continue 跳过、不计数，n 只在累加时才 +1 —— 于是变成"凑够 10 个正整数才停"。<b>while 版：累加 10 个正整数。</b></div>
+        <div class="box key" style="margin-top:4px;font-size:27px;line-height:1.4;padding:8px 22px"><span class="label">改法</span>把 <code class="inline">n++</code> 挪到 continue <b>之前</b>，两版才等价；否则题意就变了，输入里负数一多还会一直读下去。</div>
+      </div>
     </div>
   </section>
 
   <!-- 13 另一种用法：for(;;) 与 break -->
   <section class="slide">
-    <div class="s-title">另一种用法：for(;;) 与 break</div>
+    <div class="s-title">省略表达式2：for(;;) 与 break</div>
     <div class="s-body">
       <div class="two" style="margin-top:0;align-items:start">
         <div>
@@ -677,7 +702,10 @@ for (i = 1; i &lt;= 10; i++) {
     s += i;
 }
 printf("%d\n", s);</pre>
-      <div class="box tip" style="margin-top:16px"><span class="label">提示</span>continue 在前，3、6、9 连 break 的判断都轮不到；真正做累加的只有 1、2、4、5、7 五个数。先在草稿纸上推一遍，再翻下一页对答案。</div>
+      <div class="reveal-hint" style="margin-top:10px">👉 点一下，看提示</div>
+      <div class="reveal">
+        <div class="box tip" style="margin-top:0"><span class="label">提示</span>continue 在前，3、6、9 连 break 的判断都轮不到；真正做累加的只有 1、2、4、5、7 五个数。先在草稿纸上推一遍，再翻下一页对答案。</div>
+      </div>
     </div>
   </section>
 
@@ -767,25 +795,29 @@ printf("%d\n", s);</pre>
   <section class="slide">
     <div class="s-title">回到素数：参考代码</div>
     <div class="s-body">
-      <div class="s-sub" style="margin-top:0">核心片段：循环 + 一句 break + 一句事后判断</div>
-      <pre class="code" style="font-size:32px">for (i = 2; i &lt;= sqrt(x); i++)        <span class="cmt">/* ① 从 2 试到 √x */</span>
-    if (x % i == 0) break;            <span class="cmt">/* ② 找到因子就跳出 */</span>
-if (i &lt;= sqrt(x))                     <span class="cmt">/* ③ 看 i 停在哪 */</span>
-    printf("%d 不是素数\n", x);        <span class="cmt">/*    跳出来的 */</span>
-else
-    printf("%d 是素数\n", x);          <span class="cmt">/*    试完的   */</span></pre>
-      <div class="box tip" style="margin-top:14px"><span class="label">完整程序还缺什么</span><code class="inline">#include &lt;stdio.h&gt;</code>、<code class="inline">#include &lt;math.h&gt;</code>、<code class="inline">int x, i;</code> 的声明和 <code class="inline">scanf("%d", &amp;x);</code>。</div>
-      <div class="box key"><span class="label">为什么可以省掉花括号</span>循环体只有一条 if 语句，所以 <code class="inline">for</code> 后面不带 <code class="inline">{ }</code>；加与不加都对，初学阶段建议都加上，改起来不容易出错。</div>
+      <pre class="code" style="font-size:32px">#include &lt;stdio.h&gt;
+#include &lt;math.h&gt;
+int main(void) {
+    int x, i;
+    scanf("%d", &amp;x);
+    for (i = 2; i &lt;= sqrt(x); i++)      <span class="cmt">/* ① 从 2 试到 √x */</span>
+        if (x % i == 0) break;          <span class="cmt">/* ② 找到因子就跳出 */</span>
+    if (i &lt;= sqrt(x))                   <span class="cmt">/* ③ 看 i 停在哪 */</span>
+        printf("%d 不是素数\n", x);      <span class="cmt">/*    跳出来的 */</span>
+    else
+        printf("%d 是素数\n", x);        <span class="cmt">/*    试完的   */</span>
+    return 0;
+}</pre>
     </div>
   </section>
 
-  <!-- 19 运行追踪：15 与 17 -->
+  <!-- 19 运行追踪：33 与 17 -->
   <section class="slide">
-    <div class="s-title">运行追踪：15 与 17</div>
+    <div class="s-title">运行追踪：33 与 17</div>
     <div class="s-body">
       <div class="two" style="margin-top:0;align-items:start">
         <div>
-          <div class="s-sub blue" style="margin-top:0">输入 15：i = 3 时跳出</div>
+          <div class="s-sub blue" style="margin-top:0">输入 33：i = 3 时跳出</div>
           <table class="tb" style="font-size:27px">
             <thead><tr><th style="width:16%">i</th><th style="width:36%">x % i</th><th style="width:48%">结果</th></tr></thead>
             <tbody>
@@ -793,7 +825,7 @@ else
               <tr><td>3</td><td class="c-red">0</td><td class="c-red">break 跳出</td></tr>
             </tbody>
           </table>
-          <div class="out">i 停在 3；15 的平方根约 3.87<br>3 没有超过它　→　15 不是素数</div>
+          <div class="out">i 停在 3；33 的平方根约 5.74<br>3 没有超过它　→　33 不是素数</div>
         </div>
         <div>
           <div class="s-sub blue" style="margin-top:0">输入 17：试满全程</div>
@@ -813,25 +845,7 @@ else
     </div>
   </section>
 
-  <!-- 20 关键一问：凭什么判断是素数 -->
-  <section class="slide">
-    <div class="s-title">关键一问：凭什么判断是素数</div>
-    <div class="s-body">
-      <div class="s-sub" style="margin-top:0">循环结束后，程序并不知道"是怎么结束的"</div>
-      <p style="font-size:32px;line-height:1.6;margin:6px 0 12px">C 语言不区分"break 跳出"和"条件不成立"这两条出口，它只保留一件事：<b>i 最终是多少</b>。</p>
-      <table class="tb" style="font-size:29px">
-        <thead><tr><th style="width:26%">循环后的 i</th><th style="width:30%">说明</th><th style="width:44%">应该输出</th></tr></thead>
-        <tbody>
-          <tr><td class="c-red">\(i\le\sqrt{x}\)</td><td>被 break 打断，找到了因子</td><td>不是素数</td></tr>
-          <tr><td class="c-green">\(i>\sqrt{x}\)</td><td>条件自然变 0，全部试完</td><td>是素数</td></tr>
-        </tbody>
-      </table>
-      <div class="box warn" style="margin-top:16px"><span class="label">所以</span>判断语句必须放在<b>循环之后</b>，用 <code class="inline">if (i &lt;= sqrt(x))</code> 再问一次——这正是程序里第 ③ 行的来历。</div>
-      <div class="box tip"><span class="label">边界情况</span>输入 2：\(i=2\) 已大于 \( \sqrt{2}\approx 1.41 \)，循环一次都不执行，i 仍是 2 → 判为素数，正确。</div>
-    </div>
-  </section>
-
-  <!-- 21 例题：录入成绩，读到 -1 结束 -->
+  <!-- 20 例题：录入成绩，读到 -1 结束 -->
   <section class="slide">
     <div class="s-title">例题：录入成绩，读到 -1 结束</div>
     <div class="s-body">
@@ -839,16 +853,19 @@ else
         <div>
           <div class="s-sub" style="margin-top:0">题目</div>
           <p style="font-size:30px;line-height:1.55;margin:0 0 12px">录入全班成绩，<b>人数事先不知道</b>，输入 -1 表示结束。输出实考人数和平均分。</p>
-          <div class="box warn" style="margin-top:0;font-size:28px;line-height:1.45"><span class="label">先想</span>for 头里能写循环次数吗？"人数"该在哪儿加 1？</div>
           <div class="s-sub blue" style="margin-top:10px">输入 / 输出</div>
           <div class="out" style="font-size:27px;padding:10px 20px;margin:4px 0">输入　85　92　78　-1</div>
           <div class="out" style="font-size:27px;padding:10px 20px;margin:4px 0">输出　3 人，平均 85.0</div>
-          <div class="reveal-hint" style="margin-top:10px">👉 点一下，看出口放在哪里</div>
-          <div class="reveal">
+          <div class="reveal-hint" data-label="👉 点一下，接着看" style="margin-top:10px">👉 点一下，接着看（1 / 4）</div>
+          <div class="reveal step" data-step="1">
+            <div class="box warn" style="margin-top:0;font-size:28px;line-height:1.45"><span class="label">先想想：</span>for 表达式中里能给出循环次数吗？具体"人数"该在哪儿计算（加1）？</div>
+          </div>
+          <div class="reveal step" data-step="3">
             <div class="box tip" style="font-size:26px;line-height:1.4;padding:10px 18px"><span class="label">出口在循环体</span>次数事先不知道，就写 <code class="inline">for(;;)</code>；-1 只是数据结束，break 之后不必再判断什么。</div>
           </div>
         </div>
         <div>
+          <div class="reveal step" data-step="2">
           <pre class="code" style="font-size:32px">sum = 0;  n = 0;
 for (;;) {
     scanf("%d", &amp;s);
@@ -858,13 +875,16 @@ for (;;) {
 }
 printf("%d 人，平均 %.1f\n",
        n, (double)sum / n);</pre>
-          <div class="box key" style="margin-top:10px;font-size:28px;line-height:1.45"><span class="label">别加错人</span><code class="inline">n++</code> 排在 break 后面，-1 不会被算成一个人；平均分要用 <code class="inline">n</code>，不能拿循环次数。</div>
+          </div>
+          <div class="reveal step" data-step="4">
+          <div class="box key" style="margin-top:10px;font-size:28px;line-height:1.45"><span class="label">别多加人</span><code class="inline">n++</code> 排在 break 后面，-1 不会被算成一个人；平均分要用 <code class="inline">n</code>，不能拿循环次数。</div>
+          </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- 22 例题：缺考不计，只算有效成绩 -->
+  <!-- 21 例题：缺考不计，只算有效成绩 -->
   <section class="slide">
     <div class="s-title">例题：缺考不计，只算有效成绩</div>
     <div class="s-body">
@@ -872,16 +892,19 @@ printf("%d 人，平均 %.1f\n",
         <div>
           <div class="s-sub" style="margin-top:0">题目</div>
           <p style="font-size:30px;line-height:1.55;margin:0 0 12px">一次读入 8 个成绩，<b>-1 表示缺考</b>。缺考的人不计，输出实考人数和平均分。</p>
-          <div class="box warn" style="margin-top:0;font-size:28px;line-height:1.45"><span class="label">先想</span>缺考那一轮该跳过哪几行？<code class="inline">n++</code> 写在哪里才不会把缺考算进去？</div>
           <div class="s-sub blue" style="margin-top:10px">输入 / 输出</div>
           <div class="out" style="font-size:27px;padding:10px 20px;margin:4px 0">输入　80　-1　90　70　60　-1　88　92</div>
           <div class="out" style="font-size:27px;padding:10px 20px;margin:4px 0">输出　6 人，平均 80.0</div>
-          <div class="reveal-hint" style="margin-top:10px">👉 点一下，看最容易写错的一行</div>
-          <div class="reveal">
+          <div class="reveal-hint" data-label="👉 点一下，接着看" style="margin-top:10px">👉 点一下，接着看（1 / 4）</div>
+          <div class="reveal step" data-step="1">
+            <div class="box warn" style="margin-top:0;font-size:28px;line-height:1.45"><span class="label">先想想：</span>缺考那一轮该跳过哪几行？<code class="inline">n++</code> 写在哪里才不会把缺考算进去？</div>
+          </div>
+          <div class="reveal step" data-step="3">
             <div class="box red" style="font-size:26px;line-height:1.4;padding:10px 18px"><span class="label">放错位置</span>把 <code class="inline">n++</code> 挪到 continue 前面，两个缺考的也被算进去，平均分会变成 60.0。</div>
           </div>
         </div>
         <div>
+          <div class="reveal step" data-step="2">
           <pre class="code" style="font-size:32px">sum = 0;  n = 0;
 for (i = 1; i &lt;= 8; i++) {
     scanf("%d", &amp;s);
@@ -891,13 +914,16 @@ for (i = 1; i &lt;= 8; i++) {
 }
 printf("%d 人，平均 %.1f\n",
        n, (double)sum / n);</pre>
+          </div>
+          <div class="reveal step" data-step="4">
           <div class="box key" style="margin-top:10px;font-size:28px;line-height:1.45"><span class="label">看 n 不看 i</span>循环跑满 8 次，用 <code class="inline">n</code> 记住真正有效的个数；这里不需要判断 <code class="inline">i</code> 的终值。</div>
+          </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- 23 例题：装车，超重前一件收工 -->
+  <!-- 22 例题：装车，超重前一件收工 -->
   <section class="slide">
     <div class="s-title">例题：装车，超重前一件收工</div>
     <div class="s-body">
@@ -905,16 +931,19 @@ printf("%d 人，平均 %.1f\n",
         <div>
           <div class="s-sub" style="margin-top:0">题目</div>
           <p style="font-size:30px;line-height:1.55;margin:0 0 12px">逐个读入包裹重量，一车最多 <b>100 kg</b>，下一件会超重就停装；输出本车件数和总重。</p>
-          <div class="box warn" style="margin-top:0;font-size:28px;line-height:1.45"><span class="label">先想</span>拦住循环的是循环次数，还是累加出来的 <code class="inline">sum</code>？刚好 100 kg 算超重吗？</div>
           <div class="s-sub blue" style="margin-top:10px">输入 / 输出</div>
           <div class="out" style="font-size:27px;padding:10px 20px;margin:4px 0">输入　30　25　40　20　15　…</div>
           <div class="out" style="font-size:27px;padding:10px 20px;margin:4px 0">输出　本车 3 件，共 95 kg</div>
-          <div class="reveal-hint" style="margin-top:10px">👉 点一下，看判断式为什么这样写</div>
-          <div class="reveal">
+          <div class="reveal-hint" data-label="👉 点一下，接着看" style="margin-top:10px">👉 点一下，接着看（1 / 4）</div>
+          <div class="reveal step" data-step="1">
+            <div class="box warn" style="margin-top:0;font-size:28px;line-height:1.45"><span class="label">先想想：</span>拦住循环的是循环次数，还是累加出来的 <code class="inline">sum</code>？刚好 100 kg 算超重吗？</div>
+          </div>
+          <div class="reveal step" data-step="3">
             <div class="box tip" style="font-size:26px;line-height:1.4;padding:10px 18px"><span class="label">先算再比</span>判断写 <code class="inline">sum + w &gt; 100</code>：若写成 <code class="inline">sum &gt; 100</code>，超重那件已被加进 sum，输出就不是 95 kg。</div>
           </div>
         </div>
         <div>
+          <div class="reveal step" data-step="2">
           <pre class="code" style="font-size:32px">sum = 0;  n = 0;
 for (;;) {
     scanf("%d", &amp;w);
@@ -924,13 +953,16 @@ for (;;) {
 }
 printf("本车 %d 件，共 %d kg\n",
        n, sum);</pre>
+          </div>
+          <div class="reveal step" data-step="4">
           <div class="box key" style="margin-top:10px;font-size:28px;line-height:1.45"><span class="label">不是找答案</span>这次 break 跟"找到答案"无关：拦住它的是累加量 <code class="inline">sum</code>，循环次数事先也不知道。</div>
+          </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- 24 例题：温度巡检，坏值跳过、数据收工 -->
+  <!-- 23 例题：温度巡检，坏值跳过、数据收工 -->
   <section class="slide">
     <div class="s-title">例题：温度巡检，坏值跳过、数据收工</div>
     <div class="s-body">
@@ -938,16 +970,19 @@ printf("本车 %d 件，共 %d kg\n",
         <div>
           <div class="s-sub" style="margin-top:0">题目</div>
           <p style="font-size:30px;line-height:1.55;margin:0 0 12px">传感器上报 10 个温度：<b>-999</b> 是坏值，跳过；<b>0</b> 表示数据结束。输出有效值个数和最高温度。</p>
-          <div class="box warn" style="margin-top:0;font-size:28px;line-height:1.45"><span class="label">先想</span>坏值要不要占个数？0 是结束标志，能不能也拿去比最高温？</div>
           <div class="s-sub blue" style="margin-top:10px">输入 / 输出</div>
           <div class="out" style="font-size:27px;padding:10px 20px;margin:4px 0">输入　25　-999　28　33　0</div>
           <div class="out" style="font-size:27px;padding:10px 20px;margin:4px 0">输出　3 个 最高 33</div>
-          <div class="reveal-hint" style="margin-top:10px">👉 点一下，看两个关键字各管什么</div>
-          <div class="reveal">
+          <div class="reveal-hint" data-label="👉 点一下，接着看" style="margin-top:10px">👉 点一下，接着看（1 / 4）</div>
+          <div class="reveal step" data-step="1">
+            <div class="box warn" style="margin-top:0;font-size:28px;line-height:1.45"><span class="label">先想想：</span>坏值要不要占个数？0 是结束标志，能不能也拿去比最高温？</div>
+          </div>
+          <div class="reveal step" data-step="3">
             <div class="box key" style="font-size:26px;line-height:1.4;padding:10px 18px"><span class="label">各管一段</span>continue 丢掉坏值、<code class="inline">n</code> 不加；break 收掉整批数据，0 不会被拿来比最高温。</div>
           </div>
         </div>
         <div>
+          <div class="reveal step" data-step="2">
           <pre class="code" style="font-size:32px">n = 0;  max = -1000;
 for (i = 1; i &lt;= 10; i++) {
     scanf("%d", &amp;t);
@@ -957,13 +992,16 @@ for (i = 1; i &lt;= 10; i++) {
     if (t &gt; max) max = t;
 }
 printf("%d 个 最高 %d\n", n, max);</pre>
+          </div>
+          <div class="reveal step" data-step="4">
           <div class="box key" style="margin-top:10px;font-size:28px;line-height:1.45"><span class="label">结果在统计量里</span>两条出口都不影响统计：<code class="inline">n</code> 只数有效值，<code class="inline">max</code> 只比有效值。</div>
+          </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- 25 易错点清单 -->
+  <!-- 24 易错点清单 -->
   <section class="slide">
     <div class="s-title">易错点清单</div>
     <div class="s-body">
@@ -979,7 +1017,7 @@ printf("%d 个 最高 %d\n", n, max);</pre>
     </div>
   </section>
 
-  <!-- 26 小结：三句话 -->
+  <!-- 25 小结：三句话 -->
   <section class="slide">
     <div class="s-title">小结：三句话</div>
     <div class="s-body">
@@ -999,7 +1037,7 @@ printf("%d 个 最高 %d\n", n, max);</pre>
     </div>
   </section>
 
-  <!-- 27 分层练习 -->
+  <!-- 26 分层练习 -->
   <section class="slide">
     <div class="s-title">分层练习</div>
     <div class="s-body">
@@ -1017,7 +1055,7 @@ printf("%d 个 最高 %d\n", n, max);</pre>
     </div>
   </section>
 
-  <!-- 28 结束页 -->
+  <!-- 27 结束页 -->
 <section class="slide end">
     <div class="end-inner">
       <h2>谢　谢</h2>
@@ -1027,7 +1065,7 @@ printf("%d 个 最高 %d\n", n, max);</pre>
 
 
   <!-- 导航 UI（无需改动） -->
-  <div class="pageinfo"><b id="cur">1</b> / <span id="total">29</span></div>
+  <div class="pageinfo"><b id="cur">1</b> / <span id="total">28</span></div>
   <div class="nav">
     <button class="tocbtn" id="btnToc" title="目录（按 O 键）">目录</button>
     <button id="btnPrev" title="上一页（←）">‹</button>
@@ -1244,14 +1282,33 @@ function texScan(root){
     var s = slides[cur];
     return !!(s && s.querySelector('.reveal:not(.shown)'));
   }
+  function stepOrder(a, b){
+    return (+a.getAttribute('data-step') || 0) - (+b.getAttribute('data-step') || 0);
+  }
+  function updateRevealHint(s){
+    var h = s.querySelector('.reveal-hint');
+    if(!h) return;
+    if(!h.hasAttribute('data-label')) h.setAttribute('data-label', h.textContent.replace(/（\d+ \/ \d+）$/, '').trim());
+    var base = h.getAttribute('data-label');
+    var steps = Array.prototype.slice.call(s.querySelectorAll('.reveal.step')).sort(stepOrder);
+    var pend = s.querySelectorAll('.reveal:not(.shown)').length;
+    if(!pend){ h.classList.add('gone'); return; }
+    h.classList.remove('gone');
+    var done = s.querySelectorAll('.reveal.step.shown').length;
+    h.textContent = steps.length ? base + '（' + (done + 1) + ' / ' + steps.length + '）' : base;
+  }
   function revealAnswers(){
     var s = slides[cur];
     if(!s) return false;
     var pending = s.querySelectorAll('.reveal:not(.shown)');
     if(!pending.length) return false;
-    pending.forEach(function(el){ el.classList.add('shown'); });
-    var hint = s.querySelector('.reveal-hint');
-    if(hint) hint.classList.add('gone');
+    var steps = Array.prototype.slice.call(s.querySelectorAll('.reveal.step:not(.shown)')).sort(stepOrder);
+    if(steps.length){
+      steps[0].classList.add('shown');
+    } else {
+      pending.forEach(function(el){ el.classList.add('shown'); });
+    }
+    updateRevealHint(s);
     fitSlide(s);
     setTimeout(function(){ fitSlide(s); }, 560);
     return true;
@@ -1306,26 +1363,25 @@ function texScan(root){
       items: [
         { i: 17, t: '流程图' },
         { i: 18, t: '参考代码' },
-        { i: 19, t: '运行追踪' },
-        { i: 20, t: '关键一问' }
+        { i: 19, t: '运行追踪' }
       ]
     },
     {
       title: '实际例题',
       items: [
-        { i: 21, t: '读到 -1 结束' },
-        { i: 22, t: '缺考不计' },
-        { i: 23, t: '装车超重' },
-        { i: 24, t: '温度巡检' }
+        { i: 20, t: '读到 -1 结束' },
+        { i: 21, t: '缺考不计' },
+        { i: 22, t: '装车超重' },
+        { i: 23, t: '温度巡检' }
       ]
     },
     {
       title: '收尾',
       items: [
-        { i: 25, t: '易错点' },
-        { i: 26, t: '小结' },
-        { i: 27, t: '分层练习' },
-        { i: 28, t: '结束页' }
+        { i: 24, t: '易错点' },
+        { i: 25, t: '小结' },
+        { i: 26, t: '分层练习' },
+        { i: 27, t: '结束页' }
       ]
     }
   ];
@@ -1365,6 +1421,7 @@ function texScan(root){
     bar.style.width = ((cur + 1) / total * 100) + '%';
     btnPrev.disabled = (cur === 0);
     btnNext.disabled = (cur === total - 1);
+    updateRevealHint(slides[cur]);
     fitSlide(slides[cur]);
   }
 
