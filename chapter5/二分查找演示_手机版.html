@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>数组应用IV · 二分查找（二分法检索）</title>
+<style>
+:root{
+  --blue:#3b82f6; --red:#ef4444; --orange:#f97316; --cyan:#06b6d4;
+  --green:#22c55e; --yellow:#eab308; --purple:#8b5cf6;
+  --ink:#1f2937; --muted:#6b7280; --bg:#f8fafc; --panel:#ffffff; --line:#e5e7eb;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Microsoft YaHei","PingFang SC","Segoe UI",sans-serif;}
+header{padding:16px 28px 4px;}
+h1{margin:0;font-size:25px;}
+.sub{color:var(--muted);font-size:14px;margin-top:4px;}
+.toolbar{display:flex;align-items:center;gap:10px;padding:10px 28px;flex-wrap:wrap;}
+.toolbar label{font-size:15px;color:var(--muted);}
+.toolbar input[type=text]{width:340px;padding:6px 10px;border:1px solid var(--line);border-radius:6px;font-size:15px;}
+.toolbar input[type=number]{width:70px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;font-size:15px;}
+.toolbar input[type=range]{width:120px;vertical-align:middle;}
+button{padding:7px 16px;border:1px solid var(--line);background:#fff;border-radius:6px;font-size:15px;cursor:pointer;color:var(--ink);}
+button:hover{background:#f1f5f9;}
+button.primary{background:var(--blue);color:#fff;border-color:var(--blue);}
+button.primary:hover{background:#2f6fe0;}
+#stageWrap{padding:6px 28px 0;}
+#stage{position:relative;margin:0 auto;background:var(--panel);border:1px solid var(--line);border-radius:12px;}
+.cell{position:absolute;border:2px solid #cbd5e1;border-radius:8px;background:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:21px;font-weight:700;}
+.cell .idx{position:absolute;bottom:-24px;left:-14px;right:-14px;text-align:center;color:var(--muted);
+  font-size:13px;font-weight:400;}
+.cell.inrange{border-color:var(--cyan);background:#ecfeff;}
+.cell.dim{opacity:.35;}
+.cell.kcell{border-color:var(--yellow);background:#fefce8;}
+.cell.cmpk{border-color:var(--red);background:#fef2f2;}
+.cell.found{border-color:var(--green);background:#f0fdf4;color:#15803d;}
+#ychip{position:absolute;display:flex;align-items:center;justify-content:center;border-radius:8px;
+  background:var(--yellow);color:#fff;font-size:20px;font-weight:700;}
+.ycap{position:absolute;color:var(--muted);font-size:14px;font-weight:600;}
+.tag{position:absolute;font-size:13px;font-weight:700;padding:2px 10px;border-radius:10px;color:#fff;
+  white-space:nowrap;transition:transform .4s ease;}
+#status{min-height:34px;margin:8px 28px 0;font-size:22px;font-weight:600;}
+#preTip{margin:8px 28px 0;padding:7px 14px;background:#fffbeb;border:1px solid #fde68a;border-left:4px solid #f59e0b;border-radius:8px;font-size:15px;color:#92400e;min-height:20px;}
+#status.err{color:var(--red);}
+#statsRow{margin:4px 28px;color:var(--muted);font-size:15px;}
+#legend{display:flex;gap:18px;margin:6px 28px;font-size:14px;color:var(--muted);flex-wrap:wrap;align-items:center;}
+#legend .dot{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px;}
+#legend kbd{background:#e2e8f0;border-radius:4px;padding:1px 6px;font-size:12px;}
+.panels{display:flex;gap:16px;margin:12px 28px 30px;align-items:stretch;}
+.panel{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 18px;}
+.panel h3{margin:0 0 8px;font-size:17px;}
+.panel p{margin:6px 0;font-size:14.5px;line-height:1.7;}
+#code{margin:0;font-family:Consolas,Monaco,monospace;font-size:14px;line-height:1.6;}
+#code .crow{padding:0 6px;border-radius:4px;}
+#code .crow .ln{color:#9ca3af;display:inline-block;width:30px;user-select:none;}
+#code .crow.hl{background:#fff7ed;box-shadow:inset 3px 0 0 var(--orange);}
+</style>
+<!-- MOBILE LAYER — 竖排适配（仅窄屏），桌面横向零回归 -->
+<style id="mVStyle">
+@media (max-width:720px){
+  html,body{height:auto!important;overflow-x:hidden!important;}
+  body{display:block!important;font-size:15px!important;-webkit-text-size-adjust:100%;}
+  header{padding:12px 14px!important;}
+  h1{font-size:19px!important;}
+  .sub{font-size:12px!important;line-height:1.5!important;}
+  .toolbar{padding:10px 12px!important;gap:8px!important;}
+  .toolbar label{font-size:13px!important;}
+  .toolbar input[type=text]{flex:1 1 100%!important;width:100%!important;max-width:100%!important;font-size:15px!important;}
+  .toolbar input[type=number]{width:64px!important;font-size:15px!important;}
+  .toolbar input[type=range]{width:100px!important;}
+  .toolbar button{flex:1 1 42%!important;min-height:38px;font-size:14px!important;padding:8px 6px!important;}
+  #stageWrap{padding:6px 8px 0!important;}
+  #stage{margin:0 auto!important;border-radius:10px!important;}
+  .cell{font-size:18px!important;}
+  .cell .idx{left:auto!important;right:6px!important;bottom:2px!important;top:auto!important;font-size:11px!important;}
+  .tag{font-size:11px!important;padding:2px 6px!important;white-space:nowrap!important;}
+  #status{margin:8px 12px 0!important;font-size:16px!important;min-height:30px!important;line-height:1.45!important;}
+  #preTip{margin:8px 12px 0!important;font-size:13px!important;line-height:1.5!important;}
+  #statsRow{margin:4px 12px!important;font-size:13px!important;}
+  #legend{margin:6px 12px!important;font-size:12px!important;gap:8px 12px!important;}
+  #legend > span:last-child{display:none!important;}
+  .panels{display:flex!important;flex-direction:column!important;margin:12px!important;gap:10px!important;}
+  .panel{padding:12px!important;min-width:0;}
+  .panel h3{font-size:16px!important;}
+  .panel p{font-size:13.5px!important;line-height:1.6!important;}
+  #code{font-size:12px!important;overflow-x:auto!important;}
+  #code .crow{white-space:pre!important;}
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>数组应用 IV · 二分查找（二分法检索）</h1>
+  <div class="sub">对应课件《05c-2 数组_4_一维数组的应用2》第16~21页 · 示例：34 56 78 87 88 90 101 112 520 888，查 y=87（找到）/ y=80（找完退出）</div>
+</header>
+
+<section class="toolbar">
+  <label>有序数组（升序）：</label><input type="text" id="inArr" value="34,56,78,87,88,90,101,112,520,888">
+  <label>y =</label><input type="number" id="inY" value="87">
+  <button class="primary" id="btnGen">生成动画</button>
+  <button id="btnY87">示例：查87（找到）</button>
+  <button id="btnY80">示例：查80（未找到）</button>
+  <button id="btnPlay">播放 ▶</button>
+  <button id="btnStep">单步 →|</button>
+  <button id="btnFirst">⏮ 第一步</button>
+  <button id="btnPrev">◀ 上一步</button>
+  <button id="btnLast">⏭ 最后一步</button>
+  <button id="btnReset">重置 ↺</button>
+  <label>速度 <input type="range" id="inSpeed" min="1" max="10" value="5"></label>
+</section>
+
+<section id="stageWrap">
+  <div id="stage">
+    <div id="cells"></div>
+    <div id="ychip">y=87</div>
+    <div id="tags"></div>
+  </div>
+</section>
+
+<div id="status">就绪。点击「播放」或反复「单步」观察区间收缩过程。</div>
+<div id="preTip"></div>
+<div id="statsRow">比较 0 次 · 区间缩小 0 次 · 步骤 0/0</div>
+<div id="legend">
+  <span><i class="dot" style="background:#ecfeff;border:1px solid var(--cyan)"></i>当前区间 [a,b]</span>
+  <span><i class="dot" style="background:#94a3b8"></i>已排除</span>
+  <span><i class="dot" style="background:var(--yellow)"></i>中点 x[k]</span>
+  <span><i class="dot" style="background:var(--red)"></i>比较中</span>
+  <span><i class="dot" style="background:var(--green)"></i>找到</span>
+  <span><i class="dot" style="background:var(--cyan)"></i>左端 a</span>
+  <span><i class="dot" style="background:var(--purple)"></i>右端 b</span>
+  <span style="margin-left:auto;">键位：<kbd>空格</kbd> 播放/暂停　<kbd>→</kbd> 单步　<kbd>R</kbd> 重置</span>
+</div>
+
+<section class="panels">
+  <div class="panel">
+    <h3>原理说明（课件第16~18页）</h3>
+    <p><b>前提：序列有序</b>（以递增为例）。在位置区间 [a, b] 内检索 y：</p>
+    <p>① <b>等分区间</b>：求中点位置 k=(a+b)/2（整数除法，向小取整）；<br>
+       ② <b>比较</b>：若 y==x[k]，位置就是 k，找到退出；<br>
+       ③ 若 y&lt;x[k]，y 只可能在左半边，取新区间 [a, k-1]（即 b=k-1）；<br>
+       ④ 若 y&gt;x[k]，取右半边 [k+1, b]（即 a=k+1）；<br>
+       ⑤ 再等分，再比较……直到找到，或 a&gt;b（区间为空）——<b>找完退出</b>，返回 -1。</p>
+    <p><b>效率</b>：每比较一次区间减半，N 个元素最多约 ⌈log₂N⌉+1 次；本例 10 个元素查 87 只要 4 次比较（顺序查找平均要 5 次、最坏 10 次）。查 80 时区间一路收缩到空（a=3&gt;b=2），4 次比较即可断定"没有"。</p>
+    <p>看动画时注意：青色 a 与紫色 b 两个"夹子"不断向中间靠拢，黄色 k 每轮跳到当前区间的正中间。</p>
+  </div>
+  <div class="panel">
+    <h3>C 语言实现（课件第21页）</h3>
+    <div id="code"></div>
+  </div>
+</section>
+
+<script>
+"use strict";
+// ================= 常量与状态 =================
+const CELLTOP=70, CELLH=64, GAP=12, PAD=10;
+let CELLW=64;
+let arr=[], initArr=[], ops=[], oi=0;
+let cells=[], playing=false, animating=false, playTimer=null;
+let cmpCount=0, narrowCount=0;
+const $=id=>document.getElementById(id);
+
+function gapMs(){ const s=+$('inSpeed').value; const base=Math.max(160,760-s*58); const f1=2000/702; return Math.round(base*(f1-(f1-1)*(s-1)/9)); }
+function slotLeft(i){ return PAD+i*(CELLW+GAP); }
+function stageW(n){ return PAD*2+n*(CELLW+GAP)-GAP; }
+
+// ================= 布局与渲染 =================
+function layoutCells(n){
+  CELLW = n>10 ? 52 : 64;
+  const st=$('stage');
+  st.style.width=stageW(n)+'px';
+  st.style.height=(CELLTOP+CELLH+30+92)+'px';
+  const cel=$('cells'); cel.innerHTML=''; cells=[];
+  for(let i=0;i<n;i++){
+    const c=document.createElement('div');
+    c.className='cell';
+    c.style.left=slotLeft(i)+'px'; c.style.top=CELLTOP+'px';
+    c.style.width=CELLW+'px'; c.style.height=CELLH+'px';
+    c.appendChild(document.createTextNode(String(arr[i])));
+    const lab=document.createElement('span'); lab.className='idx'; lab.textContent='x['+i+']';
+    c.appendChild(lab); cel.appendChild(c); cells.push(c);
+  }
+  const yc=$('ychip');
+  yc.style.left=PAD+'px'; yc.style.top='4px'; yc.style.width=(CELLW-6)+'px'; yc.style.height='56px';
+  const cap=document.querySelector('.ycap');
+  if(cap){ cap.style.left=(PAD+CELLW+6)+'px'; cap.style.top='26px'; }
+  const tg=$('tags'); tg.style.position='absolute'; tg.style.left='0'; tg.style.top=(CELLTOP+CELLH+28)+'px';
+  tg.innerHTML='';
+}
+function cellAt(i){ return cells[i]; }
+function setBand(a,b){
+  cells.forEach((c,i)=>{
+    c.classList.remove('inrange','dim','kcell','cmpk','found');
+    if(i<a||i>b) c.classList.add('dim'); else c.classList.add('inrange');
+  });
+}
+function setTag(id,text,slot,color,row){
+  let el=document.getElementById('tag_'+id);
+  if(!el){
+    el=document.createElement('div'); el.className='tag'; el.id='tag_'+id;
+    el.style.background=color; $('tags').appendChild(el);
+  }
+  el.textContent=text;
+  el.style.top=(row*26)+'px';
+  el.style.transform='translateX('+slotLeft(slot)+'px)';
+}
+function clearTags(){ $('tags').innerHTML=''; }
+
+// ================= 状态显示 =================
+function setStatus(txt,line,err){
+  const s=$('status');
+  s.textContent=txt; s.className=err?'err':'';
+  document.querySelectorAll('#code .crow.hl').forEach(e=>e.classList.remove('hl'));
+  if(line>=0){
+    const rows=document.querySelectorAll('#code .crow');
+    if(rows[line]) rows[line].classList.add('hl');
+  }
+}
+function updateProgress(){
+  $('statsRow').textContent='比较 '+cmpCount+' 次 · 区间缩小 '+narrowCount+' 次 · 步骤 '+oi+'/'+ops.length;  updatePreTip();
+}
+function updatePreTip(){
+  const el=$('preTip');
+  if(oi>=ops.length){ el.innerHTML='✅ 演示已结束。可用「◀ 上一步」回看任意一步的定格画面。'; return; }
+  let d=null;
+  for(let k=oi;k<ops.length;k++){
+    if(ops[k].desc!==undefined&&ops[k].desc!==null){ d=ops[k].desc; break; }
+  }
+  el.innerHTML='💡 提前提示 · 下一步：'+(d!==null?d:'（画面更新）');
+}
+function setCode(lines){
+  const el=$('code'); el.innerHTML='';
+  lines.forEach((s,i)=>{
+    const d=document.createElement('div'); d.className='crow';
+    const ln=document.createElement('span'); ln.className='ln'; ln.textContent=(i+1);
+    d.appendChild(ln); d.appendChild(document.createTextNode(s));
+    el.appendChild(d);
+  });
+}
+
+// ================= 步骤执行 =================
+function runOp(op,done){
+  animating=true;
+  const finish=()=>{ animating=false; done(); };
+  switch(op.t){
+    case 'note':
+      setStatus(op.desc,op.line);
+      setTimeout(finish,gapMs());
+      break;
+    case 'band':
+      setBand(op.a,op.b);
+      setTimeout(finish,80);
+      break;
+    case 'calc':
+      setStatus(op.desc,op.line);
+      setTag('k','k',op.k,'#eab308',2);
+      if(cells[op.k]) cells[op.k].classList.add('kcell');
+      setTimeout(finish,gapMs());
+      break;
+    case 'cmpk':
+      setStatus(op.desc,op.line);
+      if(cells[op.k]) cells[op.k].classList.add('cmpk');
+      cmpCount++;
+      setTimeout(finish,gapMs());
+      break;
+    case 'narrow':
+      setStatus(op.desc,op.line);
+      if(op.moveTag==='b') setTag('b','b',op.b,'#8b5cf6',1);
+      if(op.moveTag==='a') setTag('a','a',op.a,'#06b6d4',0);
+      setBand(op.a,op.b);
+      narrowCount++;
+      setTimeout(finish,gapMs());
+      break;
+    case 'found':
+      setStatus(op.desc,op.line);
+      setBand(op.a,op.b);
+      if(cells[op.k]){ cells[op.k].classList.remove('kcell','cmpk'); cells[op.k].classList.add('found'); }
+      window.__done=true;
+      setTimeout(finish,gapMs());
+      break;
+    case 'notfound':
+      setStatus(op.desc,op.line);
+      setBand(1,0);           // 区间为空：全部变灰
+      window.__done=true;
+      setTimeout(finish,gapMs());
+      break;
+    default:
+      finish();
+  }
+}
+
+// ================= 播放器 =================
+function play(){
+  if(playing){ pause(); return; }
+  if(oi>=ops.length){ rewind(); }
+  playing=true; $('btnPlay').textContent='暂停 ⏸';
+  next();
+}
+function pause(){ playing=false; $('btnPlay').textContent='播放 ▶'; if(playTimer)clearTimeout(playTimer); }
+function next(){
+  if(!playing) return;
+  if(animating){ playTimer=setTimeout(next,80); return; }
+  if(oi>=ops.length){ pause(); return; }
+  runOp(ops[oi],()=>{ oi++; updateProgress(); if(playing) playTimer=setTimeout(next,60); });
+}
+function stepOnce(){
+  pause();
+  if(animating) return;
+  if(oi>=ops.length){ setStatus('演示已到末尾。点「重置」回看。',-1); return; }
+  runOp(ops[oi],()=>{ oi++; updateProgress(); });
+}
+function rewind(){
+  pause();
+  window.__done=false;
+  arr=initArr.slice();
+  oi=0; cmpCount=0; narrowCount=0;
+  clearTags();
+  layoutCells(arr.length);
+  setBand(0,arr.length-1);
+  setTag('a','a=0',0,'#06b6d4',0);                    // 重置后同样立即显示 a、b 指针
+  setTag('b','b='+(arr.length-1),arr.length-1,'#8b5cf6',1);
+  updateProgress();
+  setStatus('已重置。点击「播放」或反复「单步」观察区间收缩。',-1);
+}
+
+// ---------- 回退导航：瞬时重放至第 k 步的定格画面（不重放动画） ----------
+function applyOpInstant(op){
+  switch(op.t){
+    case 'band': setBand(op.a,op.b); break;
+    case 'tag': setTag(op.id,op.text,op.slot,op.color,op.row); break;
+    case 'calc': setTag('k','k',op.k,'#eab308',2); if(cells[op.k]) cells[op.k].classList.add('kcell'); break;
+    case 'cmpk': cmpCount++; if(cells[op.k]) cells[op.k].classList.add('cmpk'); break;
+    case 'narrow':
+      if(op.moveTag==='b') setTag('b','b',op.b,'#8b5cf6',1);
+      if(op.moveTag==='a') setTag('a','a',op.a,'#06b6d4',0);
+      setBand(op.a,op.b); narrowCount++; break;
+    case 'found': setBand(op.a,op.b); if(cells[op.k]) cells[op.k].classList.add('found'); window.__done=true; break;
+    case 'notfound': setBand(1,0); window.__done=true; break;
+  }
+}
+function goTo(k){
+  pause();
+  if(animating) return;
+  if(!ops.length) return;
+  if(k<0) k=0; if(k>ops.length) k=ops.length;
+  window.__done=false;
+  arr=initArr.slice(); cmpCount=0; narrowCount=0;
+  layoutCells(arr.length);   // 重建格子并清空标签层，再逐条瞬时应用
+  let curStatus=null;
+  for(let idx=0;idx<k;idx++){
+    const op=ops[idx];
+    applyOpInstant(op);
+    if(op.desc!==undefined&&op.desc!==null) curStatus={d:op.desc,l:(op.line===undefined||op.line===null)?-1:op.line};
+    else if(op.line!==undefined&&op.line!==null&&curStatus) curStatus.l=op.line;
+  }
+  oi=k;
+  updateProgress();
+  if(curStatus) setStatus(curStatus.d,curStatus.l);
+  else setStatus('已回到初始状态。按「单步」或「播放」开始。',-1);
+}
+
+// ================= 步骤生成（OPS-BEGIN） =================
+const CODE_LINES=[
+'int searchNumber(int x[], int N, int y){',
+'    int a=0, b=N-1, pos=-1;  // 没找到前 pos=-1',
+'    while(a <= b){           // 区间非空就继续找',
+'        pos=(b+a)/2;         // 求中点下标',
+'        if(y==x[pos]) break; // 找到，退出',
+'        if(y<x[pos]) b=pos-1;// y小→取左半边',
+'        else a=pos+1;        // y大→取右半边',
+'    }',
+'    return pos;',
+'}'
+];
+
+function buildOps(vals,y){
+  const list=[];
+  const N=vals.length;
+  initArr=vals.slice();
+  list.push({t:'note',line:1,desc:'初始：a=0，b=N-1='+(N-1)+'，区间 [0,'+(N-1)+']；pos=-1（还没找到）'});
+  list.push({t:'band',a:0,b:N-1,line:1,
+    desc:'画面：全部 N='+N+' 个元素都在当前检索区间 [0,'+(N-1)+'] 内'});
+  list.push({t:'tag',id:'a',text:'a=0',slot:0,color:'#06b6d4',row:0,line:1});
+  list.push({t:'tag',id:'b',text:'b='+(N-1),slot:N-1,color:'#8b5cf6',row:1,line:1});
+  let a=0,b=N-1,cmpN=0,rounds=0;
+  while(a<=b){
+    rounds++;
+    const k=Math.floor((a+b)/2);
+    list.push({t:'calc',k:k,line:3,
+      desc:'第'+rounds+'轮求中点：k=(a+b)/2=('+a+'+'+b+')/2='+k+'，x[k]=x['+k+']='+vals[k]});
+    cmpN++;
+    list.push({t:'cmpk',k:k,line:4,desc:'比较：y='+y+' 与 x['+k+']='+vals[k]+
+      (y===vals[k]?' ，相等！':(y<vals[k]?' ，y<x[k]':' ，y>x[k]'))});
+    if(y===vals[k]){
+      list.push({t:'found',k:k,a:a,b:b,line:4,
+        desc:'y==x['+k+']，找到！y 在数组中的位置 k='+k+'（共比较 '+cmpN+' 次，区间 '+rounds+' 轮）'});
+      return list;
+    }
+    if(y<vals[k]){
+      const nb=k-1;
+      list.push({t:'narrow',a:a,b:nb,moveTag:'b',line:5,
+        desc:'y='+y+' < x['+k+']=' + vals[k]+'，y 只能在左半边：b=k-1='+nb+'，新区间 ['+a+','+nb+']'});
+      b=nb;
+    }else{
+      const na=k+1;
+      list.push({t:'narrow',a:na,b:b,moveTag:'a',line:6,
+        desc:'y='+y+' > x['+k+']=' + vals[k]+'，y 只能在右半边：a=k+1='+na+'，新区间 ['+na+','+b+']'});
+      a=na;
+    }
+  }
+  list.push({t:'notfound',line:8,
+    desc:'a='+a+' > b='+b+'，区间为空——找完退出，数组中没有 '+y+'，返回 pos=-1（共比较 '+cmpN+' 次）'});
+  return list;
+}
+// （OPS-END）
+
+// ================= 输入与初始化 =================
+function gen(){
+  const raw=$('inArr').value.trim();
+  const vals=raw.split(/[\s,，、]+/).filter(s=>s!=='').map(Number);
+  const y=Number($('inY').value);
+  if(vals.length<2||vals.some(v=>!isFinite(v))){ setStatus('数组输入有误：请输入至少 2 个数字。',-1,true); return; }
+  if(vals.length>12){ setStatus('数组元素请不超过 12 个，保证投影可读。',-1,true); return; }
+  for(let k=1;k<vals.length;k++){
+    if(vals[k]<=vals[k-1]){ setStatus('二分查找要求升序有序：x['+(k-1)+']='+vals[k-1]+' ≥ x['+k+']='+vals[k]+'，请检查输入。',-1,true); return; }
+  }
+  if(!isFinite(y)){ setStatus('请输入要查找的数 y。',-1,true); return; }
+  window.__done=false;
+  pause();
+  ops=buildOps(vals,y);
+  oi=0; cmpCount=0; narrowCount=0;
+  arr=initArr.slice();
+  clearTags();
+  layoutCells(arr.length);
+  setBand(0,arr.length-1);
+  $('ychip').textContent='y='+y;
+  setTag('a','a=0',0,'#06b6d4',0);                    // 初始画面立即显示 a、b 指针
+  setTag('b','b='+(arr.length-1),arr.length-1,'#8b5cf6',1);
+  setCode(CODE_LINES);
+  updateProgress();
+  setStatus('已生成：共 '+ops.length+' 步。点「播放」或「单步」开始。',-1);
+}
+
+$('btnGen').onclick=gen;
+$('btnY87').onclick=()=>{ $('inArr').value='34,56,78,87,88,90,101,112,520,888'; $('inY').value=87; gen(); };
+$('btnY80').onclick=()=>{ $('inArr').value='34,56,78,87,88,90,101,112,520,888'; $('inY').value=80; gen(); };
+$('btnPlay').onclick=play;
+$('btnStep').onclick=stepOnce;
+$('btnReset').onclick=rewind;
+$('btnFirst').onclick=()=>goTo(1);
+$('btnPrev').onclick=()=>goTo(oi-1);
+$('btnLast').onclick=()=>goTo(ops.length);
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'&&e.target.type==='text') return;
+  if(e.code==='Space'){ e.preventDefault(); play(); }
+  else if(e.key==='ArrowRight'){ e.preventDefault(); stepOnce(); }
+  else if(e.key==='ArrowLeft'){ e.preventDefault(); goTo(oi-1); }
+  else if(e.key==='Home'){ e.preventDefault(); goTo(1); }
+  else if(e.key==='End'){ e.preventDefault(); goTo(ops.length); }
+  else if(e.key==='r'||e.key==='R'){ rewind(); }
+});
+
+gen();
+</script>
+<!-- MOBILE LAYER — 竖排渲染覆写：函数声明覆盖，首行手机守卫 -->
+<script>
+(function(){
+  if(!window.matchMedia("(max-width:720px)").matches) return;
+  var V_PAD=10, V_CELLW=64, V_CELLH=46, V_GAP=10, V_TOP0=54, V_TAGW=46;
+  function vTop(i){ return V_TOP0 + i*(V_CELLH+V_GAP); }
+  function vStageW(){ return V_PAD*2 + V_CELLW + 150; }
+  function vStageH(n){ return V_TOP0 + n*(V_CELLH+V_GAP) + 12; }
+
+  slotLeft = function(i){ return V_PAD; };
+
+  layoutCells = function(n){
+    CELLW = V_CELLW;
+    var st=$('stage');
+    st.style.width=vStageW()+'px';
+    st.style.height=vStageH(n)+'px';
+    var cel=$('cells'); cel.innerHTML=''; cells=[];
+    for(var i=0;i<n;i++){
+      var c=document.createElement('div');
+      c.className='cell';
+      c.style.left=V_PAD+'px'; c.style.top=vTop(i)+'px';
+      c.style.width=V_CELLW+'px'; c.style.height=V_CELLH+'px';
+      c.appendChild(document.createTextNode(String(arr[i])));
+      var lab=document.createElement('span'); lab.className='idx'; lab.textContent='x['+i+']';
+      c.appendChild(lab); cel.appendChild(c); cells.push(c);
+    }
+    var yc=$('ychip');
+    yc.style.left=(V_PAD+V_CELLW+10)+'px'; yc.style.top='8px';
+    yc.style.width='120px'; yc.style.height='40px'; yc.style.fontSize='16px';
+    var tg=$('tags'); tg.style.position='absolute'; tg.style.left='0'; tg.style.top='0'; tg.innerHTML='';
+  };
+
+  setTag = function(id,text,slot,color,row){
+    var el=document.getElementById('tag_'+id);
+    if(!el){ el=document.createElement('div'); el.className='tag'; el.id='tag_'+id; el.style.background=color; $('tags').appendChild(el); }
+    el.textContent=text;
+    el.style.left=(V_PAD+V_CELLW+8+(row||0)*V_TAGW)+'px';
+    el.style.top=(vTop(slot)+6)+'px';
+    el.style.transform='none';
+  };
+
+  document.documentElement.setAttribute('data-mv-vertical','binary');
+  // 用竖排函数重建当前画面
+  if(typeof gen==='function') gen();
+})();
+</script>
+</body>
+</html>

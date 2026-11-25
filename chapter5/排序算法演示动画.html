@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>排序算法演示动画</title>
+<style>
+  :root{
+    --blue:#3b82f6;     /* 未排序 */
+    --red:#ef4444;      /* 比较中 */
+    --orange:#f97316;   /* 交换中 */
+    --green:#22c55e;    /* 已排序 */
+    --yellow:#eab308;   /* 基准元素 */
+    --purple:#8b5cf6;   /* 当前最小值位置 min（选择排序） */
+    --cyan:#06b6d4;     /* 本轮目标位 i：最小值应放置的位置（选择排序） */
+    --ink:#1f2937;
+    --muted:#6b7280;
+    --line:#e5e7eb;
+    --bg:#f8fafc;
+    --panel:#ffffff;
+    --accent:#1e3a8a;   /* 标题深蓝，呼应课件卡片顶条 */
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family:-apple-system,"Microsoft YaHei","PingFang SC","Segoe UI",sans-serif;
+    background:var(--bg);color:var(--ink);
+    display:flex;flex-direction:column;min-height:100vh;
+  }
+  header{
+    background:var(--accent);color:#fff;padding:14px 28px;
+    display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px;
+  }
+  header h1{font-size:26px;margin:0;font-weight:700;letter-spacing:1px;}
+  header .sub{font-size:15px;opacity:.9;}
+  .wrap{max-width:1280px;width:100%;margin:0 auto;padding:18px 24px 28px;flex:1;display:flex;flex-direction:column;gap:14px;}
+
+  .controls{
+    background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:14px 18px;display:flex;flex-wrap:wrap;align-items:center;gap:18px;
+  }
+  .ctrl{display:flex;align-items:center;gap:8px;font-size:16px;}
+  .ctrl label{color:var(--muted);white-space:nowrap;}
+  select,input[type=range]{font-size:15px;}
+  select{padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);}
+  .btns{display:flex;gap:10px;flex-wrap:wrap;margin-left:auto;}
+  button{
+    font-size:16px;padding:9px 18px;border:none;border-radius:9px;cursor:pointer;
+    background:var(--accent);color:#fff;font-weight:600;transition:filter .15s;
+  }
+  button:hover{filter:brightness(1.08);}
+  button.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent);}
+  button:disabled{opacity:.45;cursor:not-allowed;}
+
+  .stats{display:flex;flex-wrap:wrap;gap:14px;font-size:17px;}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 16px;min-width:130px;}
+  .stat .k{color:var(--muted);font-size:14px;}
+  .stat .v{font-size:22px;font-weight:700;}
+
+  .stage{
+    background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:18px 20px 8px;flex:1;display:flex;flex-direction:column;min-height:320px;
+  }
+  .bars{display:flex;align-items:flex-end;justify-content:center;gap:2px;flex:1;padding:60px 4px 16px;}
+  .bar{
+    flex:1 1 0;min-width:3px;background:var(--blue);border-radius:4px 4px 0 0;
+    display:flex;align-items:flex-start;justify-content:center;
+    transition:height .08s linear, background-color .08s linear;
+    position:relative;
+  }
+  .bar .val{position:absolute;top:-22px;font-size:12px;color:var(--muted);}
+  /* 选择排序：当前最小值位置 min 的专用标记（紫色描边 + 浮标），与红色比较元素区分 */
+  .bar.min-mark{box-shadow:inset 0 0 0 3px var(--purple);z-index:2;}
+  .bar.min-mark::after{
+    content:'最小值位置';position:absolute;top:-40px;left:50%;transform:translateX(-50%);
+    background:var(--purple);color:#fff;font-size:11px;font-weight:700;line-height:1;
+    padding:2px 6px;border-radius:4px;white-space:nowrap;pointer-events:none;
+  }
+  .bar.min-mark::before{
+    content:'';position:absolute;top:-7px;left:50%;transform:translateX(-50%);
+    border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid var(--purple);
+  }
+  /* 选择排序：本轮目标位 i（最小值应放置的位置）——柱底青色标签 + 向上箭头，与柱顶 min 标记分开 */
+  .bar .tgt{
+    display:none;position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);
+    background:var(--cyan);color:#fff;font-size:11px;font-weight:700;line-height:1;
+    padding:2px 6px;border-radius:4px;white-space:nowrap;pointer-events:none;z-index:3;
+  }
+  .bar .tgt::before{
+    content:'';position:absolute;top:-5px;left:50%;transform:translateX(-50%);
+    border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:5px solid var(--cyan);
+  }
+  .status{
+    margin-top:10px;padding:10px 14px;background:#f1f5f9;border-radius:9px;
+    font-size:18px;min-height:44px;display:flex;align-items:center;color:var(--ink);
+  }
+  .status b{color:var(--accent);}
+
+  .legend{display:flex;flex-wrap:wrap;gap:16px;font-size:15px;color:var(--muted);padding:6px 2px;}
+  .legend span{display:inline-flex;align-items:center;gap:6px;}
+  .dot{width:14px;height:14px;border-radius:3px;display:inline-block;}
+
+  /* ---------- 新增：算法说明 + C 代码面板 ---------- */
+  .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  @media(max-width:900px){ .info-grid{grid-template-columns:1fr;} }
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;}
+  .panel h3{margin:0 0 10px;font-size:18px;color:var(--accent);display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .info-name{font-size:21px;font-weight:700;}
+  .info-en{font-size:14px;color:var(--muted);margin-left:8px;font-weight:400;}
+  .info-idea{font-size:15px;line-height:1.75;color:var(--ink);margin:8px 0 12px;}
+  .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+  .metric{background:#f1f5f9;border-radius:8px;padding:8px 6px;text-align:center;}
+  .metric .mk{font-size:12px;color:var(--muted);}
+  .metric .mv{font-size:15px;font-weight:700;margin-top:2px;}
+  .tag{display:inline-block;padding:3px 12px;border-radius:20px;font-size:13px;font-weight:600;margin:8px 0 4px;}
+  .tag.stable{background:#dcfce7;color:#15803d;}
+  .tag.unstable{background:#fee2e2;color:#b91c1c;}
+  .info-extra{font-size:14px;color:var(--muted);line-height:1.7;}
+  .info-extra b{color:var(--ink);}
+  .code-block{
+    background:#0f172a;color:#e2e8f0;border-radius:10px;padding:12px 14px;
+    font-family:'Consolas','Courier New',monospace;font-size:14px;line-height:1.55;
+    max-height:320px;overflow:auto;
+  }
+  .code-line{padding:2px 8px;border-radius:4px;white-space:pre;transition:background .12s;}
+  .code-line.hl{background:rgba(249,115,22,.30);box-shadow:inset 3px 0 0 var(--orange);}
+  .kw{color:#c084fc;font-weight:600;}
+  .num{color:#fbbf24;}
+  .com{color:#64748b;font-style:italic;}
+
+  .progress{font-size:14px;color:var(--muted);text-align:right;}
+  footer{text-align:center;color:var(--muted);font-size:13px;padding:10px;}
+  kbd{background:#eef2ff;border:1px solid #c7d2fe;border-radius:5px;padding:1px 7px;font-size:13px;color:#3730a3;}
+</style>
+</head>
+<body>
+<header>
+  <h1>排序算法演示动画</h1>
+  <div class="sub">武汉理工大学 人工智能学院 · 主讲：孙骏</div>
+</header>
+
+<div class="wrap">
+  <div class="controls">
+    <div class="ctrl">
+      <label>算法</label>
+      <select id="algo">
+        <option value="exchange">比较法排序 Exchange（教材版）</option>
+        <option value="bubble">冒泡排序 Bubble</option>
+        <option value="selection">选择排序 Selection</option>
+        <option value="insertion">插入排序 Insertion（交换版）</option>
+        <option value="quick">快速排序 Quick</option>
+        <option value="merge">归并排序 Merge</option>
+        <option value="heap">堆排序 Heap</option>
+      </select>
+    </div>
+    <div class="ctrl">
+      <label>数组大小</label>
+      <input type="range" id="size" min="8" max="80" value="32">
+      <span id="sizeVal">32</span>
+    </div>
+    <div class="ctrl">
+      <label>速度</label>
+      <input type="range" id="speed" min="1" max="10" value="6">
+      <span id="speedVal">6</span>
+    </div>
+    <div class="btns">
+      <button id="gen" class="ghost">生成新数组 (G)</button>
+      <button id="reset" class="ghost">重置 (R)</button>
+      <button id="step">单步 (→)</button>
+      <button id="play">开始 (空格)</button>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="k">比较次数</div><div class="v" id="cmp">0</div></div>
+    <div class="stat"><div class="k">交换/移动次数</div><div class="v" id="swp">0</div></div>
+    <div class="stat"><div class="k">时间复杂度</div><div class="v" id="complex" style="font-size:18px;">—</div></div>
+    <div class="progress" id="prog" style="margin-left:auto;align-self:center;">步骤 0 / 0</div>
+  </div>
+
+  <div class="stage">
+    <div class="bars" id="bars"></div>
+    <div class="status" id="status">点击「生成新数组」生成数据，再点「开始」播放动画。</div>
+  </div>
+
+  <div class="legend">
+    <span><i class="dot" style="background:var(--blue)"></i>未排序</span>
+    <span><i class="dot" style="background:var(--red)"></i>比较中</span>
+    <span><i class="dot" style="background:var(--orange)"></i>交换/写入中</span>
+    <span><i class="dot" style="background:var(--yellow)"></i>基准元素（快排）</span>
+    <span><i class="dot" style="background:var(--purple)"></i>最小值位置 min（选择排序）</span>
+    <span><i class="dot" style="background:var(--cyan)"></i>本轮基准位 i（比较法 / 选择法）</span>
+    <span><i class="dot" style="background:var(--green)"></i>已排序</span>
+    <span style="margin-left:auto;">键位：<kbd>空格</kbd> 播放/暂停　<kbd>→</kbd> 单步　<kbd>G</kbd> 换数组　<kbd>R</kbd> 重置</span>
+  </div>
+
+  <div class="info-grid">
+    <div class="panel" id="algo-info"></div>
+    <div class="panel">
+      <h3>📄 C 语言函数代码 <span style="font-size:13px;color:var(--muted);font-weight:400;">（播放时橙色行 = 当前执行语句）</span></h3>
+      <div class="code-block" id="code-block"></div>
+    </div>
+  </div>
+</div>
+
+<footer>自包含单文件 · 断网可用 · 颜色沿用 C 语言课件元件库配色约定</footer>
+
+<script>
+"use strict";
+
+// ---------- 状态 ----------
+const COLOR = {
+  blue:'#3b82f6', red:'#ef4444', orange:'#f97316', green:'#22c55e', yellow:'#eab308'
+};
+const COMPLEX = {
+  exchange:'O(n²)',
+  bubble:'O(n²)', selection:'O(n²)', insertion:'O(n²)',
+  quick:'O(n log n)', merge:'O(n log n)', heap:'O(n log n)'
+};
+
+// ---------- 算法说明 + C 代码（与下方动画逐行高亮对应）----------
+const ALGO_INFO = {
+  exchange:{
+    name:'比较法排序', en:'Exchange Sort',
+    idea:'固定 a[i]，把它与后面的元素逐一比较（j = i+1 … n-1）；只要遇到比 a[i] 更小的，就立即交换。一趟扫完，a[i] 就是本轮最小值。',
+    best:'O(n²)', avg:'O(n²)', worst:'O(n²)', space:'O(1)', stable:false,
+    use:'思路最直白、代码最短，用来建立“比较→逆序就交换”的直觉；但“遇小即换”使交换次数多于选择法。',
+    code:[
+      '// 比较法排序：a[i] 与后面每格比较，遇更小就交换',
+      'void cmpSort(int a[], int n) {',
+      '    for (int i = 0; i < n-1; i++) {',
+      '        for (int j = i+1; j < n; j++) {',
+      '            if (a[i] > a[j]) {                  // 比较',
+      '                int t=a[i]; a[i]=a[j]; a[j]=t;  // 交换',
+      '            }',
+      '        }',
+      '    }',
+      '}'
+    ]
+  },
+  bubble:{
+    name:'冒泡排序', en:'Bubble Sort',
+    idea:'重复遍历数组，依次比较相邻两元素，顺序不对就交换；每一轮都会把当前未排序部分的最大值“浮”到末尾。',
+    best:'O(n)', avg:'O(n²)', worst:'O(n²)', space:'O(1)', stable:true,
+    use:'数据量小、或基本有序时效果好；是讲解排序最直观的入门算法。',
+    code:[
+      '// 冒泡排序：相邻比较，逆序交换',
+      'void bubbleSort(int a[], int n) {',
+      '    for (int i = 0; i < n-1; i++) {',
+      '        for (int j = 0; j < n-1-i; j++) {',
+      '            if (a[j] > a[j+1]) {            // 比较',
+      '                int t=a[j]; a[j]=a[j+1]; a[j+1]=t;   // 交换',
+      '            }',
+      '        }',
+      '    }',
+      '}'
+    ]
+  },
+  selection:{
+    name:'选择排序', en:'Selection Sort',
+    idea:'每次从未排序区间中选出最小（大）元素，放到已排序区间的末尾；共需 n-1 轮。',
+    best:'O(n²)', avg:'O(n²)', worst:'O(n²)', space:'O(1)', stable:false,
+    use:'交换次数少（最多 n-1 次），适合“写”操作昂贵的场景；但不稳定。',
+    code:[
+      '// 选择排序：每轮选出最小值放到前面',
+      'void selectionSort(int a[], int n) {',
+      '    for (int i = 0; i < n-1; i++) {',
+      '        int min = i;',
+      '        for (int j = i+1; j < n; j++)',
+      '            if (a[j] < a[min]) min = j;     // 比较找最小',
+      '        if (min != i) {',
+      '            int t=a[i]; a[i]=a[min]; a[min]=t;   // 交换',
+      '        }',
+      '    }',
+      '}'
+    ]
+  },
+  insertion:{
+    name:'插入排序', en:'Insertion Sort',
+    idea:'把当前元素与前面已排序部分从右往左比较，逆序则相邻交换，直到插入到合适位置（本演示用交换版）。',
+    best:'O(n)', avg:'O(n²)', worst:'O(n²)', space:'O(1)', stable:true,
+    use:'对近乎有序的数据效率极高，最佳 O(n)；常作为更复杂算法（如快排）的小数组优化。',
+    code:[
+      '// 插入排序（交换版）：当前元素向左冒泡到合适位置',
+      'void insertionSort(int a[], int n) {',
+      '    for (int i = 1; i < n; i++) {',
+      '        int j = i;',
+      '        while (j>0 && a[j-1] > a[j]) {     // 比较',
+      '            int t=a[j-1]; a[j-1]=a[j]; a[j]=t;   // 交换',
+      '            j--;',
+      '        }',
+      '    }',
+      '}'
+    ]
+  },
+  quick:{
+    name:'快速排序', en:'Quick Sort',
+    idea:'选一个基准（pivot），把比它小的放左边、大的放右边，再对左右两段递归处理（本演示用 Lomuto 分区）。',
+    best:'O(n log n)', avg:'O(n log n)', worst:'O(n²)', space:'O(log n)', stable:false,
+    use:'平均最快的通用排序，实际应用最广；最差退化到 O(n²)（基准选得不好时）。',
+    code:[
+      '// 快速排序（Lomuto 分区）',
+      'void quickSort(int a[], int lo, int hi) {',
+      '    if (lo >= hi) return;',
+      '    int pivot = a[hi];                 // 选基准',
+      '    int i = lo - 1;',
+      '    for (int j = lo; j < hi; j++) {',
+      '        if (a[j] < pivot) {            // 比较',
+      '            i++;',
+      '            int t=a[i]; a[i]=a[j]; a[j]=t;   // 交换',
+      '        }',
+      '    }',
+      '    int t=a[i+1]; a[i+1]=a[hi]; a[hi]=t;     // 基准归位',
+      '    quickSort(a, lo, i);',
+      '    quickSort(a, i+2, hi);',
+      '}'
+    ]
+  },
+  merge:{
+    name:'归并排序', en:'Merge Sort',
+    idea:'分治：先把数组对半拆分到单个元素，再两两合并成有序区间，自底向上得到整体有序。',
+    best:'O(n log n)', avg:'O(n log n)', worst:'O(n log n)', space:'O(n)', stable:true,
+    use:'稳定且最坏也是 O(n log n)，适合链表、外部排序；需要额外 O(n) 辅助空间。',
+    code:[
+      '// 归并排序：分治 + 合并两个有序区间',
+      'void mergeSort(int a[], int lo, int hi) {',
+      '    if (lo >= hi) return;',
+      '    int mid = (lo + hi) / 2;',
+      '    mergeSort(a, lo, mid);',
+      '    mergeSort(a, mid+1, hi);',
+      '    merge(a, lo, mid, hi);',
+      '}',
+      'void merge(int a[], int lo, int mid, int hi) {',
+      '    int aux[hi-lo+1];',
+      '    for (int k=lo; k<=hi; k++) aux[k] = a[k];   // 复制',
+      '    for (int k=lo; k<=hi; k++) {                  // 写回',
+      '        if (i > mid) a[k] = aux[j++];',
+      '        else if (j > hi) a[k] = aux[i++];',
+      '        else if (aux[i] <= aux[j]) a[k] = aux[i++];',
+      '        else a[k] = aux[j++];',
+      '    }',
+      '}'
+    ]
+  },
+  heap:{
+    name:'堆排序', en:'Heap Sort',
+    idea:'先建大顶堆，每次把堆顶（最大值）与末尾交换并缩小堆范围，重复直到有序。',
+    best:'O(n log n)', avg:'O(n log n)', worst:'O(n log n)', space:'O(1)', stable:false,
+    use:'原地排序、最坏也是 O(n log n)，且能高效取前 k 大；但缓存不友好、不稳定。',
+    code:[
+      '// 堆排序：建大顶堆，反复取堆顶放到末尾',
+      'void heapSort(int a[], int n) {',
+      '    for (int i=n/2-1; i>=0; i--) siftDown(a, i, n-1);  // 建堆',
+      '    for (int end=n-1; end>0; end--) {',
+      '        int t=a[0]; a[0]=a[end]; a[end]=t;   // 取堆顶',
+      '        siftDown(a, 0, end-1);',
+      '    }',
+      '}',
+      'void siftDown(int a[], int root, int end) {',
+      '    while (2*root+1 <= end) {',
+      '        int child = 2*root+1;',
+      '        if (child+1<=end && a[child] < a[child+1]) child++;  // 选较大子节点',
+      '        if (a[root] < a[child]) {                // 比较父子',
+      '            int t=a[root]; a[root]=a[child]; a[child]=t;     // 交换下沉',
+      '            root = child;',
+      '        } else break;',
+      '    }',
+      '}'
+    ]
+  }
+};
+
+let data = [];            // 当前数组（原始数据，不被动画修改）
+let frames = [];          // 动画帧序列
+let frameIdx = 0;
+let playing = false;
+let timer = null;
+let maxVal = 100;
+let codeLineEls = [];     // 缓存代码行节点，用于逐行高亮
+
+const barsEl   = document.getElementById('bars');
+const statusEl = document.getElementById('status');
+const cmpEl    = document.getElementById('cmp');
+const swpEl    = document.getElementById('swp');
+const progEl   = document.getElementById('prog');
+const complexEl= document.getElementById('complex');
+const playBtn  = document.getElementById('play');
+
+// ---------- 帧记录工具 ----------
+function makeRecorder(arr){
+  const a = arr.slice();
+  let cmp = 0, swp = 0;
+  const out = [];
+  function snap(compare, swap, pivot, desc, line, mark, target){
+    out.push({
+      arr: a.slice(),
+      compare: compare ? compare.slice() : [],
+      swap: swap ? swap.slice() : [],
+      pivot: (pivot===undefined||pivot===null)? -1 : pivot,
+      mark:  (mark===undefined||mark===null)? -1 : mark,   // 当前最小值位置（选择排序专用）
+      target:(target===undefined||target===null)? -1 : target, // 本轮目标位 i：最小值应放置处（选择排序专用）
+      sorted: sortedSet.slice(),
+      desc: desc||'',
+      cmp, swp,
+      line: (line===undefined||line===null)? -1 : line
+    });
+  }
+  let sortedSet = [];
+  return {
+    a, get cmp(){return cmp;}, get swp(){return swp;},
+    setSorted(s){ sortedSet = s.slice(); },
+    getSorted(){ return sortedSet; },
+    compare(){ cmp++; },
+    move(){ swp++; },
+    snap, frames: out
+  };
+}
+
+// ---------- 0. 比较法（教材版：a[i] 与后面逐格比较，遇小即换） ----------
+function exchangeSort(src){
+  const r = makeRecorder(src);
+  const a = r.a, n = a.length;
+  for(let i=0;i<n-1;i++){
+    // 每轮开始：先把"基准 a[i]"与"j 要扫的区间"说清楚，再开始比较
+    r.snap([],[],-1,
+      `第 ${i+1} 轮：拿 a[${i}]=${a[i]} 作基准，用 j 从 ${i+1} 逐格扫到 ${n-1}，比它小就交换`,
+      2, -1, i);
+    for(let j=i+1;j<n;j++){
+      r.compare();
+      const oa=a[i], oj=a[j];
+      const desc = `比较 a[${i}]=${oa} 与 a[${j}]=${oj}`;
+      if(oa > oj){
+        [a[i],a[j]]=[a[j],a[i]]; r.move();
+        r.snap([],[i,j],-1, `${desc}：${oa}>${oj}，交换`, 5, -1, i);
+      }else{
+        r.snap([i,j],[],-1, `${desc}：${oa}<=${oj}，不交换`, 4, -1, i);
+      }
+    }
+    const s = r.getSorted(); s.push(i); r.setSorted(s);
+  }
+  const s = r.getSorted(); if(!s.includes(n-1)) s.push(n-1); r.setSorted(s);
+  r.snap([],[],[], '比较法排序完成，数组已有序', -1);
+  return r.frames;
+}
+
+// ---------- 1. 冒泡排序 ----------
+function bubbleSort(src){
+  const r = makeRecorder(src);
+  const a = r.a, n = a.length;
+  for(let i=0;i<n-1;i++){
+    for(let j=0;j<n-1-i;j++){
+      r.compare();
+      const oa=a[j], ob=a[j+1];
+      const desc = `比较 a[${j}]=${oa} 与 a[${j+1}]=${ob}`;
+      if(oa > ob){
+        [a[j],a[j+1]]=[a[j+1],a[j]]; r.move();
+        r.snap([],[j,j+1],-1, `${desc}，${oa}>${ob} 交换`, 5);   // 仅橙色：交换中 -> 代码行5
+      }else{
+        r.snap([j,j+1],[],-1, `${desc}，${oa}<=${ob} 不交换`, 4); // 仅红色：比较中 -> 代码行4
+      }
+    }
+    const s = r.getSorted(); s.push(n-1-i); r.setSorted(s);
+  }
+  const s = r.getSorted(); for(let k=0;k<n;k++) if(!s.includes(k)) s.push(k); r.setSorted(s);
+  r.snap([],[],[], '冒泡排序完成，数组已有序', -1);
+  return r.frames;
+}
+
+// ---------- 2. 选择排序 ----------
+function selectionSort(src){
+  const r = makeRecorder(src);
+  const a = r.a, n = a.length;
+  for(let i=0;i<n-1;i++){
+    let min = i;
+    // 每轮开始：青色目标位落在 i（本轮最小值最终要放这里）；紫色 min 暂定也在 i（代码行3：int min=i;）
+    r.snap([],[],-1, `第 ${i+1} 轮：目标位 i=${i}（本轮最小值要放到这里）；暂定位置 ${i}（值 ${a[i]}）为当前最小值 min`, 3, min, i);
+    for(let j=i+1;j<n;j++){
+      r.compare();
+      const oj=a[j], om=a[min], oldMin=min;
+      if(oj < om) min = j;
+      const desc = oj < om
+        ? `比较 a[${j}]=${oj} 与当前最小 a[${oldMin}]=${om}：${oj}<${om}，min 更新为位置 ${j}（目标位仍是 ${i}）`
+        : `比较 a[${j}]=${oj} 与当前最小 a[${oldMin}]=${om}：${oj}≥${om}，min 保持位置 ${oldMin}（目标位仍是 ${i}）`;
+      // j 标红=正在比较的候选；min 用紫色标记=已记录的最小值位置；i 用青色标记=目标位（代码行5）
+      r.snap([j],[],-1, desc, 5, min, i);
+    }
+    if(min !== i){
+      const oi=a[i], om=a[min];
+      [a[i],a[min]]=[a[min],a[i]]; r.move();
+      // 交换帧：不再标紫色 min（min 已交换走），只保留青色目标位 i，橙色表示正在交换 -> 代码行7
+      r.snap([],[i,min],-1, `将最小值 a[${min}]=${om} 放到目标位 ${i}（原 a[${i}]=${oi} 交换过去）`, 7, -1, i);
+    }else{
+      r.snap([],[],-1, `目标位 ${i} 上的 a[${i}]=${a[i]} 已是最小值，无需交换`, 6, i, i);
+    }
+    const s = r.getSorted(); s.push(i); r.setSorted(s);
+  }
+  const s = r.getSorted(); if(!s.includes(n-1)) s.push(n-1); r.setSorted(s);
+  r.snap([],[],[], '选择排序完成，数组已有序', -1);
+  return r.frames;
+}
+
+// ---------- 3. 插入排序（交换版，元素向左冒泡） ----------
+function insertionSort(src){
+  const r = makeRecorder(src);
+  const a = r.a, n = a.length;
+  r.setSorted([0]);
+  r.snap([0],[],-1, `a[0]=${a[0]} 视为已排序区间`, -1);
+  for(let i=1;i<n;i++){
+    let j = i;
+    while(j>0){
+      r.compare();
+      const desc = `比较 a[${j-1}]=${a[j-1]} 与 a[${j}]=${a[j]}`;
+      if(a[j-1] > a[j]){
+        const oa=a[j-1], ob=a[j];
+        [a[j-1],a[j]]=[a[j],a[j-1]]; r.move();
+        r.snap([],[j-1,j],-1, `${desc}，${oa}>${ob} 交换`, 5); // 仅橙色 -> 代码行5
+        j--;
+      }else{
+        r.snap([j-1,j],[],-1, `${desc}，${a[j-1]}<=${a[j]} 就位`, 4);
+        break;
+      }
+    }
+    const s = r.getSorted(); for(let k=0;k<=i;k++) if(!s.includes(k)) s.push(k); r.setSorted(s);
+  }
+  r.snap([],[],[], '插入排序完成，数组已有序', -1);
+  return r.frames;
+}
+
+// ---------- 4. 快速排序（Lomuto 分区） ----------
+function quickSort(src){
+  const r = makeRecorder(src);
+  const a = r.a, n = a.length;
+  function qs(lo, hi, sorted){
+    if(lo > hi) return;
+    if(lo === hi){ if(!sorted.includes(lo)) sorted.push(lo); return; }
+    const pivot = a[hi];
+    let i = lo - 1;
+    for(let j=lo;j<hi;j++){
+      r.compare();
+      r.snap([j,hi],[],hi, `以 a[${hi}]=${pivot} 为基准，比较 a[${j}]=${a[j]}`, 6);
+      if(a[j] < pivot){
+        i++;
+        if(i!==j){ const oi=a[i], oj=a[j]; [a[i],a[j]]=[a[j],a[i]]; r.move(); r.snap([],[i,j],hi, `将 a[${j}]=${oj} 交换到左区 i=${i}（原 a[${i}]=${oi}）`, 8); }
+        else { r.snap([i],[],hi, `${a[j]}<${pivot}，已在左区`, 6); }
+      }
+    }
+    if(i+1 !== hi){ [a[i+1],a[hi]]=[a[hi],a[i+1]]; r.move(); }
+    r.snap([],[i+1],-1, `基准归位到位置 ${i+1}`, 11);  // 仅橙色：基准落位 -> 代码行11
+    const p = i+1;
+    if(!sorted.includes(p)) sorted.push(p);
+    qs(lo, p-1, sorted);
+    qs(p+1, hi, sorted);
+  }
+  qs(0, n-1, []);
+  r.snap([],[],[], '快速排序完成，数组已有序', -1);
+  return r.frames;
+}
+
+// ---------- 5. 归并排序 ----------
+function mergeSort(src){
+  const r = makeRecorder(src);
+  const a = r.a, n = a.length;
+  const aux = a.slice();
+  function ms(lo, hi){
+    if(lo >= hi) return;
+    const mid = (lo+hi)>>1;
+    ms(lo, mid); ms(mid+1, hi);
+    merge(lo, mid, hi);
+  }
+  function merge(lo, mid, hi){
+    for(let k=lo;k<=hi;k++) aux[k]=a[k];
+    let i=lo, j=mid+1;
+    for(let k=lo;k<=hi;k++){
+      let from;
+      if(i>mid){ a[k]=aux[j]; from=j; j++; }
+      else if(j>hi){ a[k]=aux[i]; from=i; i++; }
+      else if(aux[i] <= aux[j]){ a[k]=aux[i]; from=i; i++; }
+      else { a[k]=aux[j]; from=j; j++; }
+      r.snap([],[k],-1, `合并区间 [${lo},${hi}]：写 a[${k}]=${a[k]}（取自 aux[${from}]）`, 11); // 仅橙色：写入中 -> 代码行11
+    }
+  }
+  ms(0, n-1);
+  const s=[]; for(let k=0;k<n;k++) s.push(k); r.setSorted(s);
+  r.snap([],[],[], '归并排序完成，数组已有序', -1);
+  return r.frames;
+}
+
+// ---------- 6. 堆排序 ----------
+function heapSort(src){
+  const r = makeRecorder(src);
+  const a = r.a, n = a.length;
+  function siftDown(start, end){
+    let root = start;
+    while(2*root+1 <= end){
+      let child = 2*root+1;
+      if(child+1 <= end && a[child] < a[child+1]) child++;
+      r.compare();
+      r.snap([root,child],[],-1, `堆调整：比较父 a[${root}]=${a[root]} 与子 a[${child}]=${a[child]}`, 12);
+      if(a[root] < a[child]){
+        const oroot=a[root], och=a[child];
+        [a[root],a[child]]=[a[child],a[root]]; r.move();
+        r.snap([],[root,child],-1, `父 a[${root}]=${oroot} < 子 a[${child}]=${och}，交换下沉`, 13); // 仅橙色 -> 代码行13
+        root = child;
+      }else break;
+    }
+  }
+  for(let i=(n>>1)-1;i>=0;i--) siftDown(i, n-1);
+  const sorted=[];
+  for(let end=n-1;end>0;end--){
+    const o0=a[0], oe=a[end];
+    [a[0],a[end]]=[a[end],a[0]]; r.move();
+    sorted.push(end);
+    r.snap([],[0,end],-1, `取出堆顶 ${o0} 放到位置 ${end}（与 a[${end}]=${oe} 交换）`, 4); // 仅橙色 -> 代码行4
+    siftDown(0, end-1);
+  }
+  sorted.push(0); r.setSorted(sorted);
+  r.snap([],[],[], '堆排序完成，数组已有序', -1);
+  return r.frames;
+}
+
+const BUILDERS = {
+  exchange:exchangeSort, bubble:bubbleSort, selection:selectionSort, insertion:insertionSort,
+  quick:quickSort, merge:mergeSort, heap:heapSort
+};
+
+// ---------- 渲染 ----------
+let valSpans = [];   // 缓存每根柱子的数字节点，渲染时同步更新
+let tgtTags = [];    // 缓存每根柱子的目标位标签节点（选择排序）
+function buildBars(){
+  barsEl.innerHTML='';
+  valSpans = [];
+  tgtTags = [];
+  maxVal = Math.max(...data);
+  for(let i=0;i<data.length;i++){
+    const bar=document.createElement('div');
+    bar.className='bar';
+    bar.dataset.idx=i;
+    const v=document.createElement('span');
+    v.className='val'; v.textContent=data[i];
+    bar.appendChild(v);
+    const t=document.createElement('span');
+    t.className='tgt';
+    t.textContent = (document.getElementById('algo').value==='exchange') ? '基准位' : '目标位';
+    bar.appendChild(t);
+    barsEl.appendChild(bar);
+    valSpans.push(v);
+    tgtTags.push(t);
+  }
+  // 数组较大时隐藏数值标签，避免拥挤
+  const showVal = data.length <= 40;
+  barsEl.querySelectorAll('.val').forEach(e=> e.style.display = showVal?'block':'none');
+}
+
+function renderFrame(f){
+  const bars = barsEl.children;
+  const cmp = new Set(f.compare), swp = new Set(f.swap), sd = new Set(f.sorted);
+  const mark = (f.mark===undefined||f.mark===null)? -1 : f.mark;
+  const target = (f.target===undefined||f.target===null)? -1 : f.target;
+  for(let i=0;i<f.arr.length;i++){
+    const bar = bars[i];
+    if(!bar) continue;
+    bar.style.height = (f.arr[i]/maxVal*100) + '%';
+    if(valSpans[i]) valSpans[i].textContent = f.arr[i];   // 关键修复：数字随当前值同步
+    let c = COLOR.blue;
+    if(sd.has(i)) c = COLOR.green;
+    else if(i === f.pivot) c = COLOR.yellow;
+    else if(swp.has(i)) c = COLOR.orange;   // 交换帧：仅橙色
+    else if(cmp.has(i)) c = COLOR.red;      // 比较帧：仅红色
+    bar.style.backgroundColor = c;
+    // 选择排序：当前最小值位置用紫色描边 + "min" 浮标突出，与红色比较元素区分；已排序位不叠加
+    if(i === mark && !sd.has(i)) bar.classList.add('min-mark');
+    else bar.classList.remove('min-mark');
+    // 选择排序：本轮目标位 i（最小值应放置处）用柱底青色标签标出；已排序位不再显示
+    if(tgtTags[i]) tgtTags[i].style.display = (i === target && !sd.has(i)) ? 'block' : 'none';
+  }
+  cmpEl.textContent = f.cmp;
+  swpEl.textContent = f.swp;
+  progEl.textContent = `步骤 ${frameIdx+1} / ${frames.length}`;
+  statusEl.innerHTML = f.desc ? f.desc : '就绪';
+  // 代码逐行高亮（初始帧不点亮，避免一进来就高亮）
+  highlightCode(frameIdx===0 ? -1 : (f.line===undefined ? -1 : f.line));
+}
+
+// ---------- 算法说明 + C 代码面板 ----------
+function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function highlightC(line){
+  const idx = line.indexOf('//');
+  const code = idx>=0 ? line.slice(0,idx) : line;
+  const com  = idx>=0 ? line.slice(idx) : '';
+  let s = esc(code);
+  s = s.replace(/\b(int|void|char|for|while|if|else|return)\b/g, '<span class="kw">$1</span>');
+  s = s.replace(/\b(\d+)\b/g, '<span class="num">$1</span>');
+  if(com) s += '<span class="com">' + esc(com) + '</span>';
+  return s;
+}
+function highlightCode(line){
+  for(let i=0;i<codeLineEls.length;i++) codeLineEls[i].classList.toggle('hl', i===line);
+}
+function renderInfo(){
+  const key = document.getElementById('algo').value;
+  const info = ALGO_INFO[key];
+  const stableTag = info.stable
+    ? '<span class="tag stable">稳定</span>'
+    : '<span class="tag unstable">不稳定</span>';
+  document.getElementById('algo-info').innerHTML = `
+    <h3>📘 算法基本说明</h3>
+    <div class="info-name">${info.name}<span class="info-en">${info.en}</span></div>
+    <div class="info-idea">${info.idea}</div>
+    <div class="metrics">
+      <div class="metric"><div class="mk">最佳时间</div><div class="mv">${info.best}</div></div>
+      <div class="metric"><div class="mk">平均时间</div><div class="mv">${info.avg}</div></div>
+      <div class="metric"><div class="mk">最差时间</div><div class="mv">${info.worst}</div></div>
+      <div class="metric"><div class="mk">空间</div><div class="mv">${info.space}</div></div>
+    </div>
+    <div>${stableTag}</div>
+    <div class="info-extra">适用场景：<b>${info.use}</b></div>
+  `;
+  const block = document.getElementById('code-block');
+  block.innerHTML = '';
+  codeLineEls = [];
+  info.code.forEach(line=>{
+    const div = document.createElement('div');
+    div.className = 'code-line';
+    div.innerHTML = highlightC(line) || '&nbsp;';
+    block.appendChild(div);
+    codeLineEls.push(div);
+  });
+  highlightCode(-1);
+}
+
+// ---------- 控制 ----------
+function generate(){
+  stop();
+  const n = +document.getElementById('size').value;
+  data = [];
+  for(let i=0;i<n;i++) data.push(Math.floor(Math.random()*92)+8); // 8..99
+  buildBars();
+  prepare();
+  complexEl.textContent = COMPLEX[document.getElementById('algo').value];
+  renderInfo();
+  statusEl.innerHTML = '已生成新数组，点击「开始」播放，或「单步」逐步讲解。';
+  frameIdx=0;
+}
+function prepare(){
+  const algo = document.getElementById('algo').value;
+  tgtTags.forEach(t => t.textContent = (algo==='exchange') ? '基准位' : '目标位');
+  frames = BUILDERS[algo](data);
+  frameIdx = 0;
+  if(frames.length) renderFrame(frames[0]);
+}
+function play(){
+  if(playing){ stop(); return; }
+  if(!frames.length) prepare();
+  if(frameIdx >= frames.length-1){ frameIdx = 0; renderFrame(frames[0]); } // 播完后再点从头来
+  playing = true;
+  playBtn.textContent='暂停 (空格)';
+  tick();
+}
+function tick(){
+  if(!playing) return;
+  if(frameIdx >= frames.length-1){ stop(); return; }
+  frameIdx++;
+  renderFrame(frames[frameIdx]);
+  const sp = +document.getElementById('speed').value;
+  const delay = 620 - sp*58; // sp=1→562ms, sp=10→42ms
+  timer = setTimeout(tick, delay);
+}
+function stop(){
+  playing=false;
+  playBtn.textContent='开始 (空格)';
+  if(timer){ clearTimeout(timer); timer=null; }
+}
+function stepOnce(){
+  stop();
+  if(!frames.length) prepare();
+  if(frameIdx < frames.length-1){ frameIdx++; renderFrame(frames[frameIdx]); }
+}
+function reset(){
+  stop();
+  if(data.length){ prepare(); frameIdx=0; renderFrame(frames[0]); }
+  statusEl.innerHTML = '已重置到初始状态。';
+}
+
+// ---------- 事件 ----------
+document.getElementById('gen').onclick = generate;
+document.getElementById('reset').onclick = reset;
+document.getElementById('step').onclick = stepOnce;
+playBtn.onclick = play;
+document.getElementById('size').oninput = e=>{
+  document.getElementById('sizeVal').textContent = e.target.value;
+};
+document.getElementById('size').onchange = generate;
+document.getElementById('speed').oninput = e=>{
+  document.getElementById('speedVal').textContent = e.target.value;
+};
+document.getElementById('algo').onchange = ()=>{
+  complexEl.textContent = COMPLEX[document.getElementById('algo').value];
+  renderInfo();
+  if(data.length){ prepare(); frameIdx=0; renderFrame(frames[0]); }
+};
+document.addEventListener('keydown', e=>{
+  if(e.code==='Space'){ e.preventDefault(); play(); }
+  else if(e.code==='ArrowRight'){ e.preventDefault(); stepOnce(); }
+  else if(e.key==='g'||e.key==='G'){ generate(); }
+  else if(e.key==='r'||e.key==='R'){ reset(); }
+});
+
+// ---------- 深链参数（供其他课件按需链接，例如 排序算法演示动画.html?algo=quick&size=20&speed=8）----------
+(function applyDeepLink(){
+  const p = new URLSearchParams(location.search);
+  const algoSel = document.getElementById('algo');
+  const sizeEl  = document.getElementById('size');
+  const speedEl = document.getElementById('speed');
+  if(p.has('algo') && algoSel.querySelector(`option[value="${p.get('algo')}"]`)){
+    algoSel.value = p.get('algo');
+    complexEl.textContent = COMPLEX[p.get('algo')];
+  }
+  if(p.has('size')){ const s=Math.min(80,Math.max(8, (+p.get('size'))||32)); sizeEl.value=s; document.getElementById('sizeVal').textContent=s; }
+  if(p.has('speed')){ const s=Math.min(10,Math.max(1, (+p.get('speed'))||6)); speedEl.value=s; document.getElementById('speedVal').textContent=s; }
+})();
+
+// ---------- 初始化 ----------
+generate();
+</script>
+</body>
+</html>

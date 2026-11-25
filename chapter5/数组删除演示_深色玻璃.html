@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>数组应用III · 删除 —— 删除指定数字（含连续删除） · 深色玻璃</title>
+<style>
+:root{
+  --blue:#3b82f6; --red:#ef4444; --orange:#f97316; --cyan:#06b6d4;
+  --green:#22c55e; --yellow:#eab308; --purple:#8b5cf6;
+  --ink:#1f2937; --muted:#6b7280; --bg:#f8fafc; --panel:#ffffff; --line:#e5e7eb;
+}
+*{box-sizing:border-box;}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Microsoft YaHei","PingFang SC","Segoe UI",sans-serif;}
+header{padding:16px 28px 4px;}
+h1{margin:0;font-size:25px;}
+.sub{color:var(--muted);font-size:14px;margin-top:4px;}
+.toolbar{display:flex;align-items:center;gap:10px;padding:10px 28px;flex-wrap:wrap;}
+.toolbar label{font-size:15px;color:var(--muted);}
+.toolbar input[type=text]{width:300px;padding:6px 10px;border:1px solid var(--line);border-radius:6px;font-size:15px;}
+.toolbar input[type=number]{width:70px;padding:6px 8px;border:1px solid var(--line);border-radius:6px;font-size:15px;}
+.toolbar input[type=range]{width:120px;vertical-align:middle;}
+button{padding:7px 16px;border:1px solid var(--line);background:#fff;border-radius:6px;font-size:15px;cursor:pointer;color:var(--ink);}
+button:hover{background:#f1f5f9;}
+button.primary{background:var(--blue);color:#fff;border-color:var(--blue);}
+button.primary:hover{background:#2f6fe0;}
+#stageWrap{padding:6px 28px 0;}
+#stage{position:relative;margin:0 auto;background:var(--panel);border:1px solid var(--line);border-radius:12px;}
+.cell{position:absolute;border:2px solid #cbd5e1;border-radius:8px;background:#fff;}
+.cell .idx{position:absolute;bottom:-24px;left:-14px;right:-14px;text-align:center;color:var(--muted);font-size:13px;}
+.cell.emptycell{border-style:dashed;background:#f8fafc;}
+.cell.stalecell{border-style:dashed;background:#f1f5f9;}
+.tile.stale{opacity:.5;}
+.cell.cmp{border-color:var(--red);background:#fef2f2;}
+.cell.src,.cell.dst{border-color:var(--orange);background:#fff7ed;}
+.cell.target{border-color:var(--cyan);background:#ecfeff;}
+.cell.missmark{border-color:var(--red);background:#fef2f2;animation:missPulse 1.1s ease-in-out infinite;}
+@keyframes missPulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,0);}50%{box-shadow:0 0 0 7px rgba(239,68,68,.22);}}
+.tile{position:absolute;left:0;top:0;display:flex;align-items:center;justify-content:center;
+  border-radius:8px;font-size:24px;font-weight:700;color:#fff;background:var(--blue);will-change:transform;}
+.tile.empty{display:none;}
+#xchip{position:absolute;display:flex;align-items:center;justify-content:center;border-radius:8px;
+  background:var(--cyan);color:#fff;font-size:20px;font-weight:700;transition:opacity .4s;}
+#xchip.dim{opacity:.3;}
+.xcap{position:absolute;color:var(--muted);font-size:14px;font-weight:600;}
+.tag{position:absolute;font-size:13px;font-weight:700;padding:2px 10px;border-radius:10px;color:#fff;
+  white-space:nowrap;transition:transform .4s ease;}
+#status{min-height:34px;margin:8px 28px 0;font-size:22px;font-weight:600;}
+#preTip{margin:8px 28px 0;padding:7px 14px;background:#fffbeb;border:1px solid #fde68a;border-left:4px solid #f59e0b;border-radius:8px;font-size:15px;color:#92400e;min-height:20px;}
+#status.err{color:var(--red);}
+#statsRow{margin:4px 28px;color:var(--muted);font-size:15px;}
+#legend{display:flex;gap:18px;margin:6px 28px;font-size:14px;color:var(--muted);flex-wrap:wrap;align-items:center;}
+#legend .dot{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px;}
+#legend kbd{background:#e2e8f0;border-radius:4px;padding:1px 6px;font-size:12px;}
+.panels{display:flex;gap:16px;margin:12px 28px 30px;align-items:stretch;}
+.panel{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 18px;}
+.panel h3{margin:0 0 8px;font-size:17px;}
+.panel p{margin:6px 0;font-size:14.5px;line-height:1.7;}
+.panel table{border-collapse:collapse;font-size:13.5px;margin-top:6px;}
+.panel td,.panel th{border:1px solid var(--line);padding:4px 10px;}
+#code{margin:0;font-family:Consolas,Monaco,monospace;font-size:14px;line-height:1.6;}
+#code .crow{padding:0 6px;border-radius:4px;}
+#code .crow .ln{color:#9ca3af;display:inline-block;width:30px;user-select:none;}
+#code .crow.hl{background:#fff7ed;box-shadow:inset 3px 0 0 var(--orange);}
+
+/* ===== 深色玻璃卡片风格覆盖层（由浅色版派生，浅色原件保留） ===== */
+:root{--ink:#e2e8f0;--muted:#94a3b8;--bg:#0b1220;--panel:rgba(17,25,40,.62);--line:rgba(148,163,184,.28);}
+body{background:radial-gradient(1100px 700px at 12% -8%,#1d2b4d 0%,#0b1220 52%,#060b16 100%) !important;}
+.toolbar input[type=text],.toolbar input[type=number]{background:rgba(15,23,42,.72);border-color:var(--line);color:var(--ink);}
+button{background:rgba(30,41,59,.55);border-color:var(--line);color:var(--ink);backdrop-filter:blur(6px);}
+button:hover{background:rgba(51,65,85,.72);}
+button.primary{background:linear-gradient(135deg,#2563eb,#3b82f6);border-color:#3b82f6;color:#fff;}
+button.primary:hover{background:linear-gradient(135deg,#1d4ed8,#2563eb);}
+button[style*="fef2f2"]{background:rgba(127,29,29,.28) !important;border-color:rgba(248,113,113,.55) !important;color:#fca5a5 !important;}
+#stage{background:var(--panel);border-color:var(--line);box-shadow:0 12px 36px rgba(0,0,0,.5);backdrop-filter:blur(12px);}
+.cell{background:rgba(30,41,59,.55);border-color:rgba(148,163,184,.38);backdrop-filter:blur(3px);}
+.cell.emptycell{background:rgba(15,23,42,.45);}
+.cell.stalecell{background:rgba(30,41,59,.4);}
+.cell.cmp{background:rgba(127,29,29,.30);}
+.cell.src,.cell.dst{background:rgba(124,45,18,.30);}
+.cell.target{background:rgba(8,51,68,.34);}
+.cell.inrange{background:rgba(8,51,68,.34);}
+.cell.kcell{background:rgba(113,63,18,.32);}
+.cell.cmpk{background:rgba(127,29,29,.30);}
+.cell.found{background:rgba(20,83,45,.34);color:#86efac;}
+.cell.missmark{background:rgba(127,29,29,.32);}
+.panel{background:var(--panel);border-color:var(--line);backdrop-filter:blur(12px);}
+#preTip{background:rgba(120,53,15,.30);border-color:rgba(251,191,36,.45);color:#fcd34d;}
+#legend kbd{background:rgba(51,65,85,.72);color:var(--ink);}
+#legend .dot[style*="f8fafc"]{background:rgba(15,23,42,.45) !important;}
+#legend .dot[style*="fef2f2"]{background:rgba(127,29,29,.35) !important;}
+#legend .dot[style*="ecfeff"]{background:rgba(8,51,68,.4) !important;}
+#code .crow.hl{background:rgba(124,45,18,.34);}
+</style>
+</head>
+<body>
+<header>
+  <h1>数组应用 III · 删除 —— 不改变顺序，删除指定的数字</h1>
+  <div class="sub">对应课件《05c-2 数组_4_一维数组的应用2》第12~14页 · 示例：1 2 3 4 5 5 7 8 9 10，删除 x = 5（含连续两个 5）　·　深色玻璃风格版</div>
+</header>
+
+<section class="toolbar">
+  <label>数组（逗号或空格分隔）：</label><input type="text" id="inArr" value="1,2,3,4,5,5,7,8,9,10">
+  <label>x =</label><input type="number" id="inX" value="5">
+  <button class="primary" id="btnGen">生成动画（正确做法）</button>
+  <button id="btnWrong1" style="background:#fef2f2;border-color:#fca5a5;color:#b91c1c;">错误① 连续待删除数据 ⚠</button>
+  <button id="btnWrong2" style="background:#fef2f2;border-color:#fca5a5;color:#b91c1c;">错误② 尾部待删除数据 ⚠</button>
+  <button id="btnPlay">播放 ▶</button>
+  <button id="btnStep">单步 →|</button>
+  <button id="btnFirst">⏮ 第一步</button>
+  <button id="btnPrev">◀ 上一步</button>
+  <button id="btnLast">⏭ 最后一步</button>
+  <button id="btnReset">重置 ↺</button>
+  <label>速度 <input type="range" id="inSpeed" min="1" max="10" value="5"></label>
+</section>
+
+<section id="stageWrap">
+  <div id="stage">
+    <div id="cells"></div>
+    <svg id="arrows">
+      <defs>
+        <marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+          <path d="M0,0 L7,3 L0,6 Z" fill="#f97316"/>
+        </marker>
+      </defs>
+    </svg>
+    <div id="tiles"></div>
+    <div id="xchip">x=5</div>
+    <div id="tags"></div>
+  </div>
+</section>
+
+<div id="status">就绪。点击「播放」或反复「单步」观察每一次移动。</div>
+<div id="preTip"></div>
+<div id="statsRow">比较 0 次 · 移动/赋值 0 次 · 步骤 0/0</div>
+<div id="legend">
+  <span><i class="dot" style="background:var(--blue)"></i>数组元素</span>
+  <span><i class="dot" style="background:var(--red)"></i>正在比较</span>
+  <span><i class="dot" style="background:var(--orange)"></i>正在前移</span>
+  <span><i class="dot" style="background:var(--cyan)"></i>扫描位置 i</span>
+  <span><i class="dot" style="background:var(--purple)"></i>已删除个数 del</span>
+  <span><i class="dot" style="background:var(--green)"></i>完成</span>
+  <span><i class="dot" style="background:#fef2f2;border:1px solid var(--red)"></i>漏删 / 死循环警示</span>
+  <span><i class="dot" style="background:#f8fafc;border:1px dashed #94a3b8"></i>空位</span>
+  <span style="margin-left:auto;">键位：<kbd>空格</kbd> 播放/暂停　<kbd>→</kbd> 单步　<kbd>R</kbd> 重置</span>
+</div>
+
+<section class="panels">
+  <div class="panel">
+    <h3>方法说明（课件第12~14页）</h3>
+    <p><b>思路：找到 x 的位置 → 后继元素依次前移 → 数组长度减 1。</b></p>
+    <p>删除后必须保持原有顺序：把被删元素后面的所有元素<b>依次向前挪一格</b>（a[j]=a[j+1]，从左往右挪，与插入的移位方向正好相反），末尾自然空出一个位置。</p>
+    <p><b>连续删除是难点</b>（课件第13~14页）：若 x 连续出现（如本例的两个 5），前移之后当前位置又换成了新的 x。所以删除一轮后要执行 <b>i--</b>（还原到删除位置，下一个元素已补上来，还要再检查一次），并用 <b>del++</b> 记录已删个数——循环条件 i&lt;N-del 与内层 j&lt;N-1-del 都要用 del 修正范围，否则会多比较已删掉的尾部、甚至死循环（课件第13页演示了这个 bug）。</p>
+    <p>示例中删 5：第 1 个 5 前移补位 5 次；i-- 后发现位置 4 又是 5，再前移 4 次；最终有效元素剩 8 个，尾部空 2 格。</p>
+    <p><b>课件给出的两个易错点</b>（点工具栏红色按钮看动画演示）：</p>
+    <p>① <b>连续待删除数据</b>（错误①，i-- 与 del++ 都没有）：删除后直接 i++ 进入下一轮，补到被删位置上的元素被跳过——连续出现的 x 会漏删。解决办法：删除后执行 <b>i--</b>（还原到删除位置，下一轮再检查补上来的元素），或改用 <b>while 循环守在原地</b>，直到当前位置不再是 x 才前进。</p>
+    <p>② <b>尾部待删除数据</b>（错误②，不加 del++）：删除后有效长度不缩小，循环条件仍是 i&lt;N——当待删除数据在<b>尾部</b>（移位循环一次都不执行，x 原地不动）或需要<b>删除所有数据</b>时，i 原地打转，程序<b>死循环</b>。解决办法：<b>del++</b> 记录删除个数，让循环条件 i&lt;N-del 与移位上界 j&lt;N-1-del 都随删除缩小。</p>
+  </div>
+  <div class="panel">
+    <h3>C 语言实现（课件第27页）</h3>
+    <div id="code"></div>
+  </div>
+</section>
+
+<script>
+"use strict";
+// ================= 常量与状态 =================
+const CELLTOP=70, CELLH=64, GAP=12, PAD=10;
+let CELLW=64;
+let arr=[], initArr=[], ops=[], oi=0;
+let cells=[], playing=false, animating=false, playTimer=null;
+let cmpCount=0, moveCount=0;
+let validCount=-1;   // 有效长度（N-del），此位置之后的旧值仅为内存残留
+const $=id=>document.getElementById(id);
+
+function speedMs(){ const s=+$('inSpeed').value; return Math.max(200,1150-s*95); }
+function gapMs(){ const s=+$('inSpeed').value; return Math.max(140,700-s*52); }
+function slotLeft(i){ return PAD+i*(CELLW+GAP); }
+function stageW(n){ return PAD*2+n*(CELLW+GAP)-GAP; }
+
+// ================= 布局与渲染 =================
+function layoutCells(n){
+  CELLW = n>10 ? 52 : 64;
+  const st=$('stage');
+  st.style.width=stageW(n)+'px';
+  st.style.height=(CELLTOP+CELLH+30+30)+'px';
+  const cel=$('cells'); cel.innerHTML=''; cells=[];
+  for(let i=0;i<n;i++){
+    const c=document.createElement('div');
+    c.className='cell'+(arr[i]===null?' emptycell':'');
+    c.style.left=slotLeft(i)+'px'; c.style.top=CELLTOP+'px';
+    c.style.width=CELLW+'px'; c.style.height=CELLH+'px';
+    const lab=document.createElement('span'); lab.className='idx'; lab.textContent='a['+i+']';
+    c.appendChild(lab); cel.appendChild(c); cells.push(c);
+  }
+  const svg=$('arrows');
+  svg.setAttribute('width',stageW(n)); svg.setAttribute('height',CELLTOP+CELLH);
+  svg.style.position='absolute'; svg.style.left='0'; svg.style.top='0';
+  const tl=$('tiles'); tl.style.position='absolute'; tl.style.left='0'; tl.style.top=CELLTOP+'px';
+  tl.innerHTML='';
+  const xc=$('xchip');
+  xc.style.left=PAD+'px'; xc.style.top='4px'; xc.style.width=(CELLW-6)+'px'; xc.style.height='56px';
+  const cap=document.querySelector('.xcap');
+  if(cap){ cap.style.left=(PAD+CELLW+6)+'px'; cap.style.top='26px'; }
+  const tg=$('tags'); tg.style.position='absolute'; tg.style.left='0'; tg.style.top=(CELLTOP+CELLH+28)+'px';
+  tg.innerHTML='';
+}
+
+function makeTile(i){
+  const t=document.createElement('div');
+  if(arr[i]===null){ t.className='tile empty'; }
+  else if(validCount>=0 && i>=validCount){
+    t.className='tile stale'; t.textContent=arr[i]; t.style.background='#94a3b8';
+  }
+  else{
+    t.className='tile'; t.textContent=arr[i]; t.style.background=tileColor(i);
+  }
+  t.style.width=CELLW+'px'; t.style.height=CELLH+'px';
+  t.style.transform='translateX('+slotLeft(i)+'px)';
+  $('tiles').appendChild(t);
+  return t;
+}
+function applyStale(){
+  cells.forEach((c,i)=>{
+    if(validCount>=0 && i>=validCount) c.classList.add('stalecell');
+    else c.classList.remove('stalecell');
+  });
+  renderTiles();
+}
+function tileColor(i){
+  if(window.__done) return 'var(--green)';
+  return 'var(--blue)';
+}
+function renderTiles(){
+  const tl=$('tiles'); tl.innerHTML='';
+  for(let i=0;i<arr.length;i++) makeTile(i);
+}
+function tileAt(i){ return $('tiles').children[i]; }
+
+function hl(i,cls){ if(cells[i]) cells[i].classList.add(cls); }
+function clearHl(){ cells.forEach(c=>c.classList.remove('cmp','src','dst','target','missmark')); }
+
+function setTag(id,text,slot,color,row){
+  let el=document.getElementById('tag_'+id);
+  if(!el){
+    el=document.createElement('div'); el.className='tag'; el.id='tag_'+id;
+    el.style.background=color; $('tags').appendChild(el);
+  }
+  el.textContent=text;
+  el.style.top=(row?row*28:0)+'px';
+  el.style.transform='translateX('+slotLeft(slot)+'px)';
+}
+function clearTags(){ $('tags').innerHTML=''; }
+
+function drawArrow(from,to){
+  const NS='http://www.w3.org/2000/svg';
+  const x1=slotLeft(from)+CELLW/2, x2=slotLeft(to)+CELLW/2;
+  const yTop=CELLTOP-12;
+  const mid=(x1+x2)/2;
+  const lift=Math.abs(x2-x1)>(CELLW+GAP)?26:14;
+  const p=document.createElementNS(NS,'path');
+  p.setAttribute('d','M '+x1+' '+(yTop+14)+' Q '+mid+' '+(yTop-lift)+' '+x2+' '+(yTop+14));
+  p.setAttribute('fill','none'); p.setAttribute('stroke','#f97316');
+  p.setAttribute('stroke-width','3'); p.setAttribute('marker-end','url(#ah)');
+  p.setAttribute('class','anim');
+  p.style.opacity='0';
+  $('arrows').appendChild(p);
+  requestAnimationFrame(()=>{ p.style.transition='opacity .2s'; p.style.opacity='1'; });
+  return p;
+}
+function clearArrows(){ document.querySelectorAll('#arrows path.anim').forEach(e=>e.remove()); }
+
+// ================= 状态显示 =================
+function setStatus(txt,line,err){
+  const s=$('status');
+  s.textContent=txt; s.className=err?'err':'';
+  document.querySelectorAll('#code .crow.hl').forEach(e=>e.classList.remove('hl'));
+  if(line>=0){
+    const rows=document.querySelectorAll('#code .crow');
+    if(rows[line]) rows[line].classList.add('hl');
+  }
+}
+function updateProgress(){
+  $('statsRow').textContent='比较 '+cmpCount+' 次 · 移动/赋值 '+moveCount+' 次 · 步骤 '+oi+'/'+ops.length;  updatePreTip();
+}
+function updatePreTip(){
+  const el=$('preTip');
+  if(oi>=ops.length){ el.innerHTML='✅ 演示已结束。可用「◀ 上一步」回看任意一步的定格画面。'; return; }
+  let d=null;
+  for(let k=oi;k<ops.length;k++){
+    if(ops[k].desc!==undefined&&ops[k].desc!==null){ d=ops[k].desc; break; }
+  }
+  el.innerHTML='💡 提前提示 · 下一步：'+(d!==null?d:'（画面更新）');
+}
+function setCode(lines){
+  const el=$('code'); el.innerHTML='';
+  lines.forEach((s,i)=>{
+    const d=document.createElement('div'); d.className='crow';
+    const ln=document.createElement('span'); ln.className='ln'; ln.textContent=(i+1);
+    d.appendChild(ln); d.appendChild(document.createTextNode(s));
+    el.appendChild(d);
+  });
+}
+
+// ================= 动画执行 =================
+function slideTile(from,to,done){
+  const src=tileAt(from);
+  if(!src){ done(); return; }
+  const clone=src.cloneNode(true);
+  clone.style.transform='translateX('+slotLeft(from)+'px)';
+  $('tiles').appendChild(clone);
+  // 源格保持可见：a[j]=a[j+1] 是赋值拷贝，原处的值保留，稍后被覆盖或残留
+  void clone.offsetWidth;
+  clone.style.transition='transform '+speedMs()+'ms ease-in-out';
+  clone.style.transform='translateX('+slotLeft(to)+'px)';
+  setTimeout(()=>{
+    arr[to]=arr[from];   // 赋值拷贝：更新目标格，源格原值保留（稍后被覆盖或残留）
+    renderTiles();
+    done();
+  },speedMs()+30);
+}
+function flyIn(at,value,done){
+  const t=document.createElement('div');
+  t.className='tile'; t.textContent=value; t.style.background='var(--cyan)';
+  t.style.width=CELLW+'px'; t.style.height=CELLH+'px';
+  t.style.transform='translate('+PAD+'px,-66px)';
+  $('tiles').appendChild(t);
+  void t.offsetWidth;
+  t.style.transition='transform '+speedMs()+'ms ease-in-out';
+  t.style.transform='translate('+slotLeft(at)+'px,0px)';
+  setTimeout(done,speedMs()+30);
+}
+
+function runOp(op,done){
+  animating=true;
+  const finish=()=>{ animating=false; done(); };
+  switch(op.t){
+    case 'note':
+      setStatus(op.desc,op.line);
+      setTimeout(finish,gapMs());
+      break;
+    case 'tag':
+      // tag 步骤可能没有说明文字：保留原状态行，只更新代码行高亮与标签位置
+      if(op.desc===undefined) setStatus($('status').textContent,(op.line===undefined||op.line===null)?-1:op.line);
+      else setStatus(op.desc,op.line);
+      setTag(op.id,op.text,op.slot,op.color,op.row);
+      setTimeout(finish,120);
+      break;
+    case 'cmp':
+      setStatus(op.desc,op.line);
+      op.cells.forEach(i=>hl(i,'cmp'));
+      cmpCount++;
+      setTimeout(()=>{ clearHl(); finish(); },gapMs());
+      break;
+    case 'move':
+      setStatus(op.desc,op.line);
+      hl(op.from,'src'); hl(op.to,'dst');
+      moveCount++;
+      {
+        const arrow=drawArrow(op.from,op.to);
+        slideTile(op.from,op.to,()=>{
+          arrow.remove(); clearHl(); finish();
+        });
+      }
+      break;
+    case 'write':
+      setStatus(op.desc,op.line);
+      hl(op.at,'dst');
+      flyIn(op.at,op.value,()=>{
+        arr[op.at]=op.value; moveCount++;
+        renderTiles();
+        hl(op.at,'target');
+        $('xchip').classList.add('dim');
+        setTimeout(()=>{ clearHl(); finish(); },gapMs()*0.8);
+      });
+      break;
+    case 'stalemark':
+      validCount=op.n;
+      applyStale();
+      setStatus(op.desc,op.line);
+      setTimeout(finish,120);
+      break;
+    case 'missmark':
+      if(cells[op.at]) cells[op.at].classList.add('missmark');
+      setStatus(op.desc,op.line);
+      setTimeout(finish,gapMs());
+      break;
+    case 'done':
+      window.__done=!op.bad;   // 错误做法演示结束时保持蓝色，不用绿色"完成"色
+      renderTiles();
+      if(typeof finalizePage==='function') finalizePage();
+      setStatus(op.desc,op.line);
+      setTimeout(finish,gapMs());
+      break;
+    default:
+      finish();
+  }
+}
+
+// ================= 播放器 =================
+function play(){
+  if(playing){ pause(); return; }
+  if(oi>=ops.length){ rewind(); }
+  playing=true; $('btnPlay').textContent='暂停 ⏸';
+  next();
+}
+function pause(){ playing=false; $('btnPlay').textContent='播放 ▶'; if(playTimer)clearTimeout(playTimer); }
+function next(){
+  if(!playing) return;
+  if(animating){ playTimer=setTimeout(next,80); return; }
+  if(oi>=ops.length){ pause(); return; }
+  runOp(ops[oi],()=>{ oi++; updateProgress(); if(playing) playTimer=setTimeout(next,60); });
+}
+function stepOnce(){
+  pause();
+  if(animating) return;
+  if(oi>=ops.length){ setStatus('演示已到末尾。点「重置」回看。',-1); return; }
+  runOp(ops[oi],()=>{ oi++; updateProgress(); });
+}
+function rewind(){
+  pause();
+  window.__done=false;
+  arr=initArr.slice();
+  oi=0; cmpCount=0; moveCount=0;
+  clearArrows(); clearTags();
+  $('xchip').classList.remove('dim');
+  layoutCells(arr.length); renderTiles();
+  updateProgress();
+  setStatus('已重置。点击「播放」或反复「单步」观察每一次移动。',-1);
+}
+
+// ---------- 回退导航：瞬时重放至第 k 步的定格画面（不重放动画） ----------
+function applyOpInstant(op){
+  switch(op.t){
+    case 'tag': setTag(op.id,op.text,op.slot,op.color,op.row); break;
+    case 'cmp': cmpCount++; break;
+    case 'move': arr[op.to]=arr[op.from]; moveCount++; break;
+    case 'write': arr[op.at]=op.value; moveCount++; $('xchip').classList.add('dim'); break;
+    case 'stalemark': validCount=op.n; break;
+    case 'missmark': if(cells[op.at]) cells[op.at].classList.add('missmark'); break;
+    case 'done': window.__done=!op.bad; break;   // 错误做法结束仍保持蓝色
+  }
+}
+function goTo(k){
+  pause();
+  if(animating) return;
+  if(!ops.length) return;
+  if(k<0) k=0; if(k>ops.length) k=ops.length;
+  window.__done=false;
+  arr=initArr.slice(); cmpCount=0; moveCount=0; validCount=-1;
+  clearArrows(); clearTags(); clearHl();
+  $('xchip').classList.remove('dim');
+  layoutCells(arr.length);   // 先重建格子，再逐条瞬时应用
+  let curStatus=null;
+  for(let idx=0;idx<k;idx++){
+    const op=ops[idx];
+    applyOpInstant(op);
+    if(op.desc!==undefined&&op.desc!==null) curStatus={d:op.desc,l:(op.line===undefined||op.line===null)?-1:op.line};
+    else if(op.line!==undefined&&op.line!==null&&curStatus) curStatus.l=op.line;
+  }
+  oi=k;
+  applyStale();              // 内部会 renderTiles（含尾部残留置灰）
+  updateProgress();
+  if(curStatus) setStatus(curStatus.d,curStatus.l);
+  else setStatus('已回到初始状态。按「单步」或「播放」开始。',-1);
+}
+
+// ================= 步骤生成（OPS-BEGIN） =================
+const CODE_LINES=[
+'void deleteNumber(int a[], int N, int x){',
+'    int i,j,del=0;           // del:已删除元素个数',
+'    for(i=0; i<N-del; i++){  // 删除后数组容量减小',
+'        if(x==a[i]){',
+'            for(j=i; j<N-1-del; j++)',
+'                a[j]=a[j+1];   // 后继元素依次前移',
+'            i--;        // 还原到删除位置，方便连续删除',
+'            del++;      // 统计删除个数',
+'        }',
+'    }',
+'}'
+];
+
+function buildOps(vals,x){
+  const list=[];
+  const N=vals.length;
+  initArr=vals.slice();
+  const sim=vals.slice();           // 模拟数组，用于生成准确的讲解文字
+  let del=0;
+  list.push({t:'note',line:-1,desc:'初始：数组 N='+N+' 个元素；要删除 x='+x+'，删除后顺序不变'});
+  list.push({t:'tag',id:'i',text:'i',slot:0,color:'#06b6d4',line:2});
+  list.push({t:'tag',id:'del',text:'del=0',slot:0,color:'#8b5cf6',line:1,row:1});
+  let i=0,cmpN=0,shiftN=0;
+  while(i<N-del){
+    cmpN++;
+    list.push({t:'cmp',cells:[i],line:3,desc:'i='+i+'：判断 a['+i+']='+sim[i]+' 是否等于 x='+x});
+    if(sim[i]===x){
+      list.push({t:'note',line:4,desc:'a['+i+']='+x+'==x，删除它：a['+i+']~a['+(N-2-del)+'] 依次向前复制一格'});
+      let roundShifts=0;
+      for(let j=i;j<N-1-del;j++){
+        list.push({t:'move',from:j+1,to:j,line:5,
+          desc:'a['+j+']=a['+(j+1)+'] ：值 '+sim[j+1]+' 复制到 a['+j+']，a['+(j+1)+'] 原值保留（稍后被覆盖）'});
+        sim[j]=sim[j+1]; sim[j+1]=null; shiftN++; roundShifts++;
+      }
+      if(roundShifts===0){
+        list.push({t:'note',line:5,
+          desc:'a['+i+'] 是最后一个有效元素，无需移位；旧值 '+x+' 保留在原格（已失效）'});
+      }
+      list.push({t:'note',line:6,desc:'i--：i 回到位置 '+i+'——后面的元素已补上来，还要再检查一次，否则会漏删连续的 x'});
+      del++;
+      list.push({t:'tag',id:'del',text:'del='+del,slot:0,color:'#8b5cf6',line:7,row:1});
+      list.push({t:'note',line:7,desc:'del++：已删除 '+del+' 个，循环上限变为 i<N-del=N-'+del});
+      list.push({t:'stalemark',n:N-del,line:7,
+        desc:'有效长度变为 '+(N-del)+'：位置 '+(N-del)+'~'+(N-1)+' 的旧值在 C 内存中仍保留（灰色虚线格），但已不属于有效数组'});
+    }else{
+      list.push({t:'note',line:3,desc:'a['+i+']='+sim[i]+'≠x='+x+'，i++ 向右继续扫描'});
+      i++;
+      if(i<N-del) list.push({t:'tag',id:'i',text:'i',slot:i,color:'#06b6d4',line:2});
+    }
+  }
+  list.push({t:'done',line:10,
+    desc:'删除完成：共删除 '+del+' 个 '+x+'，有效元素剩 '+(N-del)+' 个；尾部 '+del+' 格为残留旧值（灰色虚线格，C 中物理上仍在但不属于有效数组），顺序不变'});
+  return list;
+}
+// 错误①的代码：连续待删除数据——i-- 与 del++ 都没有
+const CODE_LINES_W1=[
+'void deleteNumber(int a[], int N, int x){',
+'    int i,j;                // 没有考虑连续删除',
+'    for(i=0; i<N; i++){',
+'        if(x==a[i]){',
+'            for(j=i; j<N-1; j++)',
+'                a[j]=a[j+1];',
+'        }',
+'    }',
+'}'
+];
+// 错误②的代码：漏写 del++（尾部删除 / 删光所有数据时死循环）
+const CODE_LINES_W2=[
+'void deleteNumber(int a[], int N, int x){',
+'    int i,j;                // 漏了 del！',
+'    for(i=0; i<N; i++){     // 循环范围没有随删除缩小',
+'        if(x==a[i]){',
+'            for(j=i; j<N-1; j++)',
+'                a[j]=a[j+1];',
+'            i--;            // 想处理连续删除',
+'        }',
+'    }',
+'}'
+];
+
+function buildOpsWrong1(vals,x){
+  const list=[];
+  const N=vals.length;
+  initArr=vals.slice();
+  const sim=vals.slice();        // 不置 null，模拟 C 内存残留
+  list.push({t:'note',line:-1,
+    desc:'【错误①演示】连续待删除数据：既没有 i-- 也没有 del++——删除后直接 i++，补到被删位置上的新元素被跳过，连续出现的 x 会漏删'});
+  list.push({t:'tag',id:'i',text:'i',slot:0,color:'#06b6d4',line:2});
+  let i=0;
+  while(i<N){
+    list.push({t:'cmp',cells:[i],line:3,desc:'i='+i+'：判断 a['+i+']='+sim[i]+' 是否等于 x='+x});
+    if(sim[i]===x){
+      list.push({t:'note',line:4,desc:'a['+i+']='+x+'==x，删除它：a['+i+']~a['+(N-2)+'] 依次向前复制一格'});
+      for(let j=i;j<N-1;j++){
+        list.push({t:'move',from:j+1,to:j,line:5,
+          desc:'a['+j+']=a['+(j+1)+'] ：值 '+sim[j+1]+' 复制到 a['+j+']，a['+(j+1)+'] 原值保留（稍后被覆盖）'});
+        sim[j]=sim[j+1];
+      }
+      list.push({t:'note',line:3,
+        desc:'⚠ 没有执行 i--：接下来 for 循环直接 i++，跳到 i='+(i+1)+'——补上来的元素没有被检查！'});
+      i++;
+    }else{
+      i++;
+    }
+    if(i<N) list.push({t:'tag',id:'i',text:'i',slot:i,color:'#06b6d4',line:2});
+  }
+  const missIdx=[];
+  for(let k=0;k<N;k++) if(sim[k]===x) missIdx.push(k);
+  if(missIdx.length){
+    list.push({t:'missmark',at:missIdx[0],line:8,
+      desc:'循环结束：'+missIdx.map(k=>'a['+k+']').join('、')+' 的 '+x+' 没有被删除！它补位到被删位置后，i++ 正好跳过了它——这就是漏删'});
+  }
+  list.push({t:'done',bad:true,line:8,
+    desc:'【错误①结束】'+(missIdx.length
+      ?'连续的 '+x+' 只删掉了一部分，'+missIdx.map(k=>'a['+k+']').join('、')+' 的 '+x+' 被漏掉。解决办法：删除后执行 i--（或用 while 守在原地），并用 del++ 缩小循环范围——见「生成动画」的正确做法'
+      :'本例结果碰巧正确（删除后没遇上连续的 x）。请点「错误①」按钮载入含连续 x 的示例再看')});
+  return list;
+}
+
+function buildOpsWrong2(vals,x){
+  const list=[];
+  const N=vals.length;
+  initArr=vals.slice();
+  const sim=vals.slice();      // 注意：不置 null，模拟 C 内存残留
+  list.push({t:'note',line:-1,
+    desc:'【错误②演示】尾部待删除数据：不加 del++，循环条件仍是 i<N，删除后有效范围不缩小——待删除数据在尾部（或要删光所有数据）时会死循环'});
+  list.push({t:'tag',id:'i',text:'i',slot:0,color:'#06b6d4',line:2});
+  let i=0,steps=0,stallI=-1;
+  const seen=new Set();
+  while(i<N && steps<500){
+    steps++;
+    const key=i+'|'+sim.join(',');
+    if(seen.has(key)){ stallI=i; break; }
+    seen.add(key);
+    list.push({t:'cmp',cells:[i],line:3,desc:'i='+i+'：判断 a['+i+']='+sim[i]+' 是否等于 x='+x});
+    if(sim[i]===x){
+      let r=0;
+      for(let j=i;j<N-1;j++){
+        list.push({t:'move',from:j+1,to:j,line:5,
+          desc:'a['+j+']=a['+(j+1)+'] ：值 '+sim[j+1]+' 复制到 a['+j+']'+(sim[j]===sim[j+1]?'（画面没有变化：本来就是这个值）':'')});
+        sim[j]=sim[j+1]; r++;
+      }
+      if(r===0){
+        list.push({t:'note',line:5,
+          desc:'a['+i+'] 是最后一个元素，移位循环一次都不执行——a['+i+'] 的 '+x+' 还留在原地！'});
+      }
+      list.push({t:'note',line:6,
+        desc:'i--：i 回到 '+(i-1)+'（想处理连续删除）；随后 for 循环 i++ 又回到 '+i+'——位置原地打转'});
+      i--;
+    }
+    i++;
+    if(i<N) list.push({t:'tag',id:'i',text:'i',slot:i,color:'#06b6d4',line:2});
+  }
+  if(stallI>=0){
+    for(let r=2;r<=3;r++){
+      list.push({t:'cmp',cells:[stallI],line:3,
+        desc:'第 '+r+' 次回到 i='+stallI+'：a['+stallI+'] 还是 '+x+'，一切照旧再来一轮——程序永远停不下来'});
+    }
+    list.push({t:'missmark',at:stallI,line:2,
+      desc:'⚠️ 死循环！i 永远停在 '+stallI+'，a['+stallI+'] 永远是 '+x+'。因为 del 没有自增，循环范围 i<N 不缩小，i 也走不到 N'});
+    list.push({t:'done',bad:true,line:9,
+      desc:'【错误②结束】解决办法：del++ 记录删除个数，让循环条件 i<N-del、移位上界 j<N-1-del 都随删除缩小（正确做法请点「生成动画」）'});
+  }else{
+    list.push({t:'done',bad:true,line:9,
+      desc:'【错误②结束】本例没有触发死循环——但循环范围没有随删除缩小，尾部残留值也被多比较了。点「错误②」按钮载入 x 在尾部的示例，就能看到死循环'});
+  }
+  return list;
+}
+
+function finalizePage(){
+  applyStale();   // validCount 已由 stalemark 步骤设置，尾部残留旧值置灰
+}
+// （OPS-END）
+
+// ================= 输入与初始化 =================
+function gen(mode){
+  const raw=$('inArr').value.trim();
+  const vals=raw.split(/[\s,，、]+/).filter(s=>s!=='').map(Number);
+  const x=Number($('inX').value);
+  if(vals.length<1||vals.some(v=>!isFinite(v))){ setStatus('数组输入有误：请输入数字，用逗号或空格分隔。',-1,true); return; }
+  if(vals.length>10){ setStatus('数组元素请不超过 10 个，保证投影可读。',-1,true); return; }
+  if(!isFinite(x)){ setStatus('请输入要删除的数 x。',-1,true); return; }
+  window.__done=false;
+  pause();
+  ops = mode==='wrong1' ? buildOpsWrong1(vals,x)
+      : mode==='wrong2' ? buildOpsWrong2(vals,x)
+      : buildOps(vals,x);
+  oi=0; cmpCount=0; moveCount=0; validCount=-1;
+  arr=initArr.slice();
+  clearArrows(); clearTags();
+  layoutCells(arr.length); renderTiles();
+  $('xchip').textContent='删 x='+x;
+  $('xchip').style.background='var(--red)';
+  $('xchip').classList.remove('dim');
+  setCode(mode==='wrong1'?CODE_LINES_W1:(mode==='wrong2'?CODE_LINES_W2:CODE_LINES));
+  updateProgress();
+  setStatus(mode==='wrong1'
+    ?'已生成【错误① 连续待删除数据】演示：共 '+ops.length+' 步。点「播放」观察连续的 '+x+' 如何被漏删。'
+    :mode==='wrong2'
+    ?'已生成【错误② 尾部待删除数据】演示：共 '+ops.length+' 步。点「播放」观察死循环如何发生。'
+    :'已生成：共 '+ops.length+' 步。点「播放」或「单步」开始。',-1);
+}
+
+$('btnGen').onclick=()=>gen('correct');
+$('btnWrong1').onclick=()=>{ $('inArr').value='1,2,3,4,5,5,7,8,9,10'; $('inX').value=5; gen('wrong1'); };
+$('btnWrong2').onclick=()=>{ $('inArr').value='1,2,3,4,5,6,7,8,9,5'; $('inX').value=5; gen('wrong2'); };
+$('btnPlay').onclick=play;
+$('btnStep').onclick=stepOnce;
+$('btnReset').onclick=rewind;
+$('btnFirst').onclick=()=>goTo(1);
+$('btnPrev').onclick=()=>goTo(oi-1);
+$('btnLast').onclick=()=>goTo(ops.length);
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'&&e.target.type==='text') return;
+  if(e.code==='Space'){ e.preventDefault(); play(); }
+  else if(e.key==='ArrowRight'){ e.preventDefault(); stepOnce(); }
+  else if(e.key==='ArrowLeft'){ e.preventDefault(); goTo(oi-1); }
+  else if(e.key==='Home'){ e.preventDefault(); goTo(1); }
+  else if(e.key==='End'){ e.preventDefault(); goTo(ops.length); }
+  else if(e.key==='r'||e.key==='R'){ rewind(); }
+});
+
+gen();
+</script>
+</body>
+</html>
